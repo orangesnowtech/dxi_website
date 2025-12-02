@@ -58,11 +58,6 @@ export default function Nav({ isSticky }: NavProps) {
                 Concepts
               </Link>
             </li>
-            <li>
-              <Link href="/contact" className={linkClass("/contact")}>
-                Contact Us
-              </Link>
-            </li>
           </ul>
 
           {/* Button */}
