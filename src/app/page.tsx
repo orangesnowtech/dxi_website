@@ -206,7 +206,7 @@ export default function Home() {
           </div>
 
           {/* Services Cards */}
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {/* Card 1 */}
             <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200 transition-shadow duration-300">
               {/* Icon Container */}
@@ -300,6 +300,144 @@ export default function Home() {
             </div>
 
             {/* Card 3 */}
+            <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200 transition-shadow duration-300">
+              {/* Icon Container */}
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-white border border-gray-300">
+                <svg
+                  width="70"
+                  height="70"
+                  viewBox="0 0 70 70"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-10 h-10"
+                >
+                  <path
+                    d="M52.5 32.0833L59.3419 25.8081C60.6139 24.6415 61.25 24.0581 61.25 23.3333M61.25 23.3333C61.25 22.6084 60.6139 22.025 59.3419 20.8584L52.5 14.5833M61.25 23.3333C8.75 23.3333 8.75 61.2499 8.75 61.2499"
+                    stroke="#EF1111"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M16.0417 23.3333C20.0687 23.3333 23.3333 20.0687 23.3333 16.0417C23.3333 12.0146 20.0687 8.75 16.0417 8.75C12.0146 8.75 8.75 12.0146 8.75 16.0417C8.75 20.0687 12.0146 23.3333 16.0417 23.3333Z"
+                    stroke="#EF1111"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M37.9167 61.2501L52.5001 46.6667M52.5001 61.2501L37.9167 46.6667"
+                    stroke="#EF1111"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h4 className="text-xl font-bold text-black mb-4">
+                Integrated Marketing
+              </h4>
+
+              {/* Description */}
+              <p className="text-black text-lg leading-relaxed">
+                We unify strategy and creativity for
+                <br />
+                consistent brand impact.
+              </p>
+            </div>
+
+            {/* Card 4 */}
+            <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200 transition-shadow duration-300">
+              {/* Icon Container */}
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-white border border-gray-300">
+                <svg
+                  width="70"
+                  height="70"
+                  viewBox="0 0 70 70"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-10 h-10"
+                >
+                  <path
+                    d="M52.5 32.0833L59.3419 25.8081C60.6139 24.6415 61.25 24.0581 61.25 23.3333M61.25 23.3333C61.25 22.6084 60.6139 22.025 59.3419 20.8584L52.5 14.5833M61.25 23.3333C8.75 23.3333 8.75 61.2499 8.75 61.2499"
+                    stroke="#EF1111"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M16.0417 23.3333C20.0687 23.3333 23.3333 20.0687 23.3333 16.0417C23.3333 12.0146 20.0687 8.75 16.0417 8.75C12.0146 8.75 8.75 12.0146 8.75 16.0417C8.75 20.0687 12.0146 23.3333 16.0417 23.3333Z"
+                    stroke="#EF1111"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M37.9167 61.2501L52.5001 46.6667M52.5001 61.2501L37.9167 46.6667"
+                    stroke="#EF1111"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h4 className="text-xl font-bold text-black mb-4">
+                Digital Marketing
+              </h4>
+
+              {/* Description */}
+              <p className="text-black text-lg leading-relaxed">
+                We drive visibility, engagement, and
+                <br />
+                growth through data-led campaigns.
+              </p>
+            </div>
+
+            {/* Card 5 */}
+            <div className="bg-black text-white rounded-xl shadow-lg p-4 border border-gray-800 transition-shadow duration-300">
+              {/* Icon Container */}
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-black border border-gray-700">
+                <svg
+                  width="70"
+                  height="70"
+                  viewBox="0 0 70 70"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-10 h-10"
+                >
+                  <path
+                    d="M52.5 32.0833L59.3419 25.8081C60.6139 24.6415 61.25 24.0581 61.25 23.3333M61.25 23.3333C61.25 22.6084 60.6139 22.025 59.3419 20.8584L52.5 14.5833M61.25 23.3333C8.75 23.3333 8.75 61.2499 8.75 61.2499"
+                    stroke="#FF69B4"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M16.0417 23.3333C20.0687 23.3333 23.3333 20.0687 23.3333 16.0417C23.3333 12.0146 20.0687 8.75 16.0417 8.75C12.0146 8.75 8.75 12.0146 8.75 16.0417C8.75 20.0687 12.0146 23.3333 16.0417 23.3333Z"
+                    stroke="#FF69B4"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M37.9167 61.2501L52.5001 46.6667M52.5001 61.2501L37.9167 46.6667"
+                    stroke="#FF69B4"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+
+              {/* Title */}
+              <h4 className="text-xl font-bold text-white mb-4">
+                Experiential Marketing
+              </h4>
+
+              {/* Description */}
+              <p className="text-white text-lg leading-relaxed">
+                We create immersive brand
+                <br />
+                moments that inspire connection.
+              </p>
+            </div>
+
+            {/* Card 6 */}
             <div className="bg-white rounded-xl shadow-lg p-4 border border-gray-200 transition-shadow duration-300">
               {/* Icon Container */}
               <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-white border border-gray-300">
