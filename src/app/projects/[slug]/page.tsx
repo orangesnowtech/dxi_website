@@ -17,9 +17,10 @@ export async function generateStaticParams() {
 export default async function ProjectDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const project = await getProjectBySlug(params.slug);
+  const { slug } = await params;
+  const project = await getProjectBySlug(slug);
 
   if (!project) {
     notFound();
@@ -144,7 +145,7 @@ export default async function ProjectDetailPage({
                 return (
                   <Link
                     key={product._id}
-                    href={`/projects/${params.slug}/products/${product.slug}`}
+                    href={`/projects/${slug}/products/${product.slug}`}
                     className="group"
                   >
                     <div className="bg-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:bg-white/20">

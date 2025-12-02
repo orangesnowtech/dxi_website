@@ -51,8 +51,21 @@ export const productBySlugQuery = `*[_type == "product" && slug.current == $slug
   title,
   slug,
   image,
-  description,
-  content,
+  heroImage,
+  subtitle,
+  achievements,
+  achievementText,
+  imageSections[]{
+    layout,
+    images[]{
+      image,
+      caption
+    }
+  },
+  challengesText,
+  focusText,
+  results,
+  brandIdentityImage,
   "slug": slug.current,
   project->{
     _id,
