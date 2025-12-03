@@ -12,6 +12,13 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'name',
+      title: 'Project Name (Hero)',
+      type: 'string',
+      description: 'Short name shown in green in hero section (e.g., "Purch", "Erisco")',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',

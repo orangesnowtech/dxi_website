@@ -4,6 +4,7 @@ import { client } from '@/sanity/lib/client';
 export const projectsQuery = `*[_type == "project"] | order(_createdAt desc) {
   _id,
   title,
+  name,
   slug,
   backgroundImage,
   logo,
@@ -15,6 +16,7 @@ export const projectsQuery = `*[_type == "project"] | order(_createdAt desc) {
 export const projectBySlugQuery = `*[_type == "project" && slug.current == $slug][0] {
   _id,
   title,
+  name,
   tagline,
   experienceTag,
   heroImage,
