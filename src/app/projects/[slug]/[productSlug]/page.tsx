@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import Nav from '../../../../components/Nav';
-import Footer from '../../../../components/Footer';
+import Nav from '../../../components/Nav';
+import Footer from '../../../components/Footer';
 import { getProductBySlug } from '@/lib/sanity/queries';
 import { urlFor } from '@/lib/sanity/client';
+import ProjectsClientWrapper from "../../ProjectsClientWrapper";
 
 // Generate static params for all products
 export async function generateStaticParams() {
@@ -21,7 +22,7 @@ export default async function ProductDetailPage({
   const { productSlug, slug } = await params;
   const product = await getProductBySlug(productSlug);
 
-  if (!product) {
+  if (!product || !product.project || product.project.slug !== slug) {
     notFound();
   }
 
@@ -31,59 +32,66 @@ export default async function ProductDetailPage({
 
   return (
     <main className="min-h-screen font-sans bg-black text-white">
-      <Nav isSticky={false} />
+      <ProjectsClientWrapper />
 
-      {/* Hero Section */}
-      <section className="relative w-full min-h-[600px] flex items-center bg-black py-20">
+      {/* Breadcrumb Navigation - Fixed under nav */}
+      <section className="sticky top-[85px] z-40 bg-[#EF1111] py-3">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Side - Text Content */}
-            <div>
-              {product.project && (
-                <h1 className="text-5xl md:text-6xl font-bold mb-4 text-[#EF1111]">
+          <nav className="flex items-center gap-2 text-white text-sm font-medium">
+            <Link href="/" className="hover:underline">
+              Home
+            </Link>
+            <span className="text-white mt-0.5">&gt;</span>
+            <Link href="/projects" className="hover:underline">
+              Projects
+            </Link>
+            <span className="text-white mt-0.5">&gt;</span>
+            {product.project && (
+              <>
+                <Link href={`/projects/${product.project.slug}`} className="hover:underline">
                   {product.project.title}
+                </Link>
+                <span className="text-white mt-0.5">&gt;</span>
+              </>
+            )}
+            <span className="text-white">{product.title}</span>
+          </nav>
+        </div>
+      </section>
+
+      {/* Hero Section - Full width hero image with overlay */}
+      <section className="relative w-full h-[400px] md:h-[400px] overflow-hidden">
+        {heroImageUrl && (
+          <div className="absolute inset-0">
+            <Image
+              src={heroImageUrl}
+              alt={product.title}
+              fill
+              className="object-cover"
+              priority
+            />
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-black/50" />
+          </div>
+        )}
+        {/* Text overlay on left */}
+        <div className="relative h-full flex items-center">
+          <div className="container mx-auto px-6">
+            <div className="max-w-2xl">
+              {product.project && product.project.name && (
+                <h1 className="text-5xl md:text-6xl font-bold mb-4 text-[#00FF00]">
+                  {product.project.name}
                 </h1>
               )}
               <h2 className="text-6xl md:text-7xl font-bold mb-4 text-white">
                 {product.title}
               </h2>
               {product.subtitle && (
-                <p className="text-lg md:text-xl text-white/80 mb-6">
+                <p className="text-lg md:text-xl text-white font-normal">
                   {product.subtitle}
                 </p>
               )}
-              {/* Overview Button */}
-              <div className="flex items-center gap-3 mt-6">
-                <div className="w-12 h-12 rounded-full bg-[#EF1111] flex items-center justify-center">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8 5V19L19 12L8 5Z"
-                      fill="white"
-                    />
-                  </svg>
-                </div>
-                <span className="text-white text-lg">Overview</span>
-              </div>
             </div>
-
-            {/* Right Side - Hero Image */}
-            {heroImageUrl && (
-              <div className="relative w-full h-[400px] md:h-[500px]">
-                <Image
-                  src={heroImageUrl}
-                  alt={product.title}
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
-            )}
           </div>
         </div>
       </section>
@@ -92,32 +100,34 @@ export default async function ProductDetailPage({
       {product.achievements && product.achievements.length > 0 && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
-            <h2 className="text-4xl md:text-5xl font-bold mb-12 text-white">
-              Achievement
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {product.achievements.map((achievement: string, index: number) => (
-                <div key={index} className="flex items-start gap-4">
-                  <div className="flex-shrink-0 mt-1">
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M8 5V19L19 12L8 5Z"
-                        fill="#EF1111"
-                      />
-                    </svg>
+            <p className="text-lg md:text-xl text-white mb-6">Overview</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+              {/* Left Side - Heading */}
+              <div>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                  Achievement
+                </h2>
+              </div>
+
+              {/* Right Side - Achievements in Columns */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {product.achievements.map((achievement: string, index: number) => (
+                  <div key={index} className="flex items-start gap-3">
+                    {/* Red triangular play button icon - 40px */}
+                    <div className="flex-shrink-0 mt-1">
+                      <svg width="40" height="40" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10">
+                        <path d="M44.4946 38.4535C48.6599 36.0637 50.7426 34.8687 51.6224 33.4197C52.898 31.3188 52.898 28.6813 51.6224 26.5803C50.7426 25.1313 48.6599 23.9364 44.4946 21.5465L21.9918 8.63545C17.8664 6.2685 15.8037 5.08502 14.1184 5.05379C11.6749 5.00852 9.40785 6.32379 8.23212 8.46887C7.42121 9.94835 7.42122 12.3285 7.42122 17.0889V42.9111C7.42122 47.6715 7.42121 50.0517 8.23212 51.5312C9.40785 53.6763 11.6749 54.9915 14.1184 54.9463C15.8037 54.915 17.8664 53.7316 21.9918 51.3646L44.4946 38.4535Z" fill="#EF1111"/>
+                      </svg>
+                    </div>
+                    <p className="text-base mt-2 md:text-lg text-white/90 leading-relaxed">
+                      {achievement}
+                    </p>
                   </div>
-                  <p className="text-lg text-white/90">{achievement}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
             {product.achievementText && (
-              <p className="text-lg text-white/80 leading-relaxed max-w-4xl">
+              <p className="text-lg text-white/80 leading-relaxed max-w-4xl mt-8">
                 {product.achievementText}
               </p>
             )}
@@ -312,3 +322,4 @@ export default async function ProductDetailPage({
     </main>
   );
 }
+

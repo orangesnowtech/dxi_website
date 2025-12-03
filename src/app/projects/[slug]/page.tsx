@@ -57,11 +57,11 @@ export default async function ProjectDetailPage({
             <Link href="/" className="hover:underline">
               Home
             </Link>
-            <span className="text-white">/</span>
+            <span className="text-white mt-0.5">&gt;</span>
             <Link href="/projects" className="hover:underline">
               Projects
             </Link>
-            <span className="text-white">/</span>
+            <span className="text-white mt-0.5">&gt;</span>
             <span className="text-white">{project.title}</span>
           </nav>
         </div>
@@ -130,7 +130,7 @@ export default async function ProjectDetailPage({
       {project.services && project.services.length > 0 && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
-          <p className="text-lg md:text-xl text-white mb-6">Overview</p>
+            <p className="text-lg md:text-xl text-white mb-6">Overview</p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
               {/* Left Side - Overview and Heading */}
               <div>
@@ -204,7 +204,7 @@ export default async function ProjectDetailPage({
                 return (
                   <Link
                     key={product._id}
-                    href={`/projects/${slug}/products/${product.slug}`}
+                    href={`/projects/${slug}/${product.slug}`}
                     className="group"
                   >
                     <div className="relative rounded-2xl overflow-hidden bg-gray-100">

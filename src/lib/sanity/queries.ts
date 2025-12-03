@@ -72,6 +72,7 @@ export const productBySlugQuery = `*[_type == "product" && slug.current == $slug
   project->{
     _id,
     title,
+    name,
     "slug": slug.current
   }
 }`;
