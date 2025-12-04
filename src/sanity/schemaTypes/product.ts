@@ -63,10 +63,10 @@ export default defineType({
       validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
-      name: 'achievementText',
-      title: 'Achievement Text',
+      name: 'about',
+      title: 'About Project',
       type: 'text',
-      description: 'Paragraph text in the Achievement section',
+      description: 'About Project section content (similar to Brief section in projects)',
       validation: (Rule) => Rule.required(),
     }),
     // Images Sections

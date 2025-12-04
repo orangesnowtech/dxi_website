@@ -56,7 +56,7 @@ export const productBySlugQuery = `*[_type == "product" && slug.current == $slug
   heroImage,
   subtitle,
   achievements,
-  achievementText,
+  about,
   imageSections[]{
     layout,
     images[]{

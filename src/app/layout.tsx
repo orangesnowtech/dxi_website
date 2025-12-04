@@ -15,27 +15,27 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/images/dxilogo.png",
+        url: "/images/dxilogo2.png",
         type: "image/png",
       },
       {
-        url: "/images/dxilogo.png",
+        url: "/images/dxilogo2.png",
         sizes: "32x32",
         type: "image/png",
       },
       {
-        url: "/images/dxilogo.png",
+        url: "/images/dxilogo2.png",
         sizes: "16x16",
         type: "image/png",
       },
     ],
     apple: [
       {
-        url: "/images/dxilogo.png",
+        url: "/images/dxilogo2.png",
         type: "image/png",
       },
     ],
-    shortcut: ["/images/dxilogo.png"],
+    shortcut: ["/images/dxilogo2.png"],
   },
 };
 
