@@ -7,6 +7,8 @@ import { getConceptBySlug, getConcepts } from '@/lib/sanity/queries';
 import { urlFor } from '@/lib/sanity/client';
 import ConceptsClientWrapper from "../ConceptsClientWrapper";
 import ConceptReactions from './ConceptReactions';
+import ConceptReactionsSection from './ConceptReactionsSection';
+import MoreLikeThisSection from './MoreLikeThisSection';
 
 // Generate static params for all concepts
 export async function generateStaticParams() {
@@ -28,19 +30,12 @@ export default async function ConceptDetailPage({
     notFound();
   }
 
-  // Get all concepts to find next/previous
+  // Get all concepts and filter out current concept
   const allConcepts = await getConcepts();
-  const currentIndex = allConcepts.findIndex((c: any) => c.slug === slug);
-  const nextConcept = currentIndex > 0 ? allConcepts[currentIndex - 1] : null;
-  const previousConcept = currentIndex < allConcepts.length - 1 ? allConcepts[currentIndex + 1] : null;
-  const displayConcept = nextConcept || previousConcept || concept;
+  const otherConcepts = allConcepts.filter((c: any) => c.slug !== slug);
 
   const brandImageUrl = concept.brandImage
     ? urlFor(concept.brandImage).width(1200).height(800).url()
-    : null;
-
-  const displayConceptImageUrl = displayConcept.image
-    ? urlFor(displayConcept.image).width(1200).height(800).url()
     : null;
 
   return (
@@ -89,7 +84,10 @@ export default async function ConceptDetailPage({
 
             {/* Right Side - Reactions */}
             <div className="lg:mt-2">
-              <ConceptReactions conceptId={concept._id} />
+              <ConceptReactions
+                conceptId={concept._id}
+                initialCounts={concept.reactionCounts}
+              />
             </div>
           </div>
         </div>
@@ -314,7 +312,7 @@ export default async function ConceptDetailPage({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
               {/* Left Side - Title */}
               <div>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight">
                   Result so far
                 </h2>
               </div>
@@ -338,34 +336,14 @@ export default async function ConceptDetailPage({
         </section>
       )}
 
-      {/* Next Concept Section */}
-      {displayConcept && displayConceptImageUrl && (
-        <section className="relative w-full h-[200px] md:h-[300px] overflow-hidden">
-          <Image
-            src={displayConceptImageUrl}
-            alt={displayConcept.title}
-            fill
-            className="object-cover blur-sm"
-          />
-          <div className="absolute inset-0 bg-black/40 flex items-end justify-center pb-8">
-            <div className="text-center">
-              <Link
-                href={`/concepts/${displayConcept.slug}`}
-                className="inline-block"
-              >
-                <p className="text-[#EF1111] text-sm md:text-base mb-4">
-                  <span className="underline decoration-[#EF1111] underline-offset-8">
-                    Next Concept
-                  </span>
-                </p>
-                <h3 className="text-4xl md:text-6xl font-bold text-white">
-                  {displayConcept.title}
-                </h3>
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Reactions Section */}
+      <ConceptReactionsSection
+        conceptId={concept._id}
+        initialCounts={concept.reactionCounts}
+      />
+
+      {/* More Like This Section */}
+      <MoreLikeThisSection concepts={otherConcepts} />
 
       <Footer />
     </main>

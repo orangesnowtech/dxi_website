@@ -114,6 +114,7 @@ export const conceptsQuery = `*[_type == "concept"] | order(_createdAt desc) {
   title,
   image,
   team,
+  reactionCounts,
   "slug": slug.current
 }`;
 
@@ -144,6 +145,7 @@ export const conceptBySlugQuery = `*[_type == "concept" && slug.current == $slug
   description2,
   galleryImages,
   results,
+  reactionCounts,
   "slug": slug.current
 }`;
 

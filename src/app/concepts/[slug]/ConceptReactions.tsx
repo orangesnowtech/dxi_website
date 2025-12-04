@@ -1,157 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
-
-type ReactionType = "like" | "neutral" | "dislike" | null;
+import { useConceptReactions } from "./useConceptReactions";
 
 interface ConceptReactionsProps {
   conceptId: string;
+  initialCounts?: {
+    like: number;
+    neutral: number;
+    dislike: number;
+  };
 }
 
-export default function ConceptReactions({ conceptId }: ConceptReactionsProps) {
-  const [mounted, setMounted] = useState(false);
-  const [reactions, setReactions] = useState({
-    like: 0,
-    neutral: 0,
-    dislike: 0,
-  });
-  const [userReaction, setUserReaction] = useState<ReactionType>(null);
-
-  useEffect(() => {
-    // Only access localStorage after component has mounted on client
-    setMounted(true);
-    
-    // Check if we're in the browser before accessing localStorage
-    if (typeof window !== 'undefined') {
-      // Load reactions from localStorage or API
-      const storedReaction = localStorage.getItem(`concept_reaction_${conceptId}`);
-      if (storedReaction) {
-        setUserReaction(storedReaction as ReactionType);
-      }
-
-      // Load reaction counts (in a real app, this would come from an API)
-      const storedCounts = localStorage.getItem(`concept_counts_${conceptId}`);
-      if (storedCounts) {
-        try {
-          setReactions(JSON.parse(storedCounts));
-        } catch (e) {
-          console.error('Error parsing reaction counts:', e);
-        }
-      }
-    }
-  }, [conceptId]);
+export default function ConceptReactions({
+  conceptId,
+  initialCounts,
+}: ConceptReactionsProps) {
+  const { mounted, reactions, userReaction, handleReaction } =
+    useConceptReactions({ conceptId, initialCounts });
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
       <div className="flex items-center gap-4">
-        {/* Like - Smiling face */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 border-2 border-transparent">
-          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="white" />
-              <circle cx="9" cy="10" r="1.5" fill="currentColor" />
-              <circle cx="15" cy="10" r="1.5" fill="currentColor" />
-              <path
-                d="M8 14c1 1 3 1 4 0s3 1 4 0"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
+          <div className="w-6 h-6 rounded-full bg-white/20 animate-pulse" />
           <span className="text-white text-sm font-medium">0</span>
         </div>
-
-        {/* Neutral - Straight face */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 border-2 border-transparent">
-          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="white" />
-              <circle cx="9" cy="10" r="1.5" fill="currentColor" />
-              <circle cx="15" cy="10" r="1.5" fill="currentColor" />
-              <path
-                d="M8 14h8"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
+          <div className="w-6 h-6 rounded-full bg-white/20 animate-pulse" />
           <span className="text-white text-sm font-medium">0</span>
         </div>
-
-        {/* Dislike - Frowning face */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 border-2 border-transparent">
-          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="white" />
-              <circle cx="9" cy="10" r="1.5" fill="currentColor" />
-              <circle cx="15" cy="10" r="1.5" fill="currentColor" />
-              <path
-                d="M8 16c1-1 3-1 4 0s3 1 4 0"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
+          <div className="w-6 h-6 rounded-full bg-white/20 animate-pulse" />
           <span className="text-white text-sm font-medium">0</span>
         </div>
       </div>
     );
   }
-
-  const handleReaction = (type: ReactionType) => {
-    if (type === null || typeof window === 'undefined') return;
-
-    // If user already reacted with this type, remove it
-    if (userReaction === type) {
-      setUserReaction(null);
-      setReactions((prev) => {
-        const newReactions = {
-          ...prev,
-          [type]: Math.max(0, prev[type] - 1),
-        };
-        localStorage.setItem(`concept_counts_${conceptId}`, JSON.stringify(newReactions));
-        return newReactions;
-      });
-      localStorage.removeItem(`concept_reaction_${conceptId}`);
-    } else {
-      // Remove previous reaction count
-      const newReactions = {
-        ...reactions,
-        [type]: reactions[type] + 1,
-      };
-      if (userReaction) {
-        newReactions[userReaction] = Math.max(0, newReactions[userReaction] - 1);
-      }
-
-      // Add new reaction
-      setUserReaction(type);
-      setReactions(newReactions);
-      localStorage.setItem(`concept_reaction_${conceptId}`, type);
-      localStorage.setItem(`concept_counts_${conceptId}`, JSON.stringify(newReactions));
-    }
-  };
 
   return (
     <div className="flex items-center gap-4">
@@ -164,25 +49,49 @@ export default function ConceptReactions({ conceptId }: ConceptReactionsProps) {
             : "bg-white/10 hover:bg-white/20 border-2 border-transparent"
         }`}
       >
-        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="white" />
-            <circle cx="9" cy="10" r="1.5" fill="currentColor" />
-            <circle cx="15" cy="10" r="1.5" fill="currentColor" />
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g clipPath="url(#clip0_like_hero)">
             <path
-              d="M8 14c1 1 3 1 4 0s3 1 4 0"
-              stroke="currentColor"
-              strokeWidth="2"
+              d="M50.001 87.5C70.7117 87.5 87.501 70.7107 87.501 50C87.501 29.2893 70.7117 12.5 50.001 12.5C29.2903 12.5 12.501 29.2893 12.501 50C12.501 70.7107 29.2903 87.5 50.001 87.5Z"
+              stroke={userReaction === "like" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
               strokeLinecap="round"
+              strokeLinejoin="round"
             />
-          </svg>
-        </div>
+            <path
+              d="M37.5 41.667H37.5417"
+              stroke={userReaction === "like" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M62.499 41.667H62.5407"
+              stroke={userReaction === "like" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M39.583 62.5C40.9408 63.8858 42.5615 64.9868 44.3502 65.7384C46.1389 66.49 48.0595 66.8771 49.9997 66.8771C51.9398 66.8771 53.8605 66.49 55.6491 65.7384C57.4378 64.9868 59.0585 63.8858 60.4163 62.5"
+              stroke={userReaction === "like" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_like_hero">
+              <rect width="100" height="100" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
         <span className="text-white text-sm font-medium">{reactions.like}</span>
       </button>
 
@@ -195,25 +104,49 @@ export default function ConceptReactions({ conceptId }: ConceptReactionsProps) {
             : "bg-white/10 hover:bg-white/20 border-2 border-transparent"
         }`}
       >
-        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="white" />
-            <circle cx="9" cy="10" r="1.5" fill="currentColor" />
-            <circle cx="15" cy="10" r="1.5" fill="currentColor" />
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g clipPath="url(#clip0_neutral_hero)">
             <path
-              d="M8 14h8"
-              stroke="currentColor"
-              strokeWidth="2"
+              d="M50 87.5C70.7107 87.5 87.5 70.7107 87.5 50C87.5 29.2893 70.7107 12.5 50 12.5C29.2893 12.5 12.5 29.2893 12.5 50C12.5 70.7107 29.2893 87.5 50 87.5Z"
+              stroke={userReaction === "neutral" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
               strokeLinecap="round"
+              strokeLinejoin="round"
             />
-          </svg>
-        </div>
+            <path
+              d="M37.5 41.667H37.5417"
+              stroke={userReaction === "neutral" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M62.5 41.667H62.5417"
+              stroke={userReaction === "neutral" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M39.583 66.6668C47.0466 61.9941 55.7986 59.8061 64.583 60.4168"
+              stroke={userReaction === "neutral" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_neutral_hero">
+              <rect width="100" height="100" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
         <span className="text-white text-sm font-medium">
           {reactions.neutral}
         </span>
@@ -228,25 +161,49 @@ export default function ConceptReactions({ conceptId }: ConceptReactionsProps) {
             : "bg-white/10 hover:bg-white/20 border-2 border-transparent"
         }`}
       >
-        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="white" />
-            <circle cx="9" cy="10" r="1.5" fill="currentColor" />
-            <circle cx="15" cy="10" r="1.5" fill="currentColor" />
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g clipPath="url(#clip0_dislike_hero)">
             <path
-              d="M8 16c1-1 3-1 4 0s3 1 4 0"
-              stroke="currentColor"
-              strokeWidth="2"
+              d="M50 87.5C70.7107 87.5 87.5 70.7107 87.5 50C87.5 29.2893 70.7107 12.5 50 12.5C29.2893 12.5 12.5 29.2893 12.5 50C12.5 70.7107 29.2893 87.5 50 87.5Z"
+              stroke={userReaction === "dislike" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
               strokeLinecap="round"
+              strokeLinejoin="round"
             />
-          </svg>
-        </div>
+            <path
+              d="M37.5 41.667H37.5417"
+              stroke={userReaction === "dislike" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M62.5 41.667H62.5417"
+              stroke={userReaction === "dislike" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M39.583 63.5412C40.9408 62.1554 42.5615 61.0544 44.3502 60.3028C46.1389 59.5512 48.0595 59.1641 49.9997 59.1641C51.9398 59.1641 53.8605 59.5512 55.6491 60.3028C57.4378 61.0544 59.0585 62.1554 60.4163 63.5412"
+              stroke={userReaction === "dislike" ? "#EF1111" : "#F9FAFB"}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_dislike_hero">
+              <rect width="100" height="100" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
         <span className="text-white text-sm font-medium">
           {reactions.dislike}
         </span>

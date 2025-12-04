@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reset All Concept Reactions</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    button {
+      background: #EF1111;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #CC0E0E;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reset All Concept Reactions</h1>
+  <p>This will clear all reaction data from localStorage. All counts will reset to zero.</p>
+  <button onclick="resetReactions()">Reset All Reactions</button>
+  <div id="result"></div>
+
+  <script>
+    function resetReactions() {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('concept_reaction_') || key.startsWith('concept_counts_'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      document.getElementById('result').innerHTML = `
+        <div class="result success">
+          <strong>Success!</strong> Removed ${keysToRemove.length} reaction items from localStorage.
+          <br><br>
+          Please refresh your browser to see the changes.
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
+

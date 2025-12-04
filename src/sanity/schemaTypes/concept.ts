@@ -140,6 +140,37 @@ export default defineType({
         },
       ],
     }),
+    defineField({
+      name: 'reactionCounts',
+      title: 'Reaction Counts',
+      type: 'object',
+      description: 'Number of likes, neutral, and dislikes',
+      fields: [
+        {
+          name: 'like',
+          title: 'Like Count',
+          type: 'number',
+          initialValue: 0,
+        },
+        {
+          name: 'neutral',
+          title: 'Neutral Count',
+          type: 'number',
+          initialValue: 0,
+        },
+        {
+          name: 'dislike',
+          title: 'Dislike Count',
+          type: 'number',
+          initialValue: 0,
+        },
+      ],
+      initialValue: {
+        like: 0,
+        neutral: 0,
+        dislike: 0,
+      },
+    }),
   ],
   preview: {
     select: {

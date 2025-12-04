@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Footer from "../components/Footer";
 import { getConcepts } from "@/lib/sanity/queries";
-import { urlFor } from "@/lib/sanity/client";
 import ConceptsClientWrapper from "./ConceptsClientWrapper";
+import ConceptCard from "./ConceptCard";
 
 export default async function Concepts() {
   let concepts = [];
@@ -166,40 +166,9 @@ export default async function Concepts() {
           <div className="w-full lg:w-2/3 bg-gray-100 p-6 lg:p-8 overflow-y-auto lg:max-h-7xl hide-scrollbar">
           {concepts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {concepts.map((concept: any) => {
-                const imageUrl = concept.image
-                  ? urlFor(concept.image).width(600).height(400).url()
-                  : "";
-                return (
-                  <Link
-                    key={concept._id}
-                    href={`/concepts/${concept.slug}`}
-                    className="relative w-[19rem] rounded-xl overflow-hidden bg-white shadow-md hover:shadow-lg transition-shadow cursor-pointer group"
-                  >
-                    {/* Image with dark overlay */}
-                    <div className="relative w-full aspect-[4/3] overflow-hidden">
-                      {imageUrl && (
-                        <>
-                          <Image
-                            src={imageUrl}
-                            alt={concept.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          <div className="absolute inset-0 bg-black/40" />
-                        </>
-                      )}
-                    </div>
-                    {/* Title and Team at bottom */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <h3 className="text-lg font-semibold mb-1">
-                        {concept.title}
-                      </h3>
-                      <p className="text-sm text-white/90">{concept.team}</p>
-                    </div>
-                  </Link>
-                );
-              })}
+              {concepts.map((concept: any) => (
+                <ConceptCard key={concept._id} concept={concept} />
+              ))}
             </div>
           ) : (
             <div className="flex items-center justify-center h-full text-gray-500">
