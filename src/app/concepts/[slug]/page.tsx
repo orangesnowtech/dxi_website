@@ -62,32 +62,32 @@ export default async function ConceptDetailPage({
       {/* Hero Section */}
       <section className="bg-black py-12 md:py-16">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            {/* Left Side - Title, Month/Year, Team */}
-            <div className="flex-1">
-              <div className="flex items-start gap-4 mb-4">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-                  {concept.title}
-                </h1>
-                {concept.monthYear && (
-                  <span className="text-xl md:text-2xl text-white/80 mt-2 whitespace-nowrap">
-                    {concept.monthYear}
-                  </span>
-                )}
-              </div>
+          <div className="flex flex-col gap-6">
+            {/* First Row: Title and Month/Year */}
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                {concept.title}
+              </h1>
+              {concept.monthYear && (
+                <span className="text-xl md:text-2xl text-white/80 mt-2 whitespace-nowrap">
+                  {concept.monthYear}
+                </span>
+              )}
+            </div>
+
+            {/* Second Row: Team and Reactions */}
+            <div className="flex items-center justify-between gap-4">
               {concept.team && (
                 <p className="text-lg md:text-xl text-white/80">
                   {concept.team}
                 </p>
               )}
-            </div>
-
-            {/* Right Side - Reactions */}
-            <div className="lg:mt-2">
-              <ConceptReactions
-                conceptId={concept._id}
-                initialCounts={concept.reactionCounts}
-              />
+              <div>
+                <ConceptReactions
+                  conceptId={concept._id}
+                  initialCounts={concept.reactionCounts}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@ export default async function ConceptDetailPage({
       {concept.about && (
         <section className="bg-white py-8 md:py-12">
           <div className="container mx-auto px-6">
-            <p className="text-lg md:text-xl text-black leading-relaxed max-w-4xl">
+            <p className="text-lg md:text-xl text-black leading-relaxed w-full">
               {concept.about}
             </p>
           </div>
@@ -162,7 +162,7 @@ export default async function ConceptDetailPage({
       {concept.description1 && (
         <section className="bg-white py-8 md:py-12">
           <div className="container mx-auto px-6">
-            <p className="text-lg md:text-xl text-black leading-relaxed max-w-4xl">
+            <p className="text-lg md:text-xl text-black leading-relaxed w-full">
               {concept.description1}
             </p>
           </div>
@@ -211,7 +211,7 @@ export default async function ConceptDetailPage({
       {concept.description2 && concept.description2.length > 0 && (
         <section className="bg-white py-8 md:py-12">
           <div className="container mx-auto px-6">
-            <div className="space-y-6 max-w-4xl">
+            <div className="space-y-6 w-full">
               {concept.description2.map((paragraph: string, index: number) => (
                 <p
                   key={index}
