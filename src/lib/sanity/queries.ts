@@ -108,3 +108,23 @@ export async function getProductBySlug(slug: string) {
   return await client.fetch(productBySlugQuery, { slug });
 }
 
+// Query to get all concepts
+export const conceptsQuery = `*[_type == "concept"] | order(_createdAt desc) {
+  _id,
+  title,
+  image,
+  team,
+  "slug": slug.current
+}`;
+
+// Helper function to fetch concepts
+export async function getConcepts() {
+  try {
+    const concepts = await client.fetch(conceptsQuery);
+    return concepts || [];
+  } catch (error) {
+    console.error('Error fetching concepts:', error);
+    return [];
+  }
+}
+
