@@ -171,9 +171,10 @@ export default async function Concepts() {
                   ? urlFor(concept.image).width(600).height(400).url()
                   : "";
                 return (
-                  <div
+                  <Link
                     key={concept._id}
-                    className="relative rounded-xl overflow-hidden bg-white shadow-md hover:shadow-lg transition-shadow cursor-pointer group"
+                    href={`/concepts/${concept.slug}`}
+                    className="relative w-[19rem] rounded-xl overflow-hidden bg-white shadow-md hover:shadow-lg transition-shadow cursor-pointer group"
                   >
                     {/* Image with dark overlay */}
                     <div className="relative w-full aspect-[4/3] overflow-hidden">
@@ -196,7 +197,7 @@ export default async function Concepts() {
                       </h3>
                       <p className="text-sm text-white/90">{concept.team}</p>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

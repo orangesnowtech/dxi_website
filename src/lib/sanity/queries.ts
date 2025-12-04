@@ -128,3 +128,32 @@ export async function getConcepts() {
   }
 }
 
+// Query to get a single concept by slug
+export const conceptBySlugQuery = `*[_type == "concept" && slug.current == $slug][0] {
+  _id,
+  title,
+  image,
+  team,
+  monthYear,
+  brandImage,
+  brandName,
+  about,
+  twoImages,
+  description1,
+  threeImages,
+  description2,
+  galleryImages,
+  results,
+  "slug": slug.current
+}`;
+
+// Helper function to fetch a concept by slug
+export async function getConceptBySlug(slug: string) {
+  try {
+    return await client.fetch(conceptBySlugQuery, { slug });
+  } catch (error) {
+    console.error('Error fetching concept by slug:', error);
+    return null;
+  }
+}
+

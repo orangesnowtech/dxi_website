@@ -8,16 +8,12 @@
  */
 
 import config from '../../../../sanity.config'
-import StudioWrapper from '../StudioWrapper'
+import StudioClient from '../StudioClient'
 
-export const dynamic = 'force-static'
+export const dynamic = 'force-dynamic'
 
 export { metadata, viewport } from 'next-sanity/studio'
 
 export default function StudioPage() {
-  return (
-    <div suppressHydrationWarning>
-      <StudioWrapper config={config} />
-    </div>
-  )
+  return <StudioClient config={config} />
 }
