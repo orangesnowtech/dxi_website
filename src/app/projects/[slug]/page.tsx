@@ -3,47 +3,47 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Nav from '../../components/Nav';
 import Footer from '../../components/Footer';
-import { getProjectBySlug, getProjects } from '@/lib/sanity/queries';
+import { getClientBySlug, getClients } from '@/lib/sanity/queries';
 import { urlFor } from '@/lib/sanity/client';
 import ProjectsClientWrapper from "../ProjectsClientWrapper";
 
-// Generate static params for all projects
+// Generate static params for all clients
 export async function generateStaticParams() {
-  const projects = await getProjects();
-  return projects.map((project: any) => ({
-    slug: project.slug,
+  const clients = await getClients();
+  return clients.map((client: any) => ({
+    slug: client.slug,
   }));
 }
 
-export default async function ProjectDetailPage({
+export default async function ClientDetailPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const client = await getClientBySlug(slug);
 
-  if (!project) {
+  if (!client) {
     notFound();
   }
 
-  // Get all projects to find next/previous
-  const allProjects = await getProjects();
-  const currentIndex = allProjects.findIndex((p: any) => p.slug === slug);
-  const nextProject = currentIndex > 0 ? allProjects[currentIndex - 1] : null;
-  const previousProject = currentIndex < allProjects.length - 1 ? allProjects[currentIndex + 1] : null;
-  // Use next project, or previous, or current if only one
-  const displayProject = nextProject || previousProject || project;
+  // Get all clients to find next/previous
+  const allClients = await getClients();
+  const currentIndex = allClients.findIndex((c: any) => c.slug === slug);
+  const nextClient = currentIndex > 0 ? allClients[currentIndex - 1] : null;
+  const previousClient = currentIndex < allClients.length - 1 ? allClients[currentIndex + 1] : null;
+  // Use next client, or previous, or current if only one
+  const displayClient = nextClient || previousClient || client;
 
-  const heroImageUrl = project.heroImage
-    ? urlFor(project.heroImage).width(1200).height(800).url()
+  const heroImageUrl = client.heroImage
+    ? urlFor(client.heroImage).width(1200).height(800).url()
     : null;
-  const logoUrl = project.logo
-    ? urlFor(project.logo).width(300).height(150).url()
+  const logoUrl = client.logo
+    ? urlFor(client.logo).width(300).height(150).url()
     : null;
   
-  const nextProjectImageUrl = displayProject.backgroundImage
-    ? urlFor(displayProject.backgroundImage).width(1200).height(800).url()
+  const nextClientImageUrl = displayClient.backgroundImage
+    ? urlFor(displayClient.backgroundImage).width(1200).height(800).url()
     : null;
 
   return (
@@ -62,7 +62,7 @@ export default async function ProjectDetailPage({
               Projects
             </Link>
             <span className="text-white mt-0.5">&gt;</span>
-            <span className="text-white">{project.title}</span>
+            <span className="text-white">{client.title}</span>
           </nav>
         </div>
       </section>
@@ -73,19 +73,19 @@ export default async function ProjectDetailPage({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Text Content */}
             <div>
-              {project.name && (
+              {client.name && (
                 <h4 className="text-5xl md:text-6xl font-bold mb-4 text-[#00FF00]">
-                  {project.name}
+                  {client.name}
                 </h4>
               )}
-              {project.tagline && (
+              {client.tagline && (
                 <p className="text-3xl md:text-4xl text-white mb-4 leading-relaxed font-normal">
-                  {project.tagline}
+                  {client.tagline}
                 </p>
               )}
-              {project.experienceTag && (
+              {client.experienceTag && (
                 <p className="text-lg md:text-xl text-white font-normal">
-                  {project.experienceTag}
+                  {client.experienceTag}
                 </p>
               )}
             </div>
@@ -95,7 +95,7 @@ export default async function ProjectDetailPage({
               <div className="relative w-full h-[100px] md:h-[200px]">
                 <Image
                   src={heroImageUrl}
-                  alt={project.title}
+                  alt={client.title}
                   fill
                   className="object-contain"
                   priority
@@ -127,7 +127,7 @@ export default async function ProjectDetailPage({
       </section>
 
       {/* What we handle Section */}
-      {project.services && project.services.length > 0 && (
+      {client.services && client.services.length > 0 && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
             <p className="text-lg md:text-xl text-white mb-6">Overview</p>
@@ -138,13 +138,13 @@ export default async function ProjectDetailPage({
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
                   What we handle
                   <br />
-                  for {project.title}
+                  for {client.title}
                 </h2>
               </div>
 
               {/* Right Side - Services in Columns */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {project.services.map((service: string, index: number) => (
+                {client.services.map((service: string, index: number) => (
                   <div key={index} className="flex items-start gap-3">
                      {/* Red triangular play button icon */}
                      <div className="flex-shrink-0 mt-1">
@@ -165,7 +165,7 @@ export default async function ProjectDetailPage({
       )}
 
       {/* Brief Section */}
-      {project.brief && (
+      {client.brief && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
             <div className="bg-white rounded-lg p-8 w-full">
@@ -180,7 +180,7 @@ export default async function ProjectDetailPage({
                 <h3 className="text-2xl font-bold text-black">Brief</h3>
               </div>
               <p className="text-gray-700 leading-relaxed text-lg">
-                {project.brief}
+                {client.brief}
               </p>
             </div>
           </div>
@@ -188,31 +188,31 @@ export default async function ProjectDetailPage({
       )}
 
       {/* Showcase Section */}
-      {project.products && project.products.length > 0 && (
+      {client.products && client.products.length > 0 && (
         <section className="bg-white py-16">
           <div className="container mx-auto px-6">
             <p className="text-base md:text-lg text-gray-600 mb-2">Portfolio</p>
             <h2 className="text-3xl md:text-4xl font-bold mb-12 text-black">
-              {project.title} Showcase
+              {client.title} Showcase
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {project.products.map((product: any) => {
-                const productImageUrl = product.image
-                  ? urlFor(product.image).width(600).height(400).url()
+              {client.products.map((project: any) => {
+                const projectImageUrl = project.image
+                  ? urlFor(project.image).width(600).height(400).url()
                   : null;
 
                 return (
                   <Link
-                    key={product._id}
-                    href={`/projects/${slug}/${product.slug}`}
+                    key={project._id}
+                    href={`/projects/${slug}/${project.slug}`}
                     className="group"
                   >
                     <div className="relative rounded-2xl overflow-hidden bg-gray-100">
-                      {productImageUrl && (
+                      {projectImageUrl && (
                         <div className="relative w-full h-64 md:h-80">
                           <Image
-                            src={productImageUrl}
-                            alt={product.title}
+                            src={projectImageUrl}
+                            alt={project.title}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
                           />
@@ -225,9 +225,9 @@ export default async function ProjectDetailPage({
                             </svg>
 
                             </div>
-                            {/* Product title */}
+                            {/* Project title */}
                             <h3 className="text-base md:text-lg font-bold text-black">
-                              {product.title}
+                              {project.title}
                             </h3>
                           </div>
                         </div>
@@ -242,7 +242,7 @@ export default async function ProjectDetailPage({
       )}
 
       {/* Results Section */}
-      {project.results && project.results.length > 0 && (
+      {client.results && client.results.length > 0 && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
             <p className="text-sm md:text-base text-white/70 mb-4">Result Driven Metrics</p>
@@ -250,13 +250,13 @@ export default async function ProjectDetailPage({
               {/* Left Side - Title and Label */}
               <div>
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
-                  Result so far for {project.title}
+                  Result so far for {client.title}
                 </h2>
               </div>
 
               {/* Right Side - Results with play buttons */}
               <div className="space-y-4">
-                {project.results.map((result: string, index: number) => (
+                {client.results.map((result: string, index: number) => (
                   <div key={index} className="flex items-start gap-4">
                     {/* Red triangular play button icon */}
                     <div className="flex-shrink-0 mt-1">
@@ -273,13 +273,13 @@ export default async function ProjectDetailPage({
         </section>
       )}
 
-      {/* Next Project Section */}
-      {displayProject && (
+      {/* Next Client Section */}
+      {displayClient && (
         <section className="relative w-full h-[200px] md:h-[300px] overflow-hidden">
-          {nextProjectImageUrl && (
+          {nextClientImageUrl && (
             <Image
-              src={nextProjectImageUrl}
-              alt={displayProject.title}
+              src={nextClientImageUrl}
+              alt={displayClient.title}
               fill
               className="object-cover blur-sm"
             />
@@ -287,16 +287,16 @@ export default async function ProjectDetailPage({
           <div className="absolute inset-0 bg-black/40 flex items-end justify-center pb-22">
             <div className="text-center">
               <Link
-                href={`/projects/${displayProject.slug}`}
+                href={`/projects/${displayClient.slug}`}
                 className="inline-block"
               >
                 <p className="text-[#EF1111] text-sm md:text-base mb-14">
                   <span className="underline decoration-[#EF1111] underline-offset-8">
-                    Next Project
+                    Next Client
                   </span>
                 </p>
                 <h3 className="text-4xl md:text-6xl font-bold text-white">
-                  {displayProject.name || displayProject.title}
+                  {displayClient.name || displayClient.title}
                 </h3>
               </Link>
             </div>

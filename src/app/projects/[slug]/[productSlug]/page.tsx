@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Nav from '../../../components/Nav';
 import Footer from '../../../components/Footer';
-import { getProductBySlug, getProductsByProject } from '@/lib/sanity/queries';
+import { getProjectBySlug, getProjectsByClient } from '@/lib/sanity/queries';
 import { urlFor } from '@/lib/sanity/client';
 import ProjectsClientWrapper from "../../ProjectsClientWrapper";
 
@@ -20,26 +20,26 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string; productSlug: string }>;
 }) {
   const { productSlug, slug } = await params;
-  const product = await getProductBySlug(productSlug);
+  const project = await getProjectBySlug(productSlug);
 
-  if (!product || !product.project || product.project.slug !== slug) {
+  if (!project || !project.client || project.client.slug !== slug) {
     notFound();
   }
 
-  // Get all products for this project to find next/previous
-  const allProducts = await getProductsByProject(product.project._id);
-  const currentIndex = allProducts.findIndex((p: any) => p.slug === productSlug);
-  const nextProduct = currentIndex > 0 ? allProducts[currentIndex - 1] : null;
-  const previousProduct = currentIndex < allProducts.length - 1 ? allProducts[currentIndex + 1] : null;
-  // Use next product, or previous, or current if only one
-  const displayProduct = nextProduct || previousProduct || product;
+  // Get all projects for this client to find next/previous
+  const allProjects = await getProjectsByClient(project.client._id);
+  const currentIndex = allProjects.findIndex((p: any) => p.slug === productSlug);
+  const nextProject = currentIndex > 0 ? allProjects[currentIndex - 1] : null;
+  const previousProject = currentIndex < allProjects.length - 1 ? allProjects[currentIndex + 1] : null;
+  // Use next project, or previous, or current if only one
+  const displayProject = nextProject || previousProject || project;
 
-  const heroImageUrl = product.heroImage
-    ? urlFor(product.heroImage).width(1200).height(800).url()
+  const heroImageUrl = project.heroImage
+    ? urlFor(project.heroImage).width(1200).height(800).url()
     : null;
   
-  const nextProductImageUrl = displayProduct.image
-    ? urlFor(displayProduct.image).width(1200).height(800).url()
+  const nextProjectImageUrl = displayProject.image
+    ? urlFor(displayProject.image).width(1200).height(800).url()
     : null;
 
   return (
@@ -58,15 +58,15 @@ export default async function ProductDetailPage({
               Projects
             </Link>
             <span className="text-white mt-0.5">&gt;</span>
-            {product.project && (
+            {project.client && (
               <>
-                <Link href={`/projects/${product.project.slug}`} className="hover:underline">
-                  {product.project.title}
+                <Link href={`/projects/${project.client.slug}`} className="hover:underline">
+                  {project.client.title}
                 </Link>
                 <span className="text-white mt-0.5">&gt;</span>
               </>
             )}
-            <span className="text-white">{product.title}</span>
+            <span className="text-white">{project.title}</span>
           </nav>
         </div>
       </section>
@@ -77,7 +77,7 @@ export default async function ProductDetailPage({
           <div className="absolute inset-0">
             <Image
               src={heroImageUrl}
-              alt={product.title}
+              alt={project.title}
               fill
               className="object-cover"
               priority
@@ -90,17 +90,17 @@ export default async function ProductDetailPage({
         <div className="relative h-full flex items-center">
           <div className="container mx-auto px-6">
             <div className="max-w-2xl">
-              {product.project && product.project.name && (
+              {project.client && project.client.name && (
                 <h1 className="text-5xl md:text-6xl font-bold mb-4 text-[#00FF00]">
-                  {product.project.name}
+                  {project.client.name}
                 </h1>
               )}
               <h2 className="text-6xl md:text-7xl font-bold mb-4 text-white">
-                {product.title}
+                {project.title}
               </h2>
-              {product.subtitle && (
+              {project.subtitle && (
                 <p className="text-lg md:text-xl text-white font-normal">
-                  {product.subtitle}
+                  {project.subtitle}
                 </p>
               )}
             </div>
@@ -109,7 +109,7 @@ export default async function ProductDetailPage({
       </section>
 
       {/* Achievement Section */}
-      {product.achievements && product.achievements.length > 0 && (
+      {project.achievements && project.achievements.length > 0 && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
             <p className="text-lg md:text-xl text-white mb-6">Overview</p>
@@ -123,7 +123,7 @@ export default async function ProductDetailPage({
 
               {/* Right Side - Achievements in Columns */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {product.achievements.map((achievement: string, index: number) => (
+                {project.achievements.map((achievement: string, index: number) => (
                   <div key={index} className="flex items-start gap-3">
                     {/* Red triangular play button icon - 40px */}
                     <div className="flex-shrink-0 mt-1">
@@ -143,7 +143,7 @@ export default async function ProductDetailPage({
       )}
 
       {/* About Project Section */}
-      {product.about && (
+      {project.about && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
             <div className="bg-white rounded-lg p-8 w-full">
@@ -157,7 +157,7 @@ export default async function ProductDetailPage({
                 <h3 className="text-2xl font-bold text-black">About Project</h3>
               </div>
               <p className="text-gray-700 leading-relaxed text-lg">
-                {product.about}
+                {project.about}
               </p>
             </div>
           </div>
@@ -165,7 +165,7 @@ export default async function ProductDetailPage({
       )}
 
       {/* First Image Section (Single) */}
-      {product.imageSections && product.imageSections[0] && product.imageSections[0].layout === 'single' && product.imageSections[0].images && product.imageSections[0].images[0] && (
+      {project.imageSections && project.imageSections[0] && project.imageSections[0].layout === 'single' && project.imageSections[0].images && project.imageSections[0].images[0] && (
         <section className="bg-white py-16">
           <div className="container mx-auto px-6">
             {/* Red play button with Images text */}
@@ -179,21 +179,21 @@ export default async function ProductDetailPage({
             </div>
             <div className="relative w-full h-[500px] md:h-[600px] mb-4">
               <Image
-                src={urlFor(product.imageSections[0].images[0].image).width(1200).height(800).url()}
-                alt={product.imageSections[0].images[0].caption || 'Image'}
+                src={urlFor(project.imageSections[0].images[0].image).width(1200).height(800).url()}
+                alt={project.imageSections[0].images[0].caption || 'Image'}
                 fill
                 className="object-cover rounded-lg"
               />
             </div>
-            {product.imageSections[0].images[0].caption && (
-              <p className="text-gray-700 text-center text-lg">{product.imageSections[0].images[0].caption}</p>
+            {project.imageSections[0].images[0].caption && (
+              <p className="text-gray-700 text-center text-lg">{project.imageSections[0].images[0].caption}</p>
             )}
           </div>
         </section>
       )}
 
       {/* Challenges Section */}
-      {product.challengesText && (
+      {project.challengesText && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
             <h2 className="text-2xl md:text-3xl mb-8 text-white">
@@ -201,7 +201,7 @@ export default async function ProductDetailPage({
             </h2>
             <div className="bg-white rounded-2xl p-8">
               <p className="text-gray-700 font-bold leading-relaxed text-lg">
-                {product.challengesText}
+                {project.challengesText}
               </p>
             </div>
           </div>
@@ -209,7 +209,7 @@ export default async function ProductDetailPage({
       )}
 
       {/* Second Image Section (Grid) */}
-      {product.imageSections && product.imageSections[1] && product.imageSections[1].layout === 'grid' && product.imageSections[1].images && (
+      {project.imageSections && project.imageSections[1] && project.imageSections[1].layout === 'grid' && project.imageSections[1].images && (
         <section className="bg-white py-16">
           <div className="container mx-auto px-6">
             {/* Red play button with Images text */}
@@ -223,7 +223,7 @@ export default async function ProductDetailPage({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Top two images */}
-              {product.imageSections[1].images.slice(0, 2).map((img: any, idx: number) => (
+              {project.imageSections[1].images.slice(0, 2).map((img: any, idx: number) => (
                 <div key={idx} className="mb-6">
                   <div className="relative w-full h-[300px] md:h-[400px] mb-4">
                     <Image
@@ -239,18 +239,18 @@ export default async function ProductDetailPage({
                 </div>
               ))}
               {/* Bottom full-width image */}
-              {product.imageSections[1].images[2] && (
+              {project.imageSections[1].images[2] && (
                 <div className="md:col-span-2 mb-6">
                   <div className="relative w-full h-[400px] md:h-[500px] mb-4">
                     <Image
-                      src={urlFor(product.imageSections[1].images[2].image).width(1200).height(800).url()}
-                      alt={product.imageSections[1].images[2].caption || 'Image'}
+                      src={urlFor(project.imageSections[1].images[2].image).width(1200).height(800).url()}
+                      alt={project.imageSections[1].images[2].caption || 'Image'}
                       fill
                       className="object-cover rounded-lg"
                     />
                   </div>
-                  {product.imageSections[1].images[2].caption && (
-                    <p className="text-gray-700 text-center text-lg">{product.imageSections[1].images[2].caption}</p>
+                  {project.imageSections[1].images[2].caption && (
+                    <p className="text-gray-700 text-center text-lg">{project.imageSections[1].images[2].caption}</p>
                   )}
                 </div>
               )}
@@ -260,7 +260,7 @@ export default async function ProductDetailPage({
       )}
 
       {/* Focus Section */}
-      {product.focusText && (
+      {project.focusText && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
             <h2 className="text-2xl md:text-3xl mb-8 text-white">
@@ -268,7 +268,7 @@ export default async function ProductDetailPage({
             </h2>
             <div className="bg-white rounded-2xl p-8">
               <p className="text-gray-700 font-bold leading-relaxed text-lg">
-                {product.focusText}
+                {project.focusText}
               </p>
             </div>
           </div>
@@ -276,7 +276,7 @@ export default async function ProductDetailPage({
       )}
 
       {/* Third Image Section (Grid) */}
-      {product.imageSections && product.imageSections[2] && product.imageSections[2].layout === 'grid' && product.imageSections[2].images && (
+      {project.imageSections && project.imageSections[2] && project.imageSections[2].layout === 'grid' && project.imageSections[2].images && (
         <section className="bg-white py-16">
           <div className="container mx-auto px-6">
             {/* Red play button with Images text */}
@@ -290,7 +290,7 @@ export default async function ProductDetailPage({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Top two images */}
-              {product.imageSections[2].images.slice(0, 2).map((img: any, idx: number) => (
+              {project.imageSections[2].images.slice(0, 2).map((img: any, idx: number) => (
                 <div key={idx} className="mb-6">
                   <div className="relative w-full h-[300px] md:h-[400px] mb-4">
                     <Image
@@ -306,18 +306,18 @@ export default async function ProductDetailPage({
                 </div>
               ))}
               {/* Bottom full-width image */}
-              {product.imageSections[2].images[2] && (
+              {project.imageSections[2].images[2] && (
                 <div className="md:col-span-2 mb-6">
                   <div className="relative w-full h-[400px] md:h-[500px] mb-4">
                     <Image
-                      src={urlFor(product.imageSections[2].images[2].image).width(1200).height(800).url()}
-                      alt={product.imageSections[2].images[2].caption || 'Image'}
+                      src={urlFor(project.imageSections[2].images[2].image).width(1200).height(800).url()}
+                      alt={project.imageSections[2].images[2].caption || 'Image'}
                       fill
                       className="object-cover rounded-lg"
                     />
                   </div>
-                  {product.imageSections[2].images[2].caption && (
-                    <p className="text-gray-700 text-center text-lg">{product.imageSections[2].images[2].caption}</p>
+                  {project.imageSections[2].images[2].caption && (
+                    <p className="text-gray-700 text-center text-lg">{project.imageSections[2].images[2].caption}</p>
                   )}
                 </div>
               )}
@@ -327,7 +327,7 @@ export default async function ProductDetailPage({
       )}
 
       {/* Results So Far Section */}
-      {product.results && product.results.length > 0 && (
+      {project.results && project.results.length > 0 && (
         <section className="bg-black py-16">
           <div className="container mx-auto px-6">
             <p className="text-sm md:text-base text-white/70 mb-4">Impact</p>
@@ -341,7 +341,7 @@ export default async function ProductDetailPage({
 
               {/* Right Side - Results with play buttons */}
               <div className="space-y-4">
-                {product.results.map((result: string, index: number) => (
+                {project.results.map((result: string, index: number) => (
                   <div key={index} className="flex items-start gap-4">
                     {/* Red triangular play button icon */}
                     <div className="flex-shrink-0 mt-1">
@@ -358,13 +358,13 @@ export default async function ProductDetailPage({
         </section>
       )}
 
-      {/* Next Product Section */}
-      {displayProduct && (
+      {/* Next Project Section */}
+      {displayProject && (
         <section className="relative w-full h-[200px] md:h-[300px] overflow-hidden">
-          {nextProductImageUrl && (
+          {nextProjectImageUrl && (
             <Image
-              src={nextProductImageUrl}
-              alt={displayProduct.title}
+              src={nextProjectImageUrl}
+              alt={displayProject.title}
               fill
               className="object-cover blur-sm"
             />
@@ -372,16 +372,16 @@ export default async function ProductDetailPage({
           <div className="absolute inset-0 bg-black/40 flex items-end justify-center pb-22">
             <div className="text-center">
               <Link
-                href={`/projects/${slug}/${displayProduct.slug}`}
+                href={`/projects/${slug}/${displayProject.slug}`}
                 className="inline-block"
               >
                 <p className="text-[#EF1111] text-sm md:text-base mb-14">
                   <span className="underline decoration-[#EF1111] underline-offset-8">
-                    Next Product
+                    Next Project
                   </span>
                 </p>
                 <h3 className="text-4xl md:text-6xl font-bold text-white">
-                  {displayProduct.title}
+                  {displayProject.title}
                 </h3>
               </Link>
             </div>

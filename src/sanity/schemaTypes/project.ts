@@ -9,13 +9,7 @@ export default defineType({
       name: 'title',
       title: 'Project Title',
       type: 'string',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'name',
-      title: 'Project Name (Hero)',
-      type: 'string',
-      description: 'Short name shown in green in hero section (e.g., "Purch", "Erisco")',
+      description: 'Title shown on the project card (e.g., "Website Redesign", "Product Launch")',
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -29,54 +23,38 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'tagline',
-      title: 'Tagline/Description',
-      type: 'string',
-      description: 'Short description shown in hero (e.g., "Purch is a Nigerian platform simplifying secure digital trade.")',
+      name: 'image',
+      title: 'Project Image',
+      type: 'image',
+      description: 'Main image for the project card',
+      options: {
+        hotspot: true,
+      },
       validation: (Rule) => Rule.required(),
     }),
-    defineField({
-      name: 'experienceTag',
-      title: 'Experience Tag',
-      type: 'string',
-      description: 'Tag shown in hero (e.g., "Full Digital Experience")',
-      validation: (Rule) => Rule.required(),
-    }),
+    // Hero Section Fields
     defineField({
       name: 'heroImage',
       title: 'Hero Image',
       type: 'image',
-      description: 'Main hero image (laptops/desktop view)',
+      description: 'Large hero image shown on the right side of hero section',
       options: {
         hotspot: true,
       },
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'backgroundImage',
-      title: 'Background Image',
-      type: 'image',
-      description: 'Background image for project card on projects page',
-      options: {
-        hotspot: true,
-      },
-      validation: (Rule) => Rule.required(),
+      name: 'subtitle',
+      title: 'Subtitle/Designer Text',
+      type: 'string',
+      description: 'Text below project title (e.g., "Design from, Company Name Marketing Team")',
     }),
+    // Achievement Section
     defineField({
-      name: 'logo',
-      title: 'Logo',
-      type: 'image',
-      description: 'Client logo',
-      options: {
-        hotspot: true,
-      },
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: 'services',
-      title: 'Services We Handle',
+      name: 'achievements',
+      title: 'Achievements',
       type: 'array',
-      description: 'List of services provided (e.g., Brand Identity & Design, Website Experience)',
+      description: 'List of achievements with red triangular icons',
       of: [
         {
           type: 'string',
@@ -85,17 +63,90 @@ export default defineType({
       validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
-      name: 'brief',
-      title: 'Brief',
+      name: 'about',
+      title: 'About Project',
       type: 'text',
-      description: "The brief section content describing the client's needs",
+      description: 'About Project section content (similar to Brief section in clients)',
       validation: (Rule) => Rule.required(),
     }),
+    // Images Sections
+    defineField({
+      name: 'imageSections',
+      title: 'Image Sections',
+      type: 'array',
+      description: 'Multiple image sections (single image or grid of 3)',
+      of: [
+        {
+          type: 'object',
+          name: 'imageSection',
+          title: 'Image Section',
+          fields: [
+            {
+              name: 'layout',
+              title: 'Layout',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Single Image', value: 'single' },
+                  { title: 'Grid of 3', value: 'grid' },
+                ],
+              },
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'images',
+              title: 'Images',
+              type: 'array',
+              of: [
+                {
+                  type: 'object',
+                  name: 'imageWithCaption',
+                  title: 'Image with Caption',
+                  fields: [
+                    {
+                      name: 'image',
+                      title: 'Image',
+                      type: 'image',
+                      options: {
+                        hotspot: true,
+                      },
+                      validation: (Rule) => Rule.required(),
+                    },
+                    {
+                      name: 'caption',
+                      title: 'Caption',
+                      type: 'string',
+                      description: 'Caption text below the image',
+                    },
+                  ],
+                },
+              ],
+              validation: (Rule) => Rule.required().min(1),
+            },
+          ],
+        },
+      ],
+    }),
+    // Challenges Section
+    defineField({
+      name: 'challengesText',
+      title: 'Challenges Text',
+      type: 'text',
+      description: 'Paragraph text in the Challenges section',
+    }),
+    // Focus Section
+    defineField({
+      name: 'focusText',
+      title: 'Focus Text',
+      type: 'text',
+      description: 'Paragraph text in the Focus section',
+    }),
+    // Results Section
     defineField({
       name: 'results',
       title: 'Results',
       type: 'array',
-      description: 'List of results/metrics achieved',
+      description: 'List of results with red triangular icons',
       of: [
         {
           type: 'string',
@@ -103,24 +154,37 @@ export default defineType({
       ],
       validation: (Rule) => Rule.required().min(1),
     }),
+    // Brand Identity Designs Section
     defineField({
-      name: 'products',
-      title: 'Products/Showcase Items',
-      type: 'array',
-      description: 'Products or showcase items for this project',
-      of: [
-        {
-          type: 'reference',
-          to: [{ type: 'product' }],
-        },
-      ],
+      name: 'brandIdentityImage',
+      title: 'Brand Identity Designs Image',
+      type: 'image',
+      description: 'Background image for Brand Identity Designs section',
+      options: {
+        hotspot: true,
+      },
+    }),
+    defineField({
+      name: 'client',
+      title: 'Client',
+      type: 'reference',
+      to: [{ type: 'client' }],
+      description: 'The client this project belongs to',
+      validation: (Rule) => Rule.required(),
     }),
   ],
   preview: {
     select: {
       title: 'title',
-      media: 'logo',
+      media: 'image',
+      client: 'client.title',
+    },
+    prepare(selection) {
+      const { client } = selection
+      return {
+        ...selection,
+        subtitle: client ? `Client: ${client}` : 'No client',
+      }
     },
   },
 })
-
