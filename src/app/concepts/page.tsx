@@ -1,17 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import Footer from "../components/Footer";
-import { getConcepts } from "@/lib/sanity/queries";
+import { getConcepts, getTags } from "@/lib/sanity/queries";
 import ConceptsClientWrapper from "./ConceptsClientWrapper";
-import ConceptCard from "./ConceptCard";
+import ConceptsContent from "./ConceptsContent";
 
 export default async function Concepts() {
   let concepts = [];
+  let tags = [];
+  
   try {
     concepts = await getConcepts();
   } catch (error) {
     console.error("Error fetching concepts:", error);
     concepts = [];
+  }
+
+  try {
+    tags = await getTags();
+  } catch (error) {
+    console.error("Error fetching tags:", error);
+    tags = [];
   }
 
   return (
@@ -162,19 +171,9 @@ export default async function Concepts() {
             </div>
           </div>
 
-          {/* Right Side - Concepts Grid */}
+          {/* Right Side - Tags and Concepts Grid */}
           <div className="w-full lg:w-2/3 bg-gray-100 p-6 lg:p-8 overflow-y-auto lg:max-h-7xl hide-scrollbar">
-          {concepts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {concepts.map((concept: any) => (
-                <ConceptCard key={concept._id} concept={concept} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              <p>No concepts available yet.</p>
-            </div>
-          )}
+            <ConceptsContent concepts={concepts} tags={tags} />
           </div>
         </div>
       </section>

@@ -119,6 +119,18 @@ export const conceptsQuery = `*[_type == "concept"] | order(_createdAt desc) {
   image,
   team,
   reactionCounts,
+  "slug": slug.current,
+  tags[]->{
+    _id,
+    title,
+    "slug": slug.current
+  }
+}`;
+
+// Query to get all tags
+export const tagsQuery = `*[_type == "tag"] | order(title asc) {
+  _id,
+  title,
   "slug": slug.current
 }`;
 
@@ -150,7 +162,12 @@ export const conceptBySlugQuery = `*[_type == "concept" && slug.current == $slug
   galleryImages,
   results,
   reactionCounts,
-  "slug": slug.current
+  "slug": slug.current,
+  tags[]->{
+    _id,
+    title,
+    "slug": slug.current
+  }
 }`;
 
 // Helper function to fetch a concept by slug
@@ -160,6 +177,17 @@ export async function getConceptBySlug(slug: string) {
   } catch (error) {
     console.error('Error fetching concept by slug:', error);
     return null;
+  }
+}
+
+// Helper function to fetch all tags
+export async function getTags() {
+  try {
+    const tags = await client.fetch(tagsQuery);
+    return tags || [];
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    return [];
   }
 }
 

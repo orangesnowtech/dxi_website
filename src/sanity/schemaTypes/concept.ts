@@ -171,6 +171,18 @@ export default defineType({
         dislike: 0,
       },
     }),
+    defineField({
+      name: 'tags',
+      title: 'Tags',
+      type: 'array',
+      description: 'Tags for filtering concepts (e.g., Photography, Brand Recognition, Marketing)',
+      of: [
+        {
+          type: 'reference',
+          to: [{ type: 'tag' }],
+        },
+      ],
+    }),
   ],
   preview: {
     select: {

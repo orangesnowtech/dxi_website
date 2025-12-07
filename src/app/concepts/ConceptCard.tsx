@@ -10,8 +10,8 @@ interface ConceptCardProps {
     _id: string;
     slug: string;
     title: string;
-    team: string;
-    image: any;
+    team?: string;
+    image?: any;
   };
 }
 
