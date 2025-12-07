@@ -144,7 +144,7 @@ export default defineType({
       name: 'reactionCounts',
       title: 'Reaction Counts',
       type: 'object',
-      description: 'Number of likes, neutral, and dislikes',
+      description: 'Number of likes, shares, and dislikes',
       fields: [
         {
           name: 'like',
@@ -153,8 +153,8 @@ export default defineType({
           initialValue: 0,
         },
         {
-          name: 'neutral',
-          title: 'Neutral Count',
+          name: 'share',
+          title: 'Share Count',
           type: 'number',
           initialValue: 0,
         },
@@ -167,7 +167,7 @@ export default defineType({
       ],
       initialValue: {
         like: 0,
-        neutral: 0,
+        share: 0,
         dislike: 0,
       },
     }),

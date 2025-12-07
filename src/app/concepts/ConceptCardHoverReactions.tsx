@@ -14,7 +14,7 @@ export default function ConceptCardHoverReactions({
   const [mounted, setMounted] = useState(false);
   const [reactions, setReactions] = useState({
     like: 0,
-    neutral: 0,
+    share: 0,
     dislike: 0,
   });
 
@@ -28,7 +28,12 @@ export default function ConceptCardHoverReactions({
           if (response.ok) {
             const data = await response.json();
             if (data.reactionCounts) {
-              setReactions(data.reactionCounts);
+              // Ensure all three counts are present, defaulting to 0 if missing
+              setReactions({
+                like: data.reactionCounts.like ?? 0,
+                share: data.reactionCounts.share ?? 0,
+                dislike: data.reactionCounts.dislike ?? 0,
+              });
             }
           }
         } catch (error) {
@@ -246,56 +251,6 @@ export default function ConceptCardHoverReactions({
         <span className="text-white text-sm font-medium">{reactions.like}</span>
       </div>
 
-      {/* Neutral - View Only */}
-      <div className="flex items-center gap-2">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <g clipPath="url(#clip0_neutral_view)">
-            <path
-              d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
-              stroke="#F9FAFB"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M9 10H9.01"
-              stroke="#F9FAFB"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M15 10H15.01"
-              stroke="#F9FAFB"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M9.5 16C11.2913 14.8786 13.3917 14.3535 15.5 14.5"
-              stroke="#F9FAFB"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </g>
-          <defs>
-            <clipPath id="clip0_neutral_view">
-              <rect width="24" height="24" fill="white" />
-            </clipPath>
-          </defs>
-        </svg>
-        <span className="text-white text-sm font-medium">
-          {reactions.neutral}
-        </span>
-      </div>
-
       {/* Dislike - View Only */}
       <div className="flex items-center gap-2">
         <svg
@@ -343,6 +298,35 @@ export default function ConceptCardHoverReactions({
         </svg>
         <span className="text-white text-sm font-medium">
           {reactions.dislike}
+        </span>
+      </div>
+
+      {/* Share - View Only */}
+      <div className="flex items-center gap-2">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M39.1495 18.75H34.8092C22.5331 18.75 16.395 18.75 12.5813 22.4112C8.76758 26.0723 8.76758 31.9649 8.76758 43.75V60.4167C8.76758 72.2017 8.76758 78.0942 12.5813 81.7554C16.395 85.4167 22.5331 85.4167 34.8092 85.4167H52.3369C64.6131 85.4167 70.751 85.4167 74.5648 81.7554C77.0356 79.3833 77.9056 76.0746 78.2119 70.8333"
+            stroke="#F9FAFB"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M67.3613 29.1663V16.0561C67.3613 15.2425 68.0483 14.583 68.8958 14.583C69.3025 14.583 69.6929 14.7382 69.9808 15.0145L89.6979 33.9432C90.6808 34.8864 91.2325 36.1658 91.2325 37.4997C91.2325 38.8336 90.6808 40.1129 89.6979 41.0561L69.9808 59.9847C69.6929 60.2613 69.3025 60.4163 68.8958 60.4163C68.0483 60.4163 67.3613 59.7568 67.3613 58.943V45.833H54.6487C36.9792 45.833 30.4688 60.4163 30.4688 60.4163V49.9997C30.4688 38.4938 40.1848 29.1663 52.17 29.1663H67.3613Z"
+            stroke="#F9FAFB"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="text-white text-sm font-medium">
+          {reactions.share}
         </span>
       </div>
     </div>

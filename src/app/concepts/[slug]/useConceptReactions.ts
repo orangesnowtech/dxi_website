@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 
-type ReactionType = "like" | "neutral" | "dislike" | null;
+type ReactionType = "like" | "share" | "dislike" | null;
 
 interface UseConceptReactionsOptions {
   conceptId: string;
   initialCounts?: {
     like: number;
-    neutral: number;
+    share: number;
     dislike: number;
   };
 }
@@ -20,7 +20,7 @@ export function useConceptReactions({
   const [mounted, setMounted] = useState(false);
   const [reactions, setReactions] = useState({
     like: initialCounts?.like || 0,
-    neutral: initialCounts?.neutral || 0,
+    share: initialCounts?.share || 0,
     dislike: initialCounts?.dislike || 0,
   });
   const [userReaction, setUserReaction] = useState<ReactionType>(null);
@@ -42,19 +42,33 @@ export function useConceptReactions({
           if (response.ok) {
             const data = await response.json();
             if (data.reactionCounts) {
-              setReactions(data.reactionCounts);
+              // Ensure all three counts are present, defaulting to 0 if missing
+              // The API should always return all three, but we safeguard here
+              setReactions({
+                like: data.reactionCounts.like ?? 0,
+                share: data.reactionCounts.share ?? 0,
+                dislike: data.reactionCounts.dislike ?? 0,
+              });
             }
           } else {
             // Fallback to initial counts if API fails
             if (initialCounts) {
-              setReactions(initialCounts);
+              setReactions({
+                like: initialCounts.like ?? 0,
+                share: initialCounts.share ?? 0,
+                dislike: initialCounts.dislike ?? 0,
+              });
             }
           }
         } catch (error) {
           console.error("Error fetching reactions:", error);
           // Fallback to initial counts if API fails
           if (initialCounts) {
-            setReactions(initialCounts);
+            setReactions({
+              like: initialCounts.like ?? 0,
+              share: initialCounts.share ?? 0,
+              dislike: initialCounts.dislike ?? 0,
+            });
           }
         }
       };
@@ -80,7 +94,12 @@ export function useConceptReactions({
         
         // Update counts from event detail or fetch from server
         if (customEvent.detail?.reactionCounts) {
-          setReactions(customEvent.detail.reactionCounts);
+          // Ensure all three counts are present
+          setReactions({
+            like: customEvent.detail.reactionCounts.like ?? 0,
+            share: customEvent.detail.reactionCounts.share ?? 0,
+            dislike: customEvent.detail.reactionCounts.dislike ?? 0,
+          });
         } else {
           // Fetch latest counts from server
           fetchReactions();
@@ -148,7 +167,12 @@ export function useConceptReactions({
       }
       
       // Update local state with server response (always use server data as source of truth)
-      setReactions(data.reactionCounts);
+      // Ensure all three counts are present
+      setReactions({
+        like: data.reactionCounts.like ?? 0,
+        share: data.reactionCounts.share ?? 0,
+        dislike: data.reactionCounts.dislike ?? 0,
+      });
       
       // Update user's reaction in localStorage and state
       if (isRemoving) {

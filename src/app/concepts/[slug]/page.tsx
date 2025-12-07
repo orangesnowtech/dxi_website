@@ -75,17 +75,33 @@ export default async function ConceptDetailPage({
               )}
             </div>
 
-            {/* Second Row: Team and Reactions */}
+            {/* Second Row: Team, Tags and Reactions */}
             <div className="flex items-center justify-between gap-4">
-              {concept.team && (
-                <p className="text-lg md:text-xl text-white/80">
-                  {concept.team}
-                </p>
-              )}
+              <div className="flex items-center gap-4 flex-wrap">
+                {concept.team && (
+                  <p className="text-lg md:text-xl text-white/80">
+                    {concept.team}
+                  </p>
+                )}
+                {concept.tags && concept.tags.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {concept.tags.map((tag: any) => (
+                      <span
+                        key={tag._id}
+                        className="px-4 py-1.5 bg-white text-[#EF1111] rounded-full text-sm font-medium shadow-sm"
+                      >
+                        {tag.title}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div>
                 <ConceptReactions
                   conceptId={concept._id}
                   initialCounts={concept.reactionCounts}
+                  conceptTitle={concept.title}
+                  conceptSlug={concept.slug}
                 />
               </div>
             </div>
@@ -340,6 +356,8 @@ export default async function ConceptDetailPage({
       <ConceptReactionsSection
         conceptId={concept._id}
         initialCounts={concept.reactionCounts}
+        conceptTitle={concept.title}
+        conceptSlug={concept.slug}
       />
 
       {/* More Like This Section */}

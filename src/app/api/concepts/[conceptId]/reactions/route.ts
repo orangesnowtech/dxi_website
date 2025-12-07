@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@/sanity/lib/client';
 import { writeClient } from '@/sanity/lib/writeClient';
 
-type ReactionType = "like" | "neutral" | "dislike";
+type ReactionType = "like" | "share" | "dislike";
 
 export async function POST(
   request: NextRequest,
@@ -13,7 +13,7 @@ export async function POST(
     const body = await request.json();
     const { reaction, action, userIdentifier } = body; // action: 'add' or 'remove', userIdentifier for tracking
 
-    if (!reaction || !['like', 'neutral', 'dislike'].includes(reaction)) {
+    if (!reaction || !['like', 'share', 'dislike'].includes(reaction)) {
       return NextResponse.json(
         { error: 'Invalid reaction type' },
         { status: 400 }
@@ -39,7 +39,7 @@ export async function POST(
     // Get current counts from Sanity or default to zero
     const currentCounts = {
       like: currentConcept.reactionCounts?.like || 0,
-      neutral: currentConcept.reactionCounts?.neutral || 0,
+      share: currentConcept.reactionCounts?.share || 0,
       dislike: currentConcept.reactionCounts?.dislike || 0,
     };
 
@@ -62,10 +62,13 @@ export async function POST(
       }
     } else if (action === 'remove') {
       // User is removing their reaction
-      newCounts[reaction as ReactionType] = Math.max(
-        0,
-        currentCounts[reaction as ReactionType] - 1
-      );
+      // Note: Share cannot be removed (unlike like/dislike)
+      if (reaction !== 'share') {
+        newCounts[reaction as ReactionType] = Math.max(
+          0,
+          currentCounts[reaction as ReactionType] - 1
+        );
+      }
     }
 
     // Always update Sanity with new counts (this is the source of truth)
@@ -128,10 +131,11 @@ export async function GET(
       );
     }
 
-    const reactionCounts = concept.reactionCounts || {
-      like: 0,
-      neutral: 0,
-      dislike: 0,
+    // Ensure all three counts are always present, defaulting to 0 if missing
+    const reactionCounts = {
+      like: concept.reactionCounts?.like ?? 0,
+      share: concept.reactionCounts?.share ?? 0,
+      dislike: concept.reactionCounts?.dislike ?? 0,
     };
 
     return NextResponse.json({ reactionCounts });
