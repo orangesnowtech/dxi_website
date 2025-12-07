@@ -103,18 +103,6 @@ export default defineType({
       ],
       validation: (Rule) => Rule.required().min(1),
     }),
-    defineField({
-      name: 'products',
-      title: 'Projects/Showcase Items',
-      type: 'array',
-      description: 'Projects or showcase items for this client',
-      of: [
-        {
-          type: 'reference',
-          to: [{ type: 'project' }],
-        },
-      ],
-    }),
   ],
   preview: {
     select: {

@@ -154,16 +154,6 @@ export default defineType({
       ],
       validation: (Rule) => Rule.required().min(1),
     }),
-    // Brand Identity Designs Section
-    defineField({
-      name: 'brandIdentityImage',
-      title: 'Brand Identity Designs Image',
-      type: 'image',
-      description: 'Background image for Brand Identity Designs section',
-      options: {
-        hotspot: true,
-      },
-    }),
     defineField({
       name: 'client',
       title: 'Client',

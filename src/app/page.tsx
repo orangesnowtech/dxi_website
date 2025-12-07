@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
+import BrandsSection from "./components/BrandsSection";
 
 export default function Home() {
   const [isSticky, setIsSticky] = useState(false);
@@ -380,14 +381,14 @@ export default function Home() {
 
               {/* Title */}
               <h4 className="text-xl font-bold text-white mb-4">
-                Experiential Marketing
+                Public Relations
               </h4>
 
               {/* Description */}
               <p className="text-white text-lg leading-relaxed">
-                We create immersive brand
+                Managing media relations to shape
                 <br />
-                moments that inspire connection.
+                perception and earn good coverage.
               </p>
             </div>
 
@@ -426,14 +427,14 @@ export default function Home() {
 
               {/* Title */}
               <h4 className="text-xl font-bold text-black mb-4">
-                Digital Marketing
+                Brand Activation
               </h4>
 
               {/* Description */}
               <p className="text-black text-lg leading-relaxed">
-                We drive visibility, engagement, and
+                Creating engaging experiences that
                 <br />
-                growth through data-led campaigns.
+                connect consumers to the brand.
               </p>
             </div>
 
@@ -472,14 +473,14 @@ export default function Home() {
 
               {/* Title */}
               <h4 className="text-xl font-bold text-white mb-4">
-                Experiential Marketing
+                Creative Production
               </h4>
 
               {/* Description */}
               <p className="text-white text-lg leading-relaxed">
-                We create immersive brand
+                Producing quality visuals
                 <br />
-                moments that inspire connection.
+                that enhance campaigns and events.
               </p>
             </div>
           </div>
@@ -487,112 +488,7 @@ export default function Home() {
       </section>
 
       {/* Brands We Represent */}
-      <section className="bg-black text-white py-20">
-        <div className="container mx-auto px-6">
-          <p className="text-sm text-white/80 mb-6">Brands We Represent</p>
-
-          <div className="flex items-start md:items-center justify-between gap-6">
-            <h2 className="text-5xl font-semibold leading-tight">
-              Here are some of the brands and organizations we proudly work
-              with.
-            </h2>
-
-            <div className="hidden md:flex items-center justify-center w-24 h-24">
-              <svg
-                width="150"
-                height="155"
-                viewBox="0 0 150 155"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M16.25 108.712V44.2881L59.3311 76.5L16.25 108.712Z"
-                  stroke="#EF1111"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M43.2881 138.75H107.712L75.5 95.6689L43.2881 138.75Z"
-                  stroke="#EF1111"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M43.2881 16.25H107.712L75.5 59.3311L43.2881 16.25Z"
-                  stroke="#EF1111"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M133.75 108.712V44.2881L90.6689 76.5L133.75 108.712Z"
-                  stroke="#EF1111"
-                  strokeWidth="2"
-                />
-              </svg>
-            </div>
-          </div>
-
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-5 gap-6 items-center justify-items-center">
-            <div className="w-full max-w-[260px] bg-white rounded-lg shadow-md flex items-center justify-center">
-              <Image
-                src="/images/purch.png"
-                alt="Purch"
-                width={140}
-                height={80}
-                className="object-contain"
-                priority
-              />
-            </div>
-
-            <div className="w-full max-w-[260px] bg-white rounded-lg p-8 shadow-md flex items-center justify-center">
-              <Image
-                src="/images/erisco.png"
-                alt="Erisco"
-                width={140}
-                height={80}
-                className="object-contain"
-                priority
-              />
-            </div>
-
-            <div className="w-full max-w-[260px] bg-white rounded-lg shadow-md flex items-center justify-center">
-              <Image
-                src="/images/purch.png"
-                alt="Purch"
-                width={140}
-                height={80}
-                className="object-contain"
-                priority
-              />
-            </div>
-
-            <div className="w-full max-w-[260px] bg-white rounded-lg shadow-md flex items-center justify-center">
-              <Image
-                src="/images/purch.png"
-                alt="Purch"
-                width={140}
-                height={80}
-                className="object-contain"
-                priority
-              />
-            </div>
-
-            <div className="w-full max-w-[260px] bg-white rounded-lg shadow-md flex items-center justify-center">
-              <Image
-                src="/images/purch.png"
-                alt="Purch"
-                width={140}
-                height={80}
-                className="object-contain"
-                priority
-              />
-            </div>
-          </div>
-          <Link
-            href="/projects"
-            className="inline-block mt-8 bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md"
-          >
-            See all Projects
-          </Link>
-        </div>
-      </section>
+      <BrandsSection />
 
       {/* Testimonials */}
       <section className="relative h-[520px] overflow-hidden">

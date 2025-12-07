@@ -72,7 +72,6 @@ export const projectBySlugQuery = `*[_type == "project" && slug.current == $slug
   challengesText,
   focusText,
   results,
-  brandIdentityImage,
   "slug": slug.current,
   client->{
     _id,

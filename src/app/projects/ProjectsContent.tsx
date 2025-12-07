@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { urlFor } from "@/lib/sanity/client";
@@ -35,7 +36,19 @@ interface ProjectsContentProps {
 }
 
 export default function ProjectsContent({ clients, projects }: ProjectsContentProps) {
-  const [filter, setFilter] = useState<FilterType>("clients");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const initialFilter: FilterType = tabParam === "projects" ? "projects" : "clients";
+  const [filter, setFilter] = useState<FilterType>(initialFilter);
+  
+  // Update filter when URL param changes
+  useEffect(() => {
+    if (tabParam === "projects") {
+      setFilter("projects");
+    } else if (tabParam === "clients") {
+      setFilter("clients");
+    }
+  }, [tabParam]);
 
   const filteredClients = filter === "clients" ? clients : [];
   const filteredProjects = filter === "projects" ? projects : [];

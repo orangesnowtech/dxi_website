@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import { getClients, getAllProjects } from "@/lib/sanity/queries";
@@ -34,7 +35,9 @@ export default async function Projects() {
       </section>
 
       {/* Clients and Projects Content with Filter */}
-      <ProjectsContent clients={clients} projects={projects} />
+      <Suspense fallback={<div className="bg-white py-12"><div className="container mx-auto px-6">Loading...</div></div>}>
+        <ProjectsContent clients={clients} projects={projects} />
+      </Suspense>
 
       {/* Footer */}
       <Footer />

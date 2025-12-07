@@ -22,11 +22,11 @@ export default function Nav({ isSticky }: NavProps) {
 
   return (
     <nav
-      className={`z-50 transition-all duration-300
+      className={`z-50 transition-all duration-300 sticky top-0
         ${
           isSticky
-            ? "sticky top-0 bg-white/95 shadow-md backdrop-blur"
-            : "relative bg-white"
+            ? "bg-white/95 shadow-md backdrop-blur"
+            : "bg-white"
         }`}
     >
       <div className="container mx-auto px-6 py-4">
