@@ -78,11 +78,11 @@ export default async function ConceptDetailPage({
             {/* Second Row: Team, Tags and Reactions */}
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4 flex-wrap">
-                {concept.team && (
-                  <p className="text-lg md:text-xl text-white/80">
-                    {concept.team}
-                  </p>
-                )}
+              {concept.team && (
+                <p className="text-lg md:text-xl text-white/80">
+                  {concept.team}
+                </p>
+              )}
                 {concept.tags && concept.tags.length > 0 && (
                   <div className="flex items-center gap-2 flex-wrap">
                     {concept.tags.map((tag: any) => (

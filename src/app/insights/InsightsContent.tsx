@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,23 +34,43 @@ interface InsightsContentProps {
 
 export default function InsightsContent({ insights, categories }: InsightsContentProps) {
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get('category');
+  const categoryParam = searchParams.get('categories');
   
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    categoryParam ? categoryParam.split(',') : []
+  );
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 10;
+  const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (categoryParam) {
-      setSelectedCategory(categoryParam);
+      setSelectedCategories(categoryParam.split(','));
       setCurrentPage(1);
     }
   }, [categoryParam]);
 
-  // Filter insights by category
-  const filteredInsights = selectedCategory
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Filter insights by categories (must match ALL selected categories)
+  const filteredInsights = selectedCategories.length > 0
     ? insights.filter((insight) =>
-        insight.categories?.some((cat) => cat._id === selectedCategory)
+        selectedCategories.every((selectedId) =>
+          insight.categories?.some((cat) => cat._id === selectedId)
+        )
       )
     : insights;
 
@@ -80,17 +100,29 @@ export default function InsightsContent({ insights, categories }: InsightsConten
     return `${day}, ${dayNum}${suffix}, ${month} ${year}`;
   };
 
-  const handleCategoryChange = (categoryId: string | null) => {
-    setSelectedCategory(categoryId);
+  const toggleCategory = (categoryId: string) => {
+    const newSelected = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter((id) => id !== categoryId)
+      : [...selectedCategories, categoryId];
+    
+    setSelectedCategories(newSelected);
     setCurrentPage(1); // Reset to first page when filtering
     
     // Update URL without page reload
     const url = new URL(window.location.href);
-    if (categoryId) {
-      url.searchParams.set('category', categoryId);
+    if (newSelected.length > 0) {
+      url.searchParams.set('categories', newSelected.join(','));
     } else {
-      url.searchParams.delete('category');
+      url.searchParams.delete('categories');
     }
+    window.history.pushState({}, '', url.toString());
+  };
+
+  const clearFilters = () => {
+    setSelectedCategories([]);
+    setCurrentPage(1);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('categories');
     window.history.pushState({}, '', url.toString());
   };
 
@@ -104,31 +136,69 @@ export default function InsightsContent({ insights, categories }: InsightsConten
               Topics
             </h2>
             
-            {/* Category Filter */}
-            <div className="flex items-center gap-2 flex-wrap">
+            {/* Category Filter Dropdown */}
+            <div className="relative" ref={filterRef}>
               <button
-                onClick={() => handleCategoryChange(null)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedCategory === null
-                    ? "bg-[#EF1111] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                All
-              </button>
-              {categories.map((category) => (
-                <button
-                  key={category._id}
-                  onClick={() => handleCategoryChange(category._id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedCategory === category._id
-                      ? "bg-[#EF1111] text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                <span>Filter</span>
+                {selectedCategories.length > 0 && (
+                  <span className="bg-[#EF1111] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {selectedCategories.length}
+                  </span>
+                )}
+                <svg
+                  className={`w-4 h-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  {category.title}
-                </button>
-              ))}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isFilterOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-300 rounded-lg shadow-xl z-50 p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-gray-900">Filter by Category</h3>
+                    {selectedCategories.length > 0 && (
+                      <button
+                        onClick={clearFilters}
+                        className="text-xs text-[#EF1111] hover:underline"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Categories Grid */}
+                  <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto">
+                    {categories.map((category) => {
+                      const isSelected = selectedCategories.includes(category._id);
+                      return (
+                        <button
+                          key={category._id}
+                          onClick={() => toggleCategory(category._id)}
+                          className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                            isSelected
+                              ? "bg-[#EF1111] text-white"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {category.title}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           

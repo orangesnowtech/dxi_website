@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { urlFor } from "@/lib/sanity/client";
+import { getClients } from "@/lib/sanity/queries";
 
 interface Client {
   _id: string;
@@ -12,14 +13,28 @@ interface Client {
   logo?: any;
 }
 
-interface BrandsSectionClientProps {
-  clients: Client[];
-}
-
 const MAX_CLIENTS_TO_DISPLAY = 5;
 
-export default function BrandsSectionClient({ clients }: BrandsSectionClientProps) {
+export default function BrandsSectionClient() {
   const [hoveredClient, setHoveredClient] = useState<string | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchClients() {
+      try {
+        const fetchedClients = await getClients();
+        setClients(fetchedClients);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+        setClients([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchClients();
+  }, []);
   
   // Limit to 5 clients for display
   const displayClients = clients.slice(0, MAX_CLIENTS_TO_DISPLAY);
@@ -68,7 +83,11 @@ export default function BrandsSectionClient({ clients }: BrandsSectionClientProp
         </div>
 
         <div className="mt-12 grid grid-cols-2 md:grid-cols-5 gap-6 items-center justify-items-center">
-          {displayClients.length === 0 ? (
+          {loading ? (
+            <div className="col-span-full text-center py-8">
+              <p className="text-white/60">Loading clients...</p>
+            </div>
+          ) : displayClients.length === 0 ? (
             <div className="col-span-full text-center py-8">
               <p className="text-white/60">No clients found.</p>
             </div>

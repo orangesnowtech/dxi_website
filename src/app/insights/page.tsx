@@ -37,9 +37,7 @@ export default async function Insights() {
               Home
             </Link>
             <span className="text-white mt-0.5">&gt;</span>
-            <Link href="/insights" className="hover:underline">
-              Insights
-            </Link>
+            <span className="text-white">Insights</span>
           </nav>
         </div>
       </section>
