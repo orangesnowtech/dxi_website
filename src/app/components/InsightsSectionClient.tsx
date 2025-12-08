@@ -72,19 +72,19 @@ export default function InsightsSectionClient() {
                   href={`/insights/${insight.slug}`}
                   className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-white"
                 >
-                  {/* Image Section */}
-                  <div className="relative w-full h-64">
+                  {/* Image with Overlay and Content */}
+                  <div className="relative w-full min-h-[400px]">
                     <Image
                       src={imageUrl}
                       alt={insight.title}
                       fill
-                      className="object-cover rounded-t-lg"
+                      className="object-cover rounded-lg"
                     />
-                    <div className="absolute inset-0 bg-black/40 rounded-t-lg" />
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="p-6 bg-black">
+                    {/* Gradient Overlay - darker at bottom */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black rounded-lg" />
+                    
+                    {/* Content Section - positioned at bottom */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
                     {/* Categories */}
                     {insight.categories && insight.categories.length > 0 && (
                       <div className="flex flex-wrap gap-4 mb-3">
@@ -108,6 +108,7 @@ export default function InsightsSectionClient() {
                     <div className="flex items-center justify-between text-sm text-white">
                       <span className="font-medium">{insight.author}</span>
                       <span>{insight.readingTime} mins read</span>
+                    </div>
                     </div>
                   </div>
                 </Link>
