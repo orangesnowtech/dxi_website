@@ -17,7 +17,7 @@ export default function Nav({ isSticky }: NavProps) {
     `${
       pathname === path || (path !== "/" && pathname.startsWith(path))
         ? "text-black font-semibold"
-        : "text-gray-400 hover:text-black"
+        : "text-gray-600 font-medium hover:text-black"
     } text-sm`;
 
   return (
@@ -60,12 +60,17 @@ export default function Nav({ isSticky }: NavProps) {
                 Concepts
               </Link>
             </li>
+            <li>
+              <Link href="/insights" className={linkClass("/insights")}>
+                Insights
+              </Link>
+            </li>
           </ul>
 
           {/* Desktop Contact Btn */}
           <div className="hidden md:flex justify-end">
             <Link
-              href="/contact"
+              href="/contact-us"
               className="bg-[#EF1111] text-white px-6 py-2 rounded-full text-sm"
             >
               Contact Us
@@ -128,7 +133,15 @@ export default function Nav({ isSticky }: NavProps) {
           </Link>
 
           <Link
-            href="/contact"
+            href="/insights"
+            className={`block ${linkClass("/insights")}`}
+            onClick={() => setOpen(false)}
+          >
+            Insights
+          </Link>
+
+          <Link
+            href="/contact-us"
             className="block bg-[#EF1111] text-white px-4 py-2 rounded-full text-sm mt-3"
             onClick={() => setOpen(false)}
           >
