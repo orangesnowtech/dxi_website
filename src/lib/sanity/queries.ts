@@ -301,3 +301,43 @@ export async function getInsightBySlug(slug: string) {
   }
 }
 
+// Query to get homepage content
+export const homepageQuery = `*[_type == "homepage"][0] {
+  whoWeAre {
+    label,
+    heading,
+    buttonText,
+    buttonLink
+  },
+  services {
+    label,
+    heading,
+    services[] | order(order asc) {
+      title,
+      description,
+      backgroundColor,
+      iconSvg,
+      order
+    }
+  },
+  testimonials {
+    label,
+    backgroundImage,
+    testimonials[] | order(order asc) {
+      quote,
+      campaign,
+      order
+    }
+  }
+}`;
+
+// Helper function to fetch homepage content
+export async function getHomepage() {
+  try {
+    return await client.fetch(homepageQuery);
+  } catch (error) {
+    console.error('Error fetching homepage:', error);
+    return null;
+  }
+}
+

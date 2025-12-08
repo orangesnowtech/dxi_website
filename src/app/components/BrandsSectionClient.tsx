@@ -45,7 +45,7 @@ export default function BrandsSectionClient() {
         <p className="text-sm text-white/80 mb-6">Brands We Represent</p>
 
         <div className="flex items-start md:items-center justify-between gap-6">
-          <h2 className="text-5xl font-semibold leading-tight">
+          <h2 className="text-3xl md:text-5xl font-semibold leading-tight">
             Here are some of the brands and organizations we proudly work
             with.
           </h2>
