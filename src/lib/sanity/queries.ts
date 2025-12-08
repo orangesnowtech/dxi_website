@@ -218,3 +218,86 @@ export async function getAllProjects() {
   }
 }
 
+// Query to get all insight categories
+export const insightCategoriesQuery = `*[_type == "insightCategory"] | order(title asc) {
+  _id,
+  title,
+  "slug": slug.current
+}`;
+
+// Query to get all insights
+export const insightsQuery = `*[_type == "insight"] | order(publishedDate desc) {
+  _id,
+  title,
+  featuredImage,
+  author,
+  readingTime,
+  publishedDate,
+  "slug": slug.current,
+  categories[]->{
+    _id,
+    title,
+    "slug": slug.current
+  }
+}`;
+
+// Query to get a single insight by slug
+export const insightBySlugQuery = `*[_type == "insight" && slug.current == $slug][0] {
+  _id,
+  title,
+  featuredImage,
+  headerImage,
+  author,
+  readingTime,
+  publishedDate,
+  "slug": slug.current,
+  categories[]->{
+    _id,
+    title,
+    "slug": slug.current
+  },
+  content[]{
+    _type,
+    heading,
+    paragraphs,
+    layout,
+    images[]{
+      image,
+      caption,
+      subtext
+    }
+  }
+}`;
+
+// Helper function to fetch all insight categories
+export async function getInsightCategories() {
+  try {
+    const categories = await client.fetch(insightCategoriesQuery);
+    return categories || [];
+  } catch (error) {
+    console.error('Error fetching insight categories:', error);
+    return [];
+  }
+}
+
+// Helper function to fetch all insights
+export async function getInsights() {
+  try {
+    const insights = await client.fetch(insightsQuery);
+    return insights || [];
+  } catch (error) {
+    console.error('Error fetching insights:', error);
+    return [];
+  }
+}
+
+// Helper function to fetch an insight by slug
+export async function getInsightBySlug(slug: string) {
+  try {
+    return await client.fetch(insightBySlugQuery, { slug });
+  } catch (error) {
+    console.error('Error fetching insight by slug:', error);
+    return null;
+  }
+}
+

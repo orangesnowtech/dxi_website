@@ -158,6 +158,12 @@ const Footer: React.FC = () => {
                 Projects
               </Link>
               <Link
+                href="/insights"
+                className="hover:underline whitespace-nowrap"
+              >
+                Insights
+              </Link>
+              <Link
                 href="/contact"
                 className="hover:underline whitespace-nowrap"
               >
