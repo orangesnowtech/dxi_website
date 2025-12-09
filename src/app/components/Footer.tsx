@@ -36,7 +36,7 @@ const Footer: React.FC = () => {
             <button
               onClick={scrollToTop}
               aria-label="Back to top"
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-[#EF1111] flex items-center justify-center hover:bg-white/5 transition"
+              className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-[#EF1111] flex items-center justify-center hover:bg-white/5 hover:scale-105 transition-transform transition-colors duration-200"
             >
               <svg
                 width="16"

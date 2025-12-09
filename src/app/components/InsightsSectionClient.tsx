@@ -70,7 +70,7 @@ export default function InsightsSectionClient() {
                 <Link
                   key={insight._id}
                   href={`/insights/${insight.slug}`}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-white"
+                  className="group bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-white"
                 >
                   {/* Image with Overlay and Content */}
                   <div className="relative w-full min-h-[400px]">
@@ -78,7 +78,7 @@ export default function InsightsSectionClient() {
                       src={imageUrl}
                       alt={insight.title}
                       fill
-                      className="object-cover rounded-lg"
+                      className="object-cover rounded-lg transition-transform duration-500 group-hover:scale-105"
                     />
                     {/* Gradient Overlay - darker at bottom */}
                     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black rounded-lg" />
