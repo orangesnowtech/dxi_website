@@ -164,7 +164,7 @@ const Footer: React.FC = () => {
                 Insights
               </Link>
               <Link
-                href="/contact"
+                href="/contact-us"
                 className="hover:underline whitespace-nowrap"
               >
                 Contact Us
