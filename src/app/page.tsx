@@ -56,7 +56,7 @@ export default function Home() {
 
           <div className="mt-10">
             <Link
-              href="/contact"
+              href="/contact-us"
               className="inline-block bg-[#EF1111] text-white px-8 py-3 rounded-full text-sm font-semibold"
             >
               Send Us a Brief
