@@ -1,4 +1,4 @@
-// Re-export client and image utilities from Sanity setup
-export { client } from '@/sanity/lib/client';
-export { urlFor } from '@/sanity/lib/image';
+// Re-export client and image utilities from the shared Sanity package
+export { client } from '@sanity-shared/lib/client';
+export { urlFor } from '@sanity-shared/lib/image';
 

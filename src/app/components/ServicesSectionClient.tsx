@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { getHomepage } from "@/lib/sanity/queries";
+import { getServicesSection } from "@/lib/sanity/queries";
 
 interface Service {
   title: string;
   description: string;
-  backgroundColor: 'white' | 'black';
+  backgroundColor: "white" | "black";
   iconSvg?: string;
   order: number;
 }
@@ -25,16 +25,16 @@ export default function ServicesSectionClient() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const homepage = await getHomepage();
-        setData(homepage?.services || null);
+        const data = await getServicesSection();
+        setData(data || null);
       } catch (error) {
-        console.error('Error fetching Services data:', error);
+        console.error("Error fetching Services data:", error);
         setData(null);
       } finally {
         setLoading(false);
       }
     }
-    
+
     fetchData();
   }, []);
 
@@ -161,9 +161,16 @@ export default function ServicesSectionClient() {
         {services.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {services.map((service) => {
-              const bgColor = service.backgroundColor === 'black' ? 'bg-black text-white' : 'bg-white text-black';
-              const borderColor = service.backgroundColor === 'black' ? 'border-gray-800' : 'border-gray-200';
-              const iconSvg = service.iconSvg || defaultIcons[service.title] || '';
+              const bgColor =
+                service.backgroundColor === "black"
+                  ? "bg-black text-white"
+                  : "bg-white text-black";
+              const borderColor =
+                service.backgroundColor === "black"
+                  ? "border-gray-800"
+                  : "border-gray-200";
+              const iconSvg =
+                service.iconSvg || defaultIcons[service.title] || "";
 
               return (
                 <div
@@ -172,16 +179,23 @@ export default function ServicesSectionClient() {
                 >
                   {/* Icon */}
                   {iconSvg && (
-                    <div className="mb-4" dangerouslySetInnerHTML={{ __html: iconSvg }} />
+                    <div
+                      className="mb-4"
+                      dangerouslySetInnerHTML={{ __html: iconSvg }}
+                    />
                   )}
 
                   {/* Title */}
-                  <h4 className={`text-xl font-bold mb-4 ${service.backgroundColor === 'black' ? 'text-white' : 'text-black'}`}>
+                  <h4
+                    className={`text-xl font-bold mb-4 ${service.backgroundColor === "black" ? "text-white" : "text-black"}`}
+                  >
                     {service.title}
                   </h4>
 
                   {/* Description */}
-                  <p className={`text-base leading-relaxed ${service.backgroundColor === 'black' ? 'text-white' : 'text-black'}`}>
+                  <p
+                    className={`text-base leading-relaxed ${service.backgroundColor === "black" ? "text-white" : "text-black"}`}
+                  >
                     {service.description}
                   </p>
                 </div>
@@ -197,4 +211,3 @@ export default function ServicesSectionClient() {
     </section>
   );
 }
-

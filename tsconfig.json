@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@sanity-shared/*": ["./packages/sanity-shared/*"]
     }
   },
   "include": [

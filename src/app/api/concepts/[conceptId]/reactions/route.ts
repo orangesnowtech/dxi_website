@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { client } from '@/sanity/lib/client';
-import { writeClient } from '@/sanity/lib/writeClient';
+import { client } from '@sanity-shared/lib/client';
+import { writeClient } from '@sanity-shared/lib/writeClient';
 
 type ReactionType = "like" | "share" | "dislike";
 

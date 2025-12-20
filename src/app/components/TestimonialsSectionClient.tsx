@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { getHomepage } from "@/lib/sanity/queries";
+import { getTestimonialsSection } from "@/lib/sanity/queries";
 import { urlFor } from "@/lib/sanity/client";
 
 interface Testimonial {
@@ -25,16 +25,16 @@ export default function TestimonialsSectionClient() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const homepage = await getHomepage();
-        setData(homepage?.testimonials || null);
+        const data = await getTestimonialsSection();
+        setData(data || null);
       } catch (error) {
-        console.error('Error fetching Testimonials data:', error);
+        console.error("Error fetching Testimonials data:", error);
         setData(null);
       } finally {
         setLoading(false);
       }
     }
-    
+
     fetchData();
   }, []);
 
@@ -166,7 +166,9 @@ export default function TestimonialsSectionClient() {
             ))
           ) : (
             <div className="snap-start min-w-[280px] md:min-w-[660px] max-w-[900px] bg-white rounded-3xl p-6 md:p-12 shadow-2xl flex items-center justify-center">
-              <p className="text-gray-500 text-sm md:text-base">No testimonials available.</p>
+              <p className="text-gray-500 text-sm md:text-base">
+                No testimonials available.
+              </p>
             </div>
           )}
         </div>
@@ -174,4 +176,3 @@ export default function TestimonialsSectionClient() {
     </section>
   );
 }
-

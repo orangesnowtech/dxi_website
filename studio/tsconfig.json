@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["dom", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "paths": {
+      "@sanity-shared/*": ["../packages/sanity-shared/*"]
+    }
+  },
+  "include": [
+    "sanity.config.ts",
+    "sanity.cli.ts",
+    "../packages/sanity-shared/**/*"
+  ]
+}
+

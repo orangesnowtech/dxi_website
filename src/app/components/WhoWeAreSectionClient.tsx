@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getHomepage } from "@/lib/sanity/queries";
+import { getServicesSection } from "@/lib/sanity/queries";
 
 interface WhoWeAreData {
   label?: string;
@@ -18,8 +18,8 @@ export default function WhoWeAreSectionClient() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const homepage = await getHomepage();
-        setData(homepage?.whoWeAre || null);
+        const data = await getServicesSection();
+        setData(data?.whoWeAre || null);
       } catch (error) {
         console.error('Error fetching Who We Are data:', error);
         setData(null);

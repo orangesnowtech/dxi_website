@@ -1,4 +1,4 @@
-import { client } from '@/sanity/lib/client';
+import { client } from '@sanity-shared/lib/client';
 
 // Query to get all clients
 export const clientsQuery = `*[_type == "client"] | order(_createdAt desc) {
@@ -301,43 +301,50 @@ export async function getInsightBySlug(slug: string) {
   }
 }
 
-// Query to get homepage content
-export const homepageQuery = `*[_type == "homepage"][0] {
-  whoWeAre {
-    label,
-    heading,
-    buttonText,
-    buttonLink
-  },
-  services {
-    label,
-    heading,
-    services[] | order(order asc) {
-      title,
-      description,
-      backgroundColor,
-      iconSvg,
-      order
-    }
-  },
-  testimonials {
-    label,
-    backgroundImage,
-    testimonials[] | order(order asc) {
-      quote,
-      campaign,
-      order
-    }
+export const whoWeAreQuery = `*[_type == "whoWeAreSection"][0]`;
+
+export async function getWhoWeAre() {
+  return await client.fetch(whoWeAreQuery);
+}
+
+export const servicesSectionQuery = `*[_type == "servicesSection"][0]{
+  label,
+  heading,
+  services[] | order(order asc) {
+    title,
+    description,
+    backgroundColor,
+    iconSvg,
+    order
   }
 }`;
 
-// Helper function to fetch homepage content
-export async function getHomepage() {
-  try {
-    return await client.fetch(homepageQuery);
-  } catch (error) {
-    console.error('Error fetching homepage:', error);
-    return null;
+export async function getServicesSection() {
+  return await client.fetch(servicesSectionQuery);
+}
+
+export const testimonialsSectionQuery = `*[_type == "testimonialsSection"][0]{
+  label,
+  backgroundImage,
+  testimonials[] | order(order asc) {
+    quote,
+    campaign,
+    order
   }
+}`;
+
+export async function getTestimonialsSection() {
+  return await client.fetch(testimonialsSectionQuery);
+}
+
+export async function getFooterSettings() {
+  return client.fetch(`
+    *[_type == "footerSettings"][0]{
+      address,
+      phones,
+      email,
+      socialLinks
+    }
+  `);
 }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeClient } from '@/sanity/lib/writeClient';
+import { writeClient } from '@sanity-shared/lib/writeClient';
 
 /**
  * API Route to delete all old "product" type documents from Sanity

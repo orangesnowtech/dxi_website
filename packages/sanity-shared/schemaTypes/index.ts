@@ -5,8 +5,8 @@ import concept from './concept'
 import tag from './tag'
 import insight from './insight'
 import insightCategory from './insightCategory'
-import homepage from './homepage'
+import footerSettings from './footerSettings'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [client, project, concept, tag, insight, insightCategory, homepage],
+  types: [client, project, concept, tag, insight, insightCategory, footerSettings],
 }
