@@ -92,7 +92,7 @@ export async function DELETE() {
       });
     }
 
-    const productIds = oldProducts.map(p => p._id);
+    const productIds = oldProducts.map((p: any) => p._id);
     const results = [];
     const referenceRemovalResults = [];
 
@@ -208,7 +208,7 @@ export async function DELETE() {
           
           if (value && typeof value === 'object') {
             // Check if it's a reference object
-            if (value._ref && productIds.includes(value._ref)) {
+            if ((value as any)._ref && productIds.includes((value as any)._ref)) {
               patch.unset([key]);
               hasChanges = true;
             }
