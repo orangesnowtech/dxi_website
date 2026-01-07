@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { writeClient } from '@sanity-shared/lib/writeClient';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * API Route to delete all old "product" type documents from Sanity
  * These are orphaned documents from before the schema rename

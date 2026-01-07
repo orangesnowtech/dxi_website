@@ -1,6 +1,9 @@
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * Webhook endpoint for Sanity to trigger revalidation
  * Configure in Sanity: Settings > API > Webhooks

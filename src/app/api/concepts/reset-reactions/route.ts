@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@sanity-shared/lib/client';
 import { writeClient } from '@sanity-shared/lib/writeClient';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     // Get all concepts
