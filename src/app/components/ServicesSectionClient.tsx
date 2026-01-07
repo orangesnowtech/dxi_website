@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { getServicesSection } from "@/lib/sanity/queries";
 
 interface Service {
@@ -64,88 +63,42 @@ export default function ServicesSectionClient() {
   return (
     <section className="relative bg-white py-24 overflow-hidden">
       {/* pink blurred circles - keeping existing animations */}
-      <motion.div
-        className="absolute -left-40 top-1/4 w-[500px] h-[500px] rounded-full pointer-events-none"
+      <div
+        className="absolute -left-40 top-1/4 w-[500px] h-[500px] rounded-full pointer-events-none glow-float-1"
         style={{
           background: "radial-gradient(circle, #FF69B4 0%, transparent 70%)",
           opacity: 0.25,
           filter: "blur(60px)",
         }}
-        animate={{
-          x: [0, 50, 0],
-          y: [0, -30, 0],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        }}
       />
 
-      <motion.div
-        className="absolute right-[-150px] bottom-1/3 w-[400px] h-[400px] rounded-full pointer-events-none"
+      <div
+        className="absolute right-[-150px] bottom-1/3 w-[400px] h-[400px] rounded-full pointer-events-none glow-float-2"
         style={{
           background: "radial-gradient(circle, #FF1493 0%, transparent 70%)",
           opacity: 0.22,
           filter: "blur(50px)",
         }}
-        animate={{
-          x: [0, -40, 0],
-          y: [0, 20, 0],
-          scale: [1, 1.05, 1],
-        }}
-        transition={{
-          duration: 18,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-          delay: 0.5,
-        }}
       />
 
-      <motion.div
-        className="absolute left-1/4 top-[-100px] w-[300px] h-[300px] rounded-full pointer-events-none"
+      <div
+        className="absolute left-1/4 top-[-100px] w-[300px] h-[300px] rounded-full pointer-events-none glow-float-3"
         style={{
           background: "radial-gradient(circle, #FFB6C1 0%, transparent 70%)",
           opacity: 0.28,
           filter: "blur(40px)",
         }}
-        animate={{
-          x: [0, 30, 0],
-          y: [0, 25, 0],
-          scale: [1, 1.08, 1],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-          delay: 1,
-        }}
       />
 
-      <motion.div
-        className="absolute right-1/3 bottom-[-150px] w-[350px] h-[350px] rounded-full pointer-events-none"
+      <div
+        className="absolute right-1/3 bottom-[-150px] w-[350px] h-[350px] rounded-full pointer-events-none glow-float-4"
         style={{
           background: "radial-gradient(circle, #C71585 0%, transparent 70%)",
           opacity: 0.2,
           filter: "blur(45px)",
         }}
-        animate={{
-          x: [0, -20, 0],
-          y: [0, -15, 0],
-          scale: [1, 1.06, 1],
-        }}
-        transition={{
-          duration: 22,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-          delay: 1.5,
-        }}
       />
+
 
       <div className="relative container mx-auto px-6 z-10">
         <div className="mb-16">

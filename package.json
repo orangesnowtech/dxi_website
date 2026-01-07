@@ -9,9 +9,8 @@
   },
   "dependencies": {
     "@sanity/image-url": "^1.2.0",
-    "framer-motion": "^12.23.25",
     "lucide-react": "^0.555.0",
-    "next": "15.2.4",
+    "next": "15.5.9",
     "next-sanity": "^11.6.10",
     "react": "19.2.0",
     "react-dom": "19.2.0",
