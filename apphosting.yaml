@@ -4,19 +4,19 @@
 # Environment configuration
 env:
   - variable: NEXT_PUBLIC_SANITY_PROJECT_ID
-    value: ece1ws9f
+    secret: NEXT_PUBLIC_SANITY_PROJECT_ID
     availability:
       - BUILD
       - RUNTIME
 
   - variable: NEXT_PUBLIC_SANITY_DATASET
-    value: production
+    secret: NEXT_PUBLIC_SANITY_DATASET
     availability:
       - BUILD
       - RUNTIME
 
   - variable: NEXT_PUBLIC_SANITY_API_VERSION
-    value: 2025-12-02
+    secret: NEXT_PUBLIC_SANITY_API_VERSION
     availability:
       - BUILD
       - RUNTIME
@@ -25,4 +25,9 @@ env:
     secret: SANITY_API_WRITE_TOKEN
     availability:
       - BUILD
+      - RUNTIME
+
+  - variable: SANITY_REVALIDATE_SECRET
+    secret: SANITY_REVALIDATE_SECRET
+    availability:
       - RUNTIME
