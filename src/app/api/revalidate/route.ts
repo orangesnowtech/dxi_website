@@ -1,4 +1,4 @@
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -32,17 +32,14 @@ export async function POST(request: NextRequest) {
       case 'client':
       case 'project':
         revalidatePath('/projects');
-        revalidateTag('projects');
         break;
       case 'insight':
       case 'insightCategory':
         revalidatePath('/insights');
-        revalidateTag('insights');
         break;
       case 'concept':
       case 'tag':
         revalidatePath('/concepts');
-        revalidateTag('concepts');
         break;
       case 'whoWeAreSection':
       case 'servicesSection':
