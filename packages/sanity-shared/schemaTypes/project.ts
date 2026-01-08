@@ -9,8 +9,8 @@ export default defineType({
       name: 'title',
       title: 'Project Title',
       type: 'string',
-      description: 'Title shown on the project card (e.g., "Website Redesign", "Product Launch")',
-      validation: (Rule) => Rule.required(),
+      description: 'Title shown on the project card',
+      placeholder: 'e.g., Website Redesign, Product Launch, Brand Identity',
     }),
     defineField({
       name: 'slug',
@@ -20,7 +20,6 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'image',
@@ -30,7 +29,6 @@ export default defineType({
       options: {
         hotspot: true,
       },
-      validation: (Rule) => Rule.required(),
     }),
     // Hero Section Fields
     defineField({
@@ -41,13 +39,13 @@ export default defineType({
       options: {
         hotspot: true,
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'subtitle',
       title: 'Subtitle/Designer Text',
       type: 'string',
-      description: 'Text below project title (e.g., "Design from, Company Name Marketing Team")',
+      description: 'Text below project title',
+      placeholder: 'e.g., Design from, Company Name Marketing Team',
     }),
     // Achievement Section
     defineField({
@@ -60,14 +58,14 @@ export default defineType({
           type: 'string',
         },
       ],
-      validation: (Rule) => Rule.required().min(1),
+      initialValue: ['Increased brand awareness by 40%', 'Improved user engagement by 60%'],
     }),
     defineField({
       name: 'about',
       title: 'About Project',
       type: 'text',
       description: 'About Project section content (similar to Brief section in clients)',
-      validation: (Rule) => Rule.required(),
+      placeholder: 'e.g., This project aimed to revitalize the brand identity and create a cohesive visual language across all touchpoints...',
     }),
     // Images Sections
     defineField({
@@ -91,7 +89,6 @@ export default defineType({
                   { title: 'Grid of 3', value: 'grid' },
                 ],
               },
-              validation: (Rule) => Rule.required(),
             },
             {
               name: 'images',
@@ -110,18 +107,17 @@ export default defineType({
                       options: {
                         hotspot: true,
                       },
-                      validation: (Rule) => Rule.required(),
                     },
                     {
                       name: 'caption',
                       title: 'Caption',
                       type: 'string',
                       description: 'Caption text below the image',
+                      placeholder: 'e.g., Final product showcase, User interface design',
                     },
                   ],
                 },
               ],
-              validation: (Rule) => Rule.required().min(1),
             },
           ],
         },
@@ -133,6 +129,7 @@ export default defineType({
       title: 'Challenges Text',
       type: 'text',
       description: 'Paragraph text in the Challenges section',
+      placeholder: 'e.g., The main challenge was to create a design that appeals to both traditional and modern audiences...',
     }),
     // Focus Section
     defineField({
@@ -140,6 +137,7 @@ export default defineType({
       title: 'Focus Text',
       type: 'text',
       description: 'Paragraph text in the Focus section',
+      placeholder: 'e.g., Our focus was on creating a user-centric design that enhances the overall experience...',
     }),
     // Results Section
     defineField({
@@ -152,7 +150,7 @@ export default defineType({
           type: 'string',
         },
       ],
-      validation: (Rule) => Rule.required().min(1),
+      initialValue: ['300% increase in conversions', '50% reduction in bounce rate'],
     }),
     defineField({
       name: 'client',
@@ -160,7 +158,6 @@ export default defineType({
       type: 'reference',
       to: [{ type: 'client' }],
       description: 'The client this project belongs to',
-      validation: (Rule) => Rule.required(),
     }),
   ],
   preview: {

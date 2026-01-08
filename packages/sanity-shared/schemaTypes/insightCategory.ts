@@ -10,7 +10,6 @@ export default defineType({
       title: 'Category Title',
       type: 'string',
       description: 'Category name (e.g., "Industry", "Brand", "Marketing")',
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'slug',
@@ -20,7 +19,6 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required(),
     }),
   ],
   preview: {

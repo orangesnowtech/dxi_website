@@ -9,8 +9,8 @@ export default defineType({
       name: 'title',
       title: 'Concept Title',
       type: 'string',
-      description: 'Title shown on the concept card (e.g., "Brand Identity Design", "Content Creation")',
-      validation: (Rule) => Rule.required(),
+      description: 'Title shown on the concept card',
+      placeholder: 'e.g., Brand Identity Design, Content Creation, Social Media Campaign',
     }),
     defineField({
       name: 'slug',
@@ -20,7 +20,6 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'image',
@@ -30,21 +29,21 @@ export default defineType({
       options: {
         hotspot: true,
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'team',
       title: 'Team',
       type: 'string',
-      description: 'Team name (e.g., "Design Team", "Social Media Team", "Marketing Team")',
-      validation: (Rule) => Rule.required(),
+      description: 'Team name',
+      placeholder: 'e.g., Design Team, Social Media Team, Marketing Team',
     }),
     // Detail Page Fields
     defineField({
       name: 'monthYear',
       title: 'Month and Year Posted',
       type: 'string',
-      description: 'Month and year (e.g., "May 2020")',
+      description: 'Month and year',
+      placeholder: 'e.g., May 2020, January 2024',
     }),
     defineField({
       name: 'brandImage',
@@ -60,12 +59,14 @@ export default defineType({
       title: 'Brand Name',
       type: 'string',
       description: 'Brand name shown below brand image',
+      placeholder: 'e.g., Your Brand Name, Client Company',
     }),
     defineField({
       name: 'about',
       title: 'About',
       type: 'text',
       description: 'About section content below brand name',
+      placeholder: 'e.g., This concept explores innovative approaches to brand identity...',
     }),
     defineField({
       name: 'twoImages',
@@ -80,13 +81,13 @@ export default defineType({
           },
         },
       ],
-      validation: (Rule) => Rule.max(2),
     }),
     defineField({
       name: 'description1',
       title: 'First Description',
       type: 'text',
       description: 'Description text after two images',
+      placeholder: 'e.g., The initial design phase focused on creating a cohesive visual language...',
     }),
     defineField({
       name: 'threeImages',
@@ -101,7 +102,6 @@ export default defineType({
           },
         },
       ],
-      validation: (Rule) => Rule.max(3),
     }),
     defineField({
       name: 'description2',
@@ -113,7 +113,6 @@ export default defineType({
           type: 'text',
         },
       ],
-      validation: (Rule) => Rule.max(2),
     }),
     defineField({
       name: 'galleryImages',

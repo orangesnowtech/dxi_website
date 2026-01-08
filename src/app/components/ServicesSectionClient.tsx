@@ -12,8 +12,6 @@ interface Service {
 }
 
 interface ServicesData {
-  label?: string;
-  heading?: string;
   services?: Service[];
 }
 
@@ -37,8 +35,9 @@ export default function ServicesSectionClient() {
     fetchData();
   }, []);
 
-  const label = data?.label || "Services We Render";
-  const heading = data?.heading || "Our Expertise";
+  // Hardcoded label and heading
+  const label = "Services We Render";
+  const heading = "Our Expertise";
   const services = data?.services || [];
 
   // Default SVG icons (fallback if not provided in Sanity)

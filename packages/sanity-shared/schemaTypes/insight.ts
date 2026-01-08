@@ -10,7 +10,7 @@ export default defineType({
       title: 'Insight Title',
       type: 'string',
       description: 'Title of the insight article',
-      validation: (Rule) => Rule.required(),
+      placeholder: 'e.g., The Future of Digital Marketing in 2024, How Brand Identity Impacts Consumer Behavior',
     }),
     defineField({
       name: 'slug',
@@ -20,7 +20,6 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'featuredImage',
@@ -30,7 +29,6 @@ export default defineType({
       options: {
         hotspot: true,
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'headerImage',
@@ -58,21 +56,20 @@ export default defineType({
       title: 'Author Name',
       type: 'string',
       description: 'Name of the article author',
-      validation: (Rule) => Rule.required(),
+      placeholder: 'e.g., John Doe, Jane Smith',
     }),
     defineField({
       name: 'readingTime',
       title: 'Reading Time (minutes)',
       type: 'number',
       description: 'Estimated reading time in minutes',
-      validation: (Rule) => Rule.required().min(1),
+      placeholder: 'e.g., 5',
     }),
     defineField({
       name: 'publishedDate',
       title: 'Published Date',
       type: 'date',
       description: 'Date when the insight was published',
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'content',
@@ -89,6 +86,7 @@ export default defineType({
               name: 'heading',
               title: 'Section Heading',
               type: 'string',
+              placeholder: 'e.g., Introduction, Key Findings, Conclusion',
             },
             {
               name: 'paragraphs',
@@ -113,7 +111,6 @@ export default defineType({
                   { title: 'Two Images Side by Side', value: 'two' },
                 ],
               },
-              validation: (Rule) => Rule.required(),
             },
             {
               name: 'images',
@@ -130,23 +127,23 @@ export default defineType({
                       options: {
                         hotspot: true,
                       },
-                      validation: (Rule) => Rule.required(),
                     },
                     {
                       name: 'caption',
                       title: 'Caption',
                       type: 'string',
+                      placeholder: 'e.g., Market analysis chart, User engagement metrics',
                     },
                     {
                       name: 'subtext',
                       title: 'Subtext',
                       type: 'text',
                       description: 'Additional text below caption',
+                      placeholder: 'e.g., Data collected from Q1 2024 survey',
                     },
                   ],
                 },
               ],
-              validation: (Rule) => Rule.required().min(1),
             },
           ],
         },

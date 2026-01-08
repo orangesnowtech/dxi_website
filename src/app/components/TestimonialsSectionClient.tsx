@@ -7,7 +7,9 @@ import { urlFor } from "@/lib/sanity/client";
 
 interface Testimonial {
   quote: string;
-  campaign: string;
+  designation?: string;
+  name?: string;
+  company?: string;
   order: number;
 }
 
@@ -139,9 +141,8 @@ export default function TestimonialsSectionClient() {
                   {testimonial.quote}
                 </p>
 
-                <div className="flex items-center gap-3 mt-6 md:mt-8">
-                  {/* Smaller red badge svg */}
-                  <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
+                <div className="mt-6 md:mt-8">
+                <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
                     <svg
                       width="32"
                       height="32"
@@ -156,11 +157,24 @@ export default function TestimonialsSectionClient() {
                       />
                     </svg>
                   </div>
-
-                  {/* Text centered vertically */}
-                  <h4 className="text-xs md:text-base font-semibold text-gray-900">
-                    {testimonial.campaign}
-                  </h4>
+                  {/* Designation */}
+                  {testimonial.designation && (
+                    <h4 className="text-xs md:text-base font-semibold text-gray-900 mb-1">
+                      {testimonial.designation}
+                    </h4>
+                  )}
+                  {/* Name */}
+                  {testimonial.name && (
+                    <h4 className="text-xs md:text-base font-semibold text-gray-900 mb-1">
+                      {testimonial.name}
+                    </h4>
+                  )}
+                  {/* Company */}
+                  {testimonial.company && (
+                    <p className="text-xs md:text-sm text-gray-600">
+                      {testimonial.company}
+                    </p>
+                  )}
                 </div>
               </article>
             ))

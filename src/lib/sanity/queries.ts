@@ -308,8 +308,6 @@ export async function getWhoWeAre() {
 }
 
 export const servicesSectionQuery = `*[_type == "servicesSection"][0]{
-  label,
-  heading,
   services[] | order(order asc) {
     title,
     description,
@@ -328,7 +326,9 @@ export const testimonialsSectionQuery = `*[_type == "testimonialsSection"][0]{
   backgroundImage,
   testimonials[] | order(order asc) {
     quote,
-    campaign,
+    designation,
+    name,
+    company,
     order
   }
 }`;
@@ -346,5 +346,13 @@ export async function getFooterSettings() {
       socialLinks
     }
   `);
+}
+
+export const conceptPageSettingsQuery = `*[_type == "conceptPageSettings"][0]{
+  aboutParagraph
+}`;
+
+export async function getConceptPageSettings() {
+  return await client.fetch(conceptPageSettingsQuery);
 }
 
