@@ -155,15 +155,18 @@ export default async function Concepts() {
                       />
                     </svg>
                   </span>
-                  <span className="text-sm text-gray-700 space-y-1">
-                    {phones.map((phone) => (
-                      <div key={phone}>
-                        <a className="hover:underline" href={`tel:${phone}`}>
-                          {phone}
-                    </a>
-                      </div>
+                  <div className="text-sm text-gray-700">
+                    {phones.map((phone, i) => (
+                      <a
+                        key={i}
+                        href={`tel:${phone}`}
+                        className="hover:underline mr-2"
+                      >
+                        {phone}
+                        {i < phones.length - 1 && ","}
+                      </a>
                     ))}
-                  </span>
+                  </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-[#EF1111] mt-1 flex-shrink-0">
