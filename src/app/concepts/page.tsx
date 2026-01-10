@@ -160,7 +160,7 @@ export default async function Concepts() {
                       <div key={phone}>
                         <a className="hover:underline" href={`tel:${phone}`}>
                           {phone}
-                        </a>
+                    </a>
                       </div>
                     ))}
                   </span>

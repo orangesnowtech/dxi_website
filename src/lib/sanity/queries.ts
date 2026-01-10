@@ -312,7 +312,7 @@ export const servicesSectionQuery = `*[_type == "servicesSection"][0]{
     title,
     description,
     backgroundColor,
-    iconSvg,
+    iconName,
     order
   }
 }`;

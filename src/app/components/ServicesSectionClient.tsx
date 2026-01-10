@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { getServicesSection } from "@/lib/sanity/queries";
+import { getServiceIcon } from "@/lib/icons/serviceIcons";
 
 interface Service {
   title: string;
   description: string;
   backgroundColor: "white" | "black";
-  iconSvg?: string;
+  iconName?: string;
   order: number;
 }
 
@@ -39,15 +40,6 @@ export default function ServicesSectionClient() {
   const label = "Services We Render";
   const heading = "Our Expertise";
   const services = data?.services || [];
-
-  // Default SVG icons (fallback if not provided in Sanity)
-  const defaultIcons: Record<string, string> = {
-    "Digital Marketing": `<svg width="32" height="32" viewBox="0 0 70 70" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
-      <path d="M43.535 8.49042L24.1311 17.8048C22.6377 18.5216 21.0421 18.7012 19.4155 18.3368C18.351 18.0983 17.8187 17.9791 17.39 17.9302C12.0675 17.3223 8.75 21.5349 8.75 26.379V29.0375C8.75 33.8817 12.0675 38.0942 17.39 37.4864C17.8187 37.4374 18.351 37.3181 19.4155 37.0798C21.0421 36.7152 22.6377 36.8949 24.1311 37.6118L43.535 46.9262C47.9891 49.0644 50.2162 50.1333 52.6995 49.3C55.1825 48.4668 56.0347 46.6785 57.7395 43.1024C62.4202 33.2826 62.4202 22.1341 57.7395 12.314C56.0347 8.73784 55.1825 6.94978 52.6995 6.11646C50.2162 5.28317 47.9891 6.35224 43.535 8.49042Z" stroke="#EF1111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M33.4195 60.5819L29.0697 64.1667C19.265 56.3906 20.4628 52.6824 20.4628 37.9167H23.7698C25.1119 46.261 28.2774 50.2134 32.6454 53.0747C35.336 54.8369 35.8908 58.5449 33.4195 60.5819Z" stroke="#EF1111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M21.875 36.4583V18.9583" stroke="#EF1111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>`,
-  };
 
   if (loading) {
     return (
@@ -121,8 +113,7 @@ export default function ServicesSectionClient() {
                 service.backgroundColor === "black"
                   ? "border-gray-800"
                   : "border-gray-200";
-              const iconSvg =
-                service.iconSvg || defaultIcons[service.title] || "";
+              const IconComponent = service.iconName ? getServiceIcon(service.iconName) : null;
 
               return (
                 <div
@@ -130,11 +121,15 @@ export default function ServicesSectionClient() {
                   className={`${bgColor} rounded-xl shadow-lg p-6 border ${borderColor} transition-shadow duration-300`}
                 >
                   {/* Icon */}
-                  {iconSvg && (
-                    <div
-                      className="mb-4"
-                      dangerouslySetInnerHTML={{ __html: iconSvg }}
-                    />
+                  {IconComponent && (
+                    <div className="mb-4">
+                      <IconComponent 
+                        size={32} 
+                        stroke="#EF1111" 
+                        strokeWidth={2}
+                        className="w-8 h-8"
+                      />
+                    </div>
                   )}
 
                   {/* Title */}
