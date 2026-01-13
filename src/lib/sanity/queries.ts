@@ -1,4 +1,19 @@
 import { client } from '@sanity-shared/lib/client';
+import { createClient } from 'next-sanity';
+
+// Import env values directly
+const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-12-02';
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+
+// Create a non-CDN client for fresh data (bypasses cache)
+// Only create if we have the required env vars
+const freshClient = projectId && dataset ? createClient({
+  projectId,
+  dataset,
+  apiVersion,
+  useCdn: false, // Disable CDN to get fresh data
+}) : null;
 
 // Query to get all clients
 export const clientsQuery = `*[_type == "client"] | order(_createdAt desc) {
@@ -8,7 +23,6 @@ export const clientsQuery = `*[_type == "client"] | order(_createdAt desc) {
   slug,
   backgroundImage,
   logo,
-  description,
   "slug": slug.current
 }`;
 
@@ -36,7 +50,6 @@ export const clientBySlugQuery = `*[_type == "client" && slug.current == $slug][
     title,
     slug,
     image,
-    description,
     "slug": slug.current
   }
 }`;
@@ -47,7 +60,6 @@ export const projectsByClientQuery = `*[_type == "project" && references($client
   title,
   slug,
   image,
-  description,
   content,
   "slug": slug.current
 }`;
@@ -197,7 +209,6 @@ export const allProjectsQuery = `*[_type == "project"] | order(_createdAt desc) 
   title,
   slug,
   image,
-  description,
   "slug": slug.current,
   client->{
     _id,
@@ -301,10 +312,33 @@ export async function getInsightBySlug(slug: string) {
   }
 }
 
-export const whoWeAreQuery = `*[_type == "whoWeAreSection"][0]`;
+export const whoWeAreQuery = `*[_type == "whoWeAreSection"][0]{
+  label,
+  heading,
+  buttonText,
+  buttonLink
+}`;
 
 export async function getWhoWeAre() {
-  return await client.fetch(whoWeAreQuery);
+  try {
+    // Use freshClient (no CDN) if available, otherwise use regular client
+    // freshClient bypasses CDN cache to get latest published data
+    const clientToUse = freshClient || client;
+    const data = await clientToUse.fetch(whoWeAreQuery);
+    // Return null if no data or if it's an empty object
+    if (!data) {
+      return null;
+    }
+    // Check if we have at least one meaningful field
+    // If all fields are empty/undefined, treat it as no data
+    if (!data.label && !data.heading && !data.buttonText && !data.buttonLink) {
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error('Error fetching Who We Are data:', error);
+    return null;
+  }
 }
 
 export const servicesSectionQuery = `*[_type == "servicesSection"][0]{
