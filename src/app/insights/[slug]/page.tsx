@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { PortableText } from '@portabletext/react';
 import Nav from '../../components/Nav';
 import Footer from '../../components/Footer';
 import { getInsightBySlug, getInsights } from '@/lib/sanity/queries';
 import { urlFor } from '@/lib/sanity/client';
 import InsightsClientWrapper from '../InsightsClientWrapper';
+import VideoPlayer from '../../components/VideoPlayer';
 
 // Generate static params for all insights
 export async function generateStaticParams() {
@@ -157,26 +159,73 @@ export default async function InsightDetailPage({
                       </h2>
                     )}
                     {section.paragraphs && section.paragraphs.length > 0 && (
-                      <div className="space-y-4">
-                        {section.paragraphs.map((paragraph: string, pIndex: number) => (
-                          <p
-                            key={pIndex}
-                            className="text-base md:text-lg text-black leading-relaxed"
-                          >
-                            {paragraph}
-                          </p>
-                        ))}
+                      <div className="prose prose-lg max-w-none">
+                        <PortableText
+                          value={section.paragraphs}
+                          components={{
+                            block: {
+                              normal: ({ children }) => (
+                                <p className="text-base md:text-lg text-black leading-relaxed mb-4">
+                                  {children}
+                                </p>
+                              ),
+                              h2: ({ children }) => (
+                                <h2 className="text-2xl md:text-3xl font-bold text-black mb-4 mt-8">
+                                  {children}
+                                </h2>
+                              ),
+                              h3: ({ children }) => (
+                                <h3 className="text-xl md:text-2xl font-bold text-black mb-3 mt-6">
+                                  {children}
+                                </h3>
+                              ),
+                              blockquote: ({ children }) => (
+                                <blockquote className="border-l-4 border-[#EF1111] pl-4 italic text-gray-700 my-4">
+                                  {children}
+                                </blockquote>
+                              ),
+                            },
+                            list: {
+                              bullet: ({ children }) => (
+                                <ul className="list-disc list-inside mb-4 space-y-2 text-base md:text-lg text-black">
+                                  {children}
+                                </ul>
+                              ),
+                              number: ({ children }) => (
+                                <ol className="list-decimal list-inside mb-4 space-y-2 text-base md:text-lg text-black">
+                                  {children}
+                                </ol>
+                              ),
+                            },
+                            marks: {
+                              strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                              em: ({ children }) => <em className="italic">{children}</em>,
+                              underline: ({ children }) => <u>{children}</u>,
+                              'strike-through': ({ children }) => <del>{children}</del>,
+                              link: ({ value, children }) => (
+                                <a
+                                  href={value?.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[#EF1111] underline hover:opacity-80"
+                                >
+                                  {children}
+                                </a>
+                              ),
+                            },
+                          }}
+                        />
                       </div>
                     )}
                   </div>
                 );
               }
 
-              // Image Section
+              // Media Section (Images or Videos)
               if (section._type === 'imageSection' || section.layout) {
                 return (
                   <div key={index} className="mb-12">
-                    {/* Images Header */}
+                    {/* Media Header */}
                     <div className="flex items-center gap-3 mb-6">
                       <svg
                         width="40"
@@ -191,55 +240,135 @@ export default async function InsightDetailPage({
                           fill="#EF1111"
                         />
                       </svg>
-                      <h3 className="text-2xl md:text-3xl font-bold text-black">Images</h3>
+                      <h3 className="text-2xl md:text-3xl font-bold text-black">Media</h3>
                     </div>
 
-                    {/* Single Large Image */}
-                    {section.layout === 'single' && section.images && section.images[0] && (
-                      <div className="mb-6">
-                        <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden mb-4">
-                          <Image
-                            src={urlFor(section.images[0].image).width(1200).height(800).url()}
-                            alt={section.images[0].caption || 'Insight image'}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        {section.images[0].caption && (
-                          <p className="text-base md:text-lg text-center font-semibold text-black mb-2">
-                            {section.images[0].caption}
-                          </p>
+                    {/* Single Large Media */}
+                    {section.layout === 'single' && (
+                      <>
+                        {/* New media structure */}
+                        {section.media && section.media[0] && (
+                          <div className="mb-6">
+                            {section.media[0].mediaType === 'image' && section.media[0].image ? (
+                              <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden mb-4">
+                                <Image
+                                  src={urlFor(section.media[0].image).width(1200).height(800).url()}
+                                  alt={section.media[0].caption || 'Insight image'}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                            ) : section.media[0].mediaType === 'video' ? (
+                              <div className="mb-4">
+                                <VideoPlayer
+                                  videoUrl={section.media[0].videoUrl}
+                                  videoFileUrl={section.media[0].videoFile?.asset?.url}
+                                  thumbnail={section.media[0].thumbnail}
+                                  thumbnailUrl={section.media[0].thumbnail ? urlFor(section.media[0].thumbnail).width(1200).height(800).url() : undefined}
+                                  alt={section.media[0].caption || 'Insight video'}
+                                />
+                              </div>
+                            ) : null}
+                            {section.media[0].caption && (
+                              <p className="text-base md:text-lg text-center font-semibold text-black mb-2">
+                                {section.media[0].caption}
+                              </p>
+                            )}
+                            {section.media[0].subtext && (
+                              <p className="text-base text-center text-gray-600">{section.media[0].subtext}</p>
+                            )}
+                          </div>
                         )}
-                        {section.images[0].subtext && (
-                          <p className="text-base text-center text-gray-600">{section.images[0].subtext}</p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Two Images Side by Side */}
-                    {section.layout === 'two' && section.images && section.images.length >= 2 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {section.images.slice(0, 2).map((img: any, imgIndex: number) => (
-                          <div key={imgIndex}>
-                            <div className="relative w-full h-[300px] md:h-[400px] rounded-lg overflow-hidden mb-4">
+                        {/* Legacy images structure (backward compatibility) */}
+                        {!section.media && section.images && section.images[0] && (
+                          <div className="mb-6">
+                            <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden mb-4">
                               <Image
-                                src={urlFor(img.image).width(800).height(600).url()}
-                                alt={img.caption || 'Insight image'}
+                                src={urlFor(section.images[0].image).width(1200).height(800).url()}
+                                alt={section.images[0].caption || 'Insight image'}
                                 fill
                                 className="object-cover"
                               />
                             </div>
-                            {img.caption && (
-                              <p className="text-base md:text-lg text-center font-semibold text-black">
-                                {img.caption}
+                            {section.images[0].caption && (
+                              <p className="text-base md:text-lg text-center font-semibold text-black mb-2">
+                                {section.images[0].caption}
                               </p>
                             )}
-                            {img.subtext && (
-                              <p className="text-base text-center text-gray-600 mt-2">{img.subtext}</p>
+                            {section.images[0].subtext && (
+                              <p className="text-base text-center text-gray-600">{section.images[0].subtext}</p>
                             )}
                           </div>
-                        ))}
-                      </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Two Media Items Side by Side */}
+                    {section.layout === 'two' && (
+                      <>
+                        {/* New media structure */}
+                        {section.media && section.media.length >= 2 && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {section.media.slice(0, 2).map((mediaItem: any, mediaIndex: number) => (
+                              <div key={mediaIndex}>
+                                {mediaItem.mediaType === 'image' && mediaItem.image ? (
+                                  <div className="relative w-full h-[300px] md:h-[400px] rounded-lg overflow-hidden mb-4">
+                                    <Image
+                                      src={urlFor(mediaItem.image).width(800).height(600).url()}
+                                      alt={mediaItem.caption || 'Insight image'}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  </div>
+                                ) : mediaItem.mediaType === 'video' ? (
+                                  <div className="mb-4">
+                                    <VideoPlayer
+                                      videoUrl={mediaItem.videoUrl}
+                                      videoFileUrl={mediaItem.videoFile?.asset?.url}
+                                      thumbnail={mediaItem.thumbnail}
+                                      thumbnailUrl={mediaItem.thumbnail ? urlFor(mediaItem.thumbnail).width(800).height(600).url() : undefined}
+                                      alt={mediaItem.caption || 'Insight video'}
+                                    />
+                                  </div>
+                                ) : null}
+                                {mediaItem.caption && (
+                                  <p className="text-base md:text-lg text-center font-semibold text-black">
+                                    {mediaItem.caption}
+                                  </p>
+                                )}
+                                {mediaItem.subtext && (
+                                  <p className="text-base text-center text-gray-600 mt-2">{mediaItem.subtext}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* Legacy images structure (backward compatibility) */}
+                        {!section.media && section.images && section.images.length >= 2 && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {section.images.slice(0, 2).map((img: any, imgIndex: number) => (
+                              <div key={imgIndex}>
+                                <div className="relative w-full h-[300px] md:h-[400px] rounded-lg overflow-hidden mb-4">
+                                  <Image
+                                    src={urlFor(img.image).width(800).height(600).url()}
+                                    alt={img.caption || 'Insight image'}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                                {img.caption && (
+                                  <p className="text-base md:text-lg text-center font-semibold text-black">
+                                    {img.caption}
+                                  </p>
+                                )}
+                                {img.subtext && (
+                                  <p className="text-base text-center text-gray-600 mt-2">{img.subtext}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 );

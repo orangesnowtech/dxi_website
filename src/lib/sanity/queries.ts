@@ -270,8 +270,25 @@ export const insightBySlugQuery = `*[_type == "insight" && slug.current == $slug
   content[]{
     _type,
     heading,
-    paragraphs,
+    paragraphs[],
     layout,
+    // New media structure (images or videos)
+    media[]{
+      mediaType,
+      image,
+      videoFile{
+        asset->{
+          _id,
+          url,
+          mimeType
+        }
+      },
+      videoUrl,
+      thumbnail,
+      caption,
+      subtext
+    },
+    // Legacy images structure (for backward compatibility)
     images[]{
       image,
       caption,
