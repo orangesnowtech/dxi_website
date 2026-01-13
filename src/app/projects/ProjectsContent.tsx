@@ -120,7 +120,7 @@ export default function ProjectsContent({ clients, projects }: ProjectsContentPr
                           className="text-xs text-[#EF1111] underline whitespace-nowrap"
                           aria-label={`View ${p.title} project`}
                         >
-                          View Project
+                          View Client
                         </Link>
                       </div>
                     </div>

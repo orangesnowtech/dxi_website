@@ -59,7 +59,7 @@ export default async function ClientDetailPage({
             </Link>
             <span className="text-white mt-0.5">&gt;</span>
             <Link href="/projects" className="hover:underline">
-              Projects
+              Clients
             </Link>
             <span className="text-white mt-0.5">&gt;</span>
             <span className="text-white">{client.title}</span>
