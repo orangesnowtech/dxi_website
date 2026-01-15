@@ -138,7 +138,8 @@ export default function BrandsSectionClient() {
         
         <Link
           href="/projects?tab=projects"
-          className="inline-block mt-8 bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md hover:bg-[#d00f0f] transition-colors"
+          className="inline-block mt-8 bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md border border-transparent transition-colors
+             hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
         >
           See all Projects
         </Link>

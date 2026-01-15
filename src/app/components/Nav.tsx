@@ -71,7 +71,7 @@ export default function Nav({ isSticky }: NavProps) {
           <div className="hidden md:flex justify-end">
             <Link
               href="/contact-us"
-              className="bg-[#EF1111] text-white px-6 py-2 rounded-full text-sm"
+              className="bg-[#EF1111] text-white px-6 py-2 rounded-full text-sm border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
             >
               Contact Us
             </Link>

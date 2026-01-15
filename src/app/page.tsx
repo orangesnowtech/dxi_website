@@ -57,7 +57,7 @@ export default function Home() {
           <div className="mt-10">
             <Link
               href="/contact-us"
-              className="inline-block bg-[#EF1111] text-white px-8 py-3 rounded-full text-sm font-semibold"
+              className="inline-block bg-[#EF1111] text-white px-8 py-3 rounded-full text-sm font-semibold border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
             >
               Send Us a Brief
             </Link>

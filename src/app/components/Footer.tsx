@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-[#080808] text-white">
+    <footer className="bg-[#080808] border-t border-[#FFFFFF]/30 text-white">
       <div className="container mx-auto px-6 py-14">
         {/* Top section: logo + heading + up button */}
         <div className="flex items-start justify-between gap-6">
@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
             <button
               onClick={scrollToTop}
               aria-label="Back to top"
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-[#EF1111] flex items-center justify-center hover:bg-white/5 hover:scale-105 transition-transform transition-colors duration-200"
+              className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-[#EF1111] flex items-center justify-center hover:border-white hover:scale-105 transition-transform transition-colors duration-200"
             >
               <svg
                 width="16"
@@ -122,7 +122,7 @@ const Footer: React.FC = () => {
                     <a
                       key={i}
                       href={`tel:${p}`}
-                      className="hover:underline mr-2"
+                      className="hover:text-[#EF1111] mr-2"
                     >
                       {p}
                       {i < phones.length - 1 && ","}
@@ -151,7 +151,7 @@ const Footer: React.FC = () => {
                 <div>
                   <a
                     href={`mailto:${email}`}
-                    className="hover:underline text-sm"
+                    className="hover:text-[#EF1111] text-sm"
                   >
                     {email}
                   </a>
@@ -165,24 +165,24 @@ const Footer: React.FC = () => {
           {/* Nav links */}
           <div className="flex justify-start">
             <nav className="flex flex-col md:flex-row gap-6 md:gap-10 text-lg">
-              <Link href="/" className="hover:underline whitespace-nowrap">
+              <Link href="/" className="hover:text-[#EF1111] whitespace-nowrap">
                 Home
               </Link>
               <Link
                 href="/projects"
-                className="hover:underline whitespace-nowrap"
+                className="hover:text-[#EF1111] whitespace-nowrap"
               >
                 Projects
               </Link>
               <Link
                 href="/insights"
-                className="hover:underline whitespace-nowrap"
+                className="hover:text-[#EF1111] whitespace-nowrap"
               >
                 Insights
               </Link>
               <Link
                 href="/contact-us"
-                className="hover:underline whitespace-nowrap"
+                className="hover:text-[#EF1111] whitespace-nowrap"
               >
                 Contact Us
               </Link>
@@ -407,10 +407,10 @@ const Footer: React.FC = () => {
           <p className="text-sm">© 2025 DXI Marketing. All rights reserved.</p>
 
           <div className="flex gap-8 items-center">
-            <Link href="/terms" className="underline text-sm">
+            <Link href="/terms" className="hover:text-[#EF1111] text-sm">
               Terms of Use.
             </Link>
-            <Link href="/privacy" className="underline text-sm">
+            <Link href="/privacy" className="hover:text-[#EF1111] text-sm">
               Privacy Policy
             </Link>
           </div>
