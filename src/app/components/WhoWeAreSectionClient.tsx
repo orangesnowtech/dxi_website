@@ -85,7 +85,7 @@ export default function WhoWeAreSectionClient() {
 
         <Link
           href={buttonLink}
-          className="inline-block bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md"
+          className="inline-block bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md hover:border-1 hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
         >
           {buttonText}
         </Link>

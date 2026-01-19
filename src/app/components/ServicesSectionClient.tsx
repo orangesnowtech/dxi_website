@@ -93,7 +93,7 @@ export default function ServicesSectionClient() {
 
       <div className="relative container mx-auto px-6 z-10">
         <div className="mb-16">
-          <p className="text-sm text-black font-semibold mb-4 uppercase tracking-wider">
+          <p className="text-sm text-black font-semibold mb-4 tracking-wider">
             {label}
           </p>
           <h3 className="text-4xl md:text-5xl font-bold text-black mb-10">

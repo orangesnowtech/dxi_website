@@ -91,6 +91,7 @@ export default function ProjectsContent({ clients, projects }: ProjectsContentPr
                               fill
                               className="object-cover"
                             />
+                            <div className="absolute inset-0 bg-black/55" />
                             {/* centered white card with logo (white rectangle under logo) */}
                             {logoUrl && (
                               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

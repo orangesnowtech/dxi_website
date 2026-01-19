@@ -81,7 +81,7 @@ export default function TestimonialsSectionClient() {
       <div className="absolute inset-0 bg-black/75" />
       <div className="relative z-10 container mx-auto px-6 h-full">
         <div className="flex items-start justify-between pt-8">
-          <p className="text-lg text-white/90">{label}</p>
+          <p className="text-sm text-white/90">{label}</p>
           <div className="flex gap-3 items-center">
             <button
               aria-label="Prev testimonial"

@@ -42,7 +42,7 @@ export default function BrandsSectionClient() {
   return (
     <section className="bg-black text-white py-20">
       <div className="container mx-auto px-6">
-        <p className="text-sm text-white/80 mb-6">Brands We Represent</p>
+        <p className="text-sm text-white/90 mb-6">Brands We Represent</p>
 
         <div className="flex items-start md:items-center justify-between gap-6">
           <h2 className="text-3xl md:text-5xl font-semibold leading-tight">
@@ -141,7 +141,7 @@ export default function BrandsSectionClient() {
           className="inline-block mt-8 bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md border border-transparent transition-colors
              hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
         >
-          See all Projects
+          See all Brands
         </Link>
       </div>
     </section>
