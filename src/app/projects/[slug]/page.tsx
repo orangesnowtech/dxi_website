@@ -74,7 +74,7 @@ export default async function ClientDetailPage({
             {/* Left Side - Text Content */}
             <div>
               {client.name && (
-                <h4 className="text-5xl md:text-6xl font-bold mb-4 text-[#00FF00]">
+                <h4 className="text-5xl md:text-6xl font-bold mb-4 text-[#EF1111]">
                   {client.name}
                 </h4>
               )}

@@ -155,6 +155,7 @@ export default function ProjectsContent({ clients, projects }: ProjectsContentPr
                               fill
                               className="object-cover"
                             />
+                            <div className="absolute inset-0 bg-black/45" />
                           </div>
                         )}
                       </div>
