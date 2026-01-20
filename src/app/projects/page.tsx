@@ -36,7 +36,7 @@ export default async function Projects() {
 
       {/* Clients and Projects Content with Filter */}
       <Suspense fallback={<div className="bg-white py-12"><div className="container mx-auto px-6">Loading...</div></div>}>
-        <ProjectsContent clients={clients} projects={projects} />
+        <ProjectsContent projects={projects} />
       </Suspense>
 
       {/* Footer */}
