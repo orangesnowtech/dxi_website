@@ -16,27 +16,27 @@ export const metadata: Metadata = {
     // Favicon for browser tabs (white logo - visible on dark backgrounds)
     icon: [
       {
-        url: "/images/dxilogo2.png",
+        url: "/images/dxi-logo-black.jpeg",
         type: "image/png",
       },
       {
-        url: "/images/dxilogo2.png",
+        url: "/images/dxi-logo-black.jpeg",
         sizes: "32x32",
         type: "image/png",
       },
       {
-        url: "/images/dxilogo2.png",
+        url: "/images/dxi-logo-black.jpeg",
         sizes: "16x16",
         type: "image/png",
       },
     ],
     apple: [
       {
-        url: "/images/dxilogo2.png",
+        url: "/images/dxi-logo-black.jpeg",
         type: "image/png",
       },
     ],
-    shortcut: ["/images/dxilogo2.png"],
+    shortcut: ["/images/dxi-logo-black.jpeg"],
   },
   // Open Graph for social media sharing (dark logo - visible on white backgrounds)
   openGraph: {
