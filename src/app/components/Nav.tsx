@@ -51,6 +51,11 @@ export default function Nav({ isSticky }: NavProps) {
               </Link>
             </li>
             <li>
+              <Link href="/clients" className={linkClass("/clients")}>
+                Clients
+              </Link>
+            </li>
+            <li>
               <Link href="/projects" className={linkClass("/projects")}>
                 Projects
               </Link>
@@ -114,6 +119,14 @@ export default function Nav({ isSticky }: NavProps) {
             onClick={() => setOpen(false)}
           >
             Home
+          </Link>
+
+          <Link
+            href="/clients"
+            className={`block ${linkClass("/clients")}`}
+            onClick={() => setOpen(false)}
+          >
+            Clients
           </Link>
 
           <Link

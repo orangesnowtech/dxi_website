@@ -168,6 +168,12 @@ const Footer: React.FC = () => {
               <Link href="/" className="hover:text-[#EF1111] whitespace-nowrap">
                 Home
               </Link>
+              <Link 
+                href="/clients" 
+                className="hover:text-[#EF1111] whitespace-nowrap"
+              >
+                Clients
+              </Link>
               <Link
                 href="/projects"
                 className="hover:text-[#EF1111] whitespace-nowrap"

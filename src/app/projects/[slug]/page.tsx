@@ -58,7 +58,7 @@ export default async function ClientDetailPage({
               Home
             </Link>
             <span className="text-white mt-0.5">&gt;</span>
-            <Link href="/projects" className="hover:underline">
+            <Link href="/clients" className="hover:underline">
               Clients
             </Link>
             <span className="text-white mt-0.5">&gt;</span>

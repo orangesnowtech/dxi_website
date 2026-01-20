@@ -137,7 +137,7 @@ export default function BrandsSectionClient() {
         </div>
         
         <Link
-          href="/projects?tab=projects"
+          href="/clients"
           className="inline-block mt-8 bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md border border-transparent transition-colors
              hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
         >
