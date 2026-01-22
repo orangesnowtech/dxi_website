@@ -407,3 +407,20 @@ export async function getConceptPageSettings() {
   return await client.fetch(conceptPageSettingsQuery);
 }
 
+export const homepageSettingsQuery = `*[_type == "homepageSettings"][0]{
+  heroImage,
+  heading1,
+  heading2,
+  buttonText,
+  buttonLink
+}`;
+
+export async function getHomepageSettings() {
+  try {
+    return await client.fetch(homepageSettingsQuery);
+  } catch (error) {
+    console.error('Error fetching homepage settings:', error);
+    return null;
+  }
+}
+

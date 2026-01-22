@@ -4,6 +4,7 @@ import client from './client'
 import concept from './concept'
 import conceptPageSettings from './conceptPageSettings'
 import footerSettings from './footerSettings'
+import homepageSettings from './homepageSettings'
 import insight from './insight'
 import insightCategory from './insightCategory'
 import project from './project'
@@ -25,5 +26,6 @@ export const schema: {types: SchemaTypeDefinition[]} = {
     footerSettings,
     whoWeAreSection,
     conceptPageSettings,
+    homepageSettings,
   ],
 }

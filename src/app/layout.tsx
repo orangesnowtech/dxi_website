@@ -13,27 +13,27 @@ export const metadata: Metadata = {
   title: "DXI Marketing",
   description: "Digital Experiences and Integrated Marketing",
   icons: {
-    // Favicon for browser tabs (white logo - visible on dark backgrounds)
+    // Favicon for browser tabs
     icon: [
       {
         url: "/images/dxi-logo-black.jpeg",
-        type: "image/png",
+        type: "image/jpeg",
       },
       {
         url: "/images/dxi-logo-black.jpeg",
         sizes: "32x32",
-        type: "image/png",
+        type: "image/jpeg",
       },
       {
         url: "/images/dxi-logo-black.jpeg",
         sizes: "16x16",
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
     apple: [
       {
         url: "/images/dxi-logo-black.jpeg",
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
     shortcut: ["/images/dxi-logo-black.jpeg"],
