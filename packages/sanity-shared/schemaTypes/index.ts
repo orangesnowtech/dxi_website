@@ -1,12 +1,31 @@
-import { type SchemaTypeDefinition } from 'sanity'
+import {type SchemaTypeDefinition} from 'sanity'
+
 import client from './client'
-import project from './project'
 import concept from './concept'
-import tag from './tag'
+import conceptPageSettings from './conceptPageSettings'
+import footerSettings from './footerSettings'
+import homepageSettings from './homepageSettings'
 import insight from './insight'
 import insightCategory from './insightCategory'
-import footerSettings from './footerSettings'
+import project from './project'
+import servicesSection from './servicesSection'
+import tag from './tag'
+import testimonialsSection from './testimonialsSection'
+import whoWeAreSection from './whoWeAreSection'
 
-export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [client, project, concept, tag, insight, insightCategory, footerSettings],
+export const schema: {types: SchemaTypeDefinition[]} = {
+  types: [
+    client,
+    project,
+    concept,
+    tag,
+    insight,
+    insightCategory,
+    servicesSection,
+    testimonialsSection,
+    footerSettings,
+    whoWeAreSection,
+    conceptPageSettings,
+    homepageSettings,
+  ],
 }

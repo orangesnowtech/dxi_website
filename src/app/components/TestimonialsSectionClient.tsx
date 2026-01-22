@@ -7,7 +7,9 @@ import { urlFor } from "@/lib/sanity/client";
 
 interface Testimonial {
   quote: string;
-  campaign: string;
+  designation?: string;
+  name?: string;
+  company?: string;
   order: number;
 }
 
@@ -79,12 +81,12 @@ export default function TestimonialsSectionClient() {
       <div className="absolute inset-0 bg-black/75" />
       <div className="relative z-10 container mx-auto px-6 h-full">
         <div className="flex items-start justify-between pt-8">
-          <p className="text-lg text-white/90">{label}</p>
+          <p className="text-sm text-white/90">{label}</p>
           <div className="flex gap-3 items-center">
             <button
               aria-label="Prev testimonial"
               onClick={() => scrollTestimonials("left")}
-              className="w-12 h-12 rounded-full border-2 border-white/25 flex items-center justify-center bg-white/6 hover:bg-white/10 transition"
+              className="w-12 h-12 rounded-full border-2 border-white/25 flex items-center justify-center bg-white/6 hover:bg-white/10 transition border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
             >
               <svg
                 width="22"
@@ -102,7 +104,7 @@ export default function TestimonialsSectionClient() {
             <button
               aria-label="Next testimonial"
               onClick={() => scrollTestimonials("right")}
-              className="w-12 h-12 rounded-full border-2 border-white/25 flex items-center justify-center bg-transparent hover:bg-white/5 transition"
+              className="w-12 h-12 rounded-full border-2 border-white/25 flex items-center justify-center bg-transparent hover:bg-white/5 transition border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
             >
               <svg
                 width="22"
@@ -130,17 +132,18 @@ export default function TestimonialsSectionClient() {
           }}
         >
           {testimonials.length > 0 ? (
-            testimonials.map((testimonial) => (
+            testimonials.map((testimonial, idx) => (
               <article
-                key={testimonial.order}
-                className="snap-start min-w-[280px] md:min-w-[660px] max-w-[900px] bg-white rounded-3xl p-6 md:p-12 shadow-2xl"
+                key={`testimonial-${testimonial.order}-${idx}`}
+                className="snap-start min-w-[280px] md:min-w-[660px] max-w-[900px] h-full bg-white rounded-3xl p-6 md:p-12 shadow-2xl flex flex-col"
               >
-                <p className="text-sm md:text-lg text-gray-900 leading-tight md:leading-relaxed mb-4 md:mb-8">
-                  {testimonial.quote}
-                </p>
+                <div className="flex-1 overflow-hidden">
+                  <p className="testimonial-quote-clamp text-sm md:text-lg text-gray-900 leading-tight md:leading-relaxed">
+                    {testimonial.quote}
+                  </p>
+                </div>
 
-                <div className="flex items-center gap-3 mt-6 md:mt-8">
-                  {/* Smaller red badge svg */}
+                <div className="mt-auto pt-6 md:pt-8">
                   <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
                     <svg
                       width="32"
@@ -156,11 +159,24 @@ export default function TestimonialsSectionClient() {
                       />
                     </svg>
                   </div>
-
-                  {/* Text centered vertically */}
-                  <h4 className="text-xs md:text-base font-semibold text-gray-900">
-                    {testimonial.campaign}
-                  </h4>
+                  {/* Designation */}
+                  {testimonial.designation && (
+                    <h4 className="text-xs md:text-base font-semibold text-gray-900 mb-1">
+                      {testimonial.designation}
+                    </h4>
+                  )}
+                  {/* Name */}
+                  {testimonial.name && (
+                    <h4 className="text-xs md:text-base font-semibold text-gray-900 mb-1">
+                      {testimonial.name}
+                    </h4>
+                  )}
+                  {/* Company */}
+                  {testimonial.company && (
+                    <p className="text-xs md:text-sm text-gray-600">
+                      {testimonial.company}
+                    </p>
+                  )}
                 </div>
               </article>
             ))

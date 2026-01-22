@@ -1,13 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import Footer from "../components/Footer";
-import { getConcepts, getTags } from "@/lib/sanity/queries";
+import { getConcepts, getTags, getFooterSettings, getConceptPageSettings } from "@/lib/sanity/queries";
 import ConceptsClientWrapper from "./ConceptsClientWrapper";
 import ConceptsContent from "./ConceptsContent";
 
 export default async function Concepts() {
   let concepts = [];
   let tags = [];
+  let contactInfo: any = null;
+  let conceptSettings: any = null;
   
   try {
     concepts = await getConcepts();
@@ -22,6 +24,29 @@ export default async function Concepts() {
     console.error("Error fetching tags:", error);
     tags = [];
   }
+
+  try {
+    contactInfo = await getFooterSettings();
+  } catch (error) {
+    console.error("Error fetching contact info:", error);
+    contactInfo = null;
+  }
+
+  try {
+    conceptSettings = await getConceptPageSettings();
+  } catch (error) {
+    console.error("Error fetching concept page settings:", error);
+    conceptSettings = null;
+  }
+
+  const aboutParagraph =
+    conceptSettings?.aboutParagraph ||
+    "DXI Marketing is a leading agency crafting impactful digital experiences and insights. With over a decade of expertise, we blend creativity and strategy to engage audiences. Our goal is to help brands grow, connect, and thrive in the modern marketplace.";
+
+  const address =
+    contactInfo?.address || "123 Example Street, City, Country";
+  const phones: string[] = contactInfo?.phones || ["+1 (555) 123-4567"];
+  const email = contactInfo?.email || "info@example.com";
 
   return (
     <main className="min-h-screen font-sans bg-gray-100">
@@ -66,10 +91,7 @@ export default async function Concepts() {
               </div>
               <h2 className="text-xl font-bold text-black mb-4">About DXI</h2>
               <p className="text-gray-700 leading-relaxed mb-6">
-                DXI Marketing is a leading agency crafting impactful digital
-                experiences and insights. With over a decade of expertise, we blend
-                creativity and strategy to engage audiences. Our goal is to help
-                brands grow, connect, and thrive in the modern marketplace.
+                {aboutParagraph}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
@@ -113,7 +135,7 @@ export default async function Concepts() {
                     </svg>
                   </span>
                   <span className="text-sm text-gray-700 leading-tight">
-                    17a, Aroyewun Street, Off Ramat Crescent, Ogudu GRA, Lagos
+                    {address}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -133,15 +155,18 @@ export default async function Concepts() {
                       />
                     </svg>
                   </span>
-                  <span className="text-sm text-gray-700">
-                    <a className="hover:underline" href="tel:08074533441">
-                      0807 453 3441
-                    </a>
-                    ,{" "}
-                    <a className="hover:underline" href="tel:08034160001">
-                      0803 416 0001
-                    </a>
-                  </span>
+                  <div className="text-sm text-gray-700">
+                    {phones.map((phone, i) => (
+                      <a
+                        key={i}
+                        href={`tel:${phone}`}
+                        className="hover:underline mr-2"
+                      >
+                        {phone}
+                        {i < phones.length - 1 && ","}
+                      </a>
+                    ))}
+                  </div>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-[#EF1111] mt-1 flex-shrink-0">
@@ -162,9 +187,9 @@ export default async function Concepts() {
                   </span>
                   <a
                     className="hover:underline text-sm text-gray-700"
-                    href="mailto:info@dximarketing.com"
+                    href={`mailto:${email}`}
                   >
-                    info@dximarketing.com
+                    {email}
                   </a>
                 </li>
               </ul>

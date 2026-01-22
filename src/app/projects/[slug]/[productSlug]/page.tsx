@@ -91,7 +91,7 @@ export default async function ProductDetailPage({
           <div className="container mx-auto px-6">
             <div className="max-w-2xl">
               {project.client && project.client.name && (
-                <h1 className="text-5xl md:text-6xl font-bold mb-4 text-[#00FF00]">
+                <h1 className="text-5xl md:text-6xl font-bold mb-4 text-[#EF1111]">
                   {project.client.name}
                 </h1>
               )}

@@ -10,7 +10,7 @@ export default defineType({
       title: 'Insight Title',
       type: 'string',
       description: 'Title of the insight article',
-      validation: (Rule) => Rule.required(),
+      placeholder: 'e.g., The Future of Digital Marketing in 2024, How Brand Identity Impacts Consumer Behavior',
     }),
     defineField({
       name: 'slug',
@@ -20,7 +20,6 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'featuredImage',
@@ -30,7 +29,6 @@ export default defineType({
       options: {
         hotspot: true,
       },
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'headerImage',
@@ -58,21 +56,20 @@ export default defineType({
       title: 'Author Name',
       type: 'string',
       description: 'Name of the article author',
-      validation: (Rule) => Rule.required(),
+      placeholder: 'e.g., John Doe, Jane Smith',
     }),
     defineField({
       name: 'readingTime',
       title: 'Reading Time (minutes)',
       type: 'number',
       description: 'Estimated reading time in minutes',
-      validation: (Rule) => Rule.required().min(1),
+      placeholder: 'e.g., 5',
     }),
     defineField({
       name: 'publishedDate',
       title: 'Published Date',
       type: 'date',
       description: 'Date when the insight was published',
-      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'content',
@@ -89,12 +86,49 @@ export default defineType({
               name: 'heading',
               title: 'Section Heading',
               type: 'string',
+              placeholder: 'e.g., Introduction, Key Findings, Conclusion',
             },
             {
               name: 'paragraphs',
               title: 'Paragraphs',
               type: 'array',
-              of: [{ type: 'text' }],
+              of: [
+                {
+                  type: 'block',
+                  styles: [
+                    { title: 'Normal', value: 'normal' },
+                    { title: 'H2', value: 'h2' },
+                    { title: 'H3', value: 'h3' },
+                    { title: 'Quote', value: 'blockquote' },
+                  ],
+                  lists: [
+                    { title: 'Bullet', value: 'bullet' },
+                    { title: 'Number', value: 'number' },
+                  ],
+                  marks: {
+                    decorators: [
+                      { title: 'Strong', value: 'strong' },
+                      { title: 'Emphasis', value: 'em' },
+                      { title: 'Underline', value: 'underline' },
+                      { title: 'Strike', value: 'strike-through' },
+                    ],
+                    annotations: [
+                      {
+                        title: 'URL',
+                        name: 'link',
+                        type: 'object',
+                        fields: [
+                          {
+                            title: 'URL',
+                            name: 'href',
+                            type: 'url',
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              ],
             },
           ],
         },
@@ -113,16 +147,30 @@ export default defineType({
                   { title: 'Two Images Side by Side', value: 'two' },
                 ],
               },
-              validation: (Rule) => Rule.required(),
             },
             {
-              name: 'images',
-              title: 'Images',
+              name: 'media',
+              title: 'Media (Images or Videos)',
               type: 'array',
               of: [
                 {
                   type: 'object',
+                  name: 'mediaItem',
+                  title: 'Media Item',
                   fields: [
+                    {
+                      name: 'mediaType',
+                      title: 'Media Type',
+                      type: 'string',
+                      options: {
+                        list: [
+                          { title: 'Image', value: 'image' },
+                          { title: 'Video', value: 'video' },
+                        ],
+                        layout: 'radio',
+                      },
+                      initialValue: 'image',
+                    },
                     {
                       name: 'image',
                       title: 'Image',
@@ -130,23 +178,68 @@ export default defineType({
                       options: {
                         hotspot: true,
                       },
-                      validation: (Rule) => Rule.required(),
+                      hidden: ({ parent }: any) => parent?.mediaType !== 'image',
+                    },
+                    {
+                      name: 'videoFile',
+                      title: 'Upload Video File',
+                      type: 'file',
+                      options: {
+                        accept: 'video/*',
+                      },
+                      hidden: ({ parent }: any) => parent?.mediaType !== 'video',
+                    },
+                    {
+                      name: 'videoUrl',
+                      title: 'Video URL (YouTube, Vimeo, etc.)',
+                      type: 'url',
+                      description: 'Paste a video URL (YouTube, Vimeo, or direct video link)',
+                      placeholder: 'e.g., https://www.youtube.com/watch?v=...',
+                      hidden: ({ parent }: any) => parent?.mediaType !== 'video',
+                    },
+                    {
+                      name: 'thumbnail',
+                      title: 'Video Thumbnail',
+                      type: 'image',
+                      description: 'Upload a custom thumbnail image for the video. If not provided, a default thumbnail will be used.',
+                      options: {
+                        hotspot: true,
+                      },
+                      hidden: ({ parent }: any) => parent?.mediaType !== 'video',
                     },
                     {
                       name: 'caption',
                       title: 'Caption',
                       type: 'string',
+                      placeholder: 'e.g., Market analysis chart, User engagement metrics',
                     },
                     {
                       name: 'subtext',
                       title: 'Subtext',
                       type: 'text',
                       description: 'Additional text below caption',
+                      placeholder: 'e.g., Data collected from Q1 2024 survey',
                     },
                   ],
+                  preview: {
+                    select: {
+                      mediaType: 'mediaType',
+                      image: 'image',
+                      caption: 'caption',
+                      videoUrl: 'videoUrl',
+                    },
+                    prepare({ mediaType, image, caption, videoUrl }: any) {
+                      return {
+                        title: caption || (mediaType === 'video' ? 'Video' : 'Image'),
+                        subtitle: mediaType === 'video' 
+                          ? (videoUrl ? `Video: ${videoUrl}` : 'Video file')
+                          : 'Image',
+                        media: image,
+                      };
+                    },
+                  },
                 },
               ],
-              validation: (Rule) => Rule.required().min(1),
             },
           ],
         },

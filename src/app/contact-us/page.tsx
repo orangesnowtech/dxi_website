@@ -31,6 +31,11 @@ export default function ContactUs() {
   });
 
   const [fileName, setFileName] = useState("No file chosen");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+  }>({ type: null, message: "" });
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -47,10 +52,69 @@ export default function ContactUs() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: "" });
+
+    try {
+      // Create FormData object
+      const formDataToSend = new FormData();
+      formDataToSend.append("fullname", formData.fullname);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("company", formData.company || "");
+      formDataToSend.append("service", formData.service);
+      formDataToSend.append("countryCode", formData.countryCode);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("projectDetails", formData.projectDetails || "");
+      
+      if (formData.projectBrief) {
+        formDataToSend.append("projectBrief", formData.projectBrief);
+      }
+
+      // Submit to API route
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit form");
+      }
+
+      // Success
+      setSubmitStatus({
+        type: "success",
+        message: "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+      });
+
+      // Reset form
+      setFormData({
+        fullname: "",
+        email: "",
+        company: "",
+        service: "web development",
+        countryCode: "+234",
+        phone: "",
+        projectBrief: null,
+        projectDetails: "",
+      });
+      setFileName("No file chosen");
+
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSubmitStatus({ type: null, message: "" });
+      }, 5000);
+    } catch (error) {
+      setSubmitStatus({
+        type: "error",
+        message: error instanceof Error ? error.message : "An error occurred. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -249,12 +313,30 @@ export default function ContactUs() {
                 />
               </div>
 
+              {/* Status Message */}
+              {submitStatus.type && (
+                <div
+                  className={`p-4 rounded-lg ${
+                    submitStatus.type === "success"
+                      ? "bg-green-50 text-green-800 border border-green-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}
+                >
+                  <p className="text-sm font-medium">{submitStatus.message}</p>
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-[#EF1111] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#d10e0e] transition-colors"
+                disabled={isSubmitting}
+                className={`w-full px-6 py-3 rounded-lg font-medium transition-colors ${
+                  isSubmitting
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#EF1111] text-white hover:bg-[#d10e0e]"
+                }`}
               >
-                Send Message
+                {isSubmitting ? "Sending..." : "Send Message"}
               </button>
             </form>
           </div>

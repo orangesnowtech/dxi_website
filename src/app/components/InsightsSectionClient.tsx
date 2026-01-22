@@ -124,7 +124,8 @@ export default function InsightsSectionClient() {
         {/* View All Button */}
         <Link
           href="/insights"
-          className="inline-block bg-[#EF1111] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#d00f0f] transition-colors"
+          className="inline-block bg-[#EF1111] text-white px-6 py-3 rounded-lg font-medium border border-transparent transition-colors
+             hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
         >
           View all
         </Link>

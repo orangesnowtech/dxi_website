@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getServicesSection } from "@/lib/sanity/queries";
+import { getWhoWeAre } from "@/lib/sanity/queries";
 
 interface WhoWeAreData {
   label?: string;
@@ -18,11 +18,17 @@ export default function WhoWeAreSectionClient() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const data = await getServicesSection();
-        setData(data?.whoWeAre || null);
+        const data = await getWhoWeAre();
+        // Only set data if we actually got something from Sanity
+        // If data is null or undefined, keep it null so defaults are used
+        if (data) {
+          setData(data);
+        } else {
+          setData(null); // Explicitly null means use defaults
+        }
       } catch (error) {
         console.error('Error fetching Who We Are data:', error);
-        setData(null);
+        setData(null); // Use defaults on error
       } finally {
         setLoading(false);
       }
@@ -31,11 +37,12 @@ export default function WhoWeAreSectionClient() {
     fetchData();
   }, []);
 
-  // Default values if no data
-  const label = data?.label || "Who We Are";
-  const heading = data?.heading || "DXI Marketing is a leading agency crafting impactful digital experiences and insights. With over a decade of expertise, we blend creativity and strategy to engage audiences. {highlight}Our goal{/highlight} is to help brands grow, connect, and thrive in the modern marketplace.";
-  const buttonText = data?.buttonText || "Work with Us";
-  const buttonLink = data?.buttonLink || "/contact-us";
+  // Default values if no data from Sanity
+  // Use data from Sanity if available, otherwise use defaults
+  const label = data?.label ?? "Who We Are";
+  const heading = data?.heading ?? "DXI Marketing is a leading agency crafting impactful digital experiences and insights. With over a decade of expertise, we blend creativity and strategy to engage audiences. {highlight}Our goal{/highlight} is to help brands grow, connect, and thrive in the modern marketplace.";
+  const buttonText = data?.buttonText ?? "Work with Us";
+  const buttonLink = data?.buttonLink ?? "/contact-us";
 
   // Parse heading to handle {highlight} tags
   const parseHeading = (text: string) => {
@@ -78,7 +85,7 @@ export default function WhoWeAreSectionClient() {
 
         <Link
           href={buttonLink}
-          className="inline-block bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md"
+          className="inline-block bg-[#EF1111] text-white px-6 py-3 rounded-full text-base font-medium shadow-md hover:border-1 hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
         >
           {buttonText}
         </Link>

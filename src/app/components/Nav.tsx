@@ -51,6 +51,11 @@ export default function Nav({ isSticky }: NavProps) {
               </Link>
             </li>
             <li>
+              <Link href="/clients" className={linkClass("/clients")}>
+                Clients
+              </Link>
+            </li>
+            <li>
               <Link href="/projects" className={linkClass("/projects")}>
                 Projects
               </Link>
@@ -71,7 +76,7 @@ export default function Nav({ isSticky }: NavProps) {
           <div className="hidden md:flex justify-end">
             <Link
               href="/contact-us"
-              className="bg-[#EF1111] text-white px-6 py-2 rounded-full text-sm"
+              className="bg-[#EF1111] text-white px-6 py-2 rounded-full text-sm border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
             >
               Contact Us
             </Link>
@@ -114,6 +119,14 @@ export default function Nav({ isSticky }: NavProps) {
             onClick={() => setOpen(false)}
           >
             Home
+          </Link>
+
+          <Link
+            href="/clients"
+            className={`block ${linkClass("/clients")}`}
+            onClick={() => setOpen(false)}
+          >
+            Clients
           </Link>
 
           <Link
