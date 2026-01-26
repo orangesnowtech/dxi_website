@@ -77,7 +77,7 @@ export default function WhoWeAreSectionClient() {
 
         <h2
           className="font-semibold mb-6 md:mb-10 
-            text-3xl md:text-[46px] 
+            text-xl md:text-[46px] 
             leading-[1.1] tracking-tight"
         >
           {parseHeading(heading)}
