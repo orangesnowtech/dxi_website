@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@sanity-shared/lib/client';
 import { writeClient } from '@sanity-shared/lib/writeClient';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 type ReactionType = "like" | "share" | "dislike";
 
 export async function POST(

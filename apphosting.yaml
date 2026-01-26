@@ -1,0 +1,33 @@
+# Firebase App Hosting configuration
+# Docs: https://firebase.google.com/docs/app-hosting
+
+# Environment configuration
+env:
+  - variable: NEXT_PUBLIC_SANITY_PROJECT_ID
+    secret: NEXT_PUBLIC_SANITY_PROJECT_ID
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_SANITY_DATASET
+    secret: NEXT_PUBLIC_SANITY_DATASET
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_SANITY_API_VERSION
+    secret: NEXT_PUBLIC_SANITY_API_VERSION
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: SANITY_API_WRITE_TOKEN
+    secret: SANITY_API_WRITE_TOKEN
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: SANITY_REVALIDATE_SECRET
+    secret: SANITY_REVALIDATE_SECRET
+    availability:
+      - RUNTIME
