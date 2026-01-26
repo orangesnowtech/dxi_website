@@ -10,8 +10,19 @@ const Footer: React.FC = () => {
 
   useEffect(() => {
     async function load() {
-      const res = await getFooterSettings();
-      setData(res);
+      try {
+        const res = await getFooterSettings();
+        setData(res);
+      } catch (error) {
+        console.error("Error loading footer settings:", error);
+        // Set default values if fetch fails
+        setData({
+          address: "",
+          phones: [],
+          email: "",
+          socialLinks: {}
+        });
+      }
     }
     load();
   }, []);
@@ -34,7 +45,7 @@ const Footer: React.FC = () => {
         <div className="flex items-start justify-between gap-6">
           {/* Left: logo + heading */}
           <div className="flex items-center gap-6">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Image
                 src="/images/dxilogo2.png"
                 alt="DXI logo"
@@ -52,7 +63,7 @@ const Footer: React.FC = () => {
             <button
               onClick={scrollToTop}
               aria-label="Back to top"
-              className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-[#EF1111] flex items-center justify-center hover:border-white hover:scale-105 transition-transform transition-colors duration-200"
+              className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-[#EF1111] flex items-center justify-center hover:border-white hover:scale-105 transition-colors duration-200"
             >
               <svg
                 width="16"

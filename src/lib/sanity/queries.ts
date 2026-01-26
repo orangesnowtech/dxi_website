@@ -375,7 +375,7 @@ export async function getServicesSection() {
 export const testimonialsSectionQuery = `*[_type == "testimonialsSection"][0]{
   label,
   backgroundImage,
-  testimonials[] | order(order asc) {
+  testimonials[] | order(coalesce(order, 999) asc) {
     quote,
     designation,
     name,
