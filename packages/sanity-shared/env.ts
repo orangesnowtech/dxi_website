@@ -5,7 +5,18 @@ function getEnvValue(key: string, fallback: string): string {
   if (!value || value.trim() === '') {
     return fallback;
   }
-  return value.trim();
+  const trimmed = value.trim();
+  
+  // For projectId, validate it only contains allowed characters
+  if (key === 'NEXT_PUBLIC_SANITY_PROJECT_ID') {
+    // Sanity projectId can only contain a-z, 0-9, and dashes
+    if (!/^[a-z0-9-]+$/.test(trimmed)) {
+      console.warn(`Invalid projectId format in ${key}: "${trimmed}". Using fallback.`);
+      return fallback;
+    }
+  }
+  
+  return trimmed;
 }
 
 export const apiVersion = getEnvValue(
