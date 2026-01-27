@@ -107,24 +107,28 @@ export async function POST(request: NextRequest) {
       ];
     }
 
-    // Send email via Zeptomail API
-    const zeptomailResponse = await fetch('https://api.zeptomail.com/v1.1/email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: zeptomailToken, // Token already includes "Zoho-enczapikey" prefix
-      },
-      body: JSON.stringify(zeptomailPayload),
-    });
+    // Send email via Zeptomail API (non-blocking, won't fail the submission)
+    try {
+      const zeptomailResponse = await fetch('https://api.zeptomail.com/v1.1/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: zeptomailToken, // Token already includes "Zoho-enczapikey" prefix
+        },
+        body: JSON.stringify(zeptomailPayload),
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      });
 
-    if (!zeptomailResponse.ok) {
-      const errorData = await zeptomailResponse.text();
-      console.error('Zeptomail API error:', errorData);
-      console.error('Response status:', zeptomailResponse.status);
-      return NextResponse.json(
-        { error: 'Failed to send email', details: errorData },
-        { status: 500 }
-      );
+      if (!zeptomailResponse.ok) {
+        const errorData = await zeptomailResponse.text();
+        console.error('Zeptomail API error:', errorData);
+        console.error('Response status:', zeptomailResponse.status);
+      } else {
+        console.log('Email sent successfully to:', recipientEmail);
+      }
+    } catch (emailError) {
+      console.error('Failed to send email (submission still saved):', emailError);
+      // Don't fail the request if email fails - submission is already in Sanity
     }
 
     // Optionally send a confirmation email to the user
