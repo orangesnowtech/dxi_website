@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeClient } from '@sanity-shared/lib/writeClient';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -117,8 +120,9 @@ export async function POST(request: NextRequest) {
     if (!zeptomailResponse.ok) {
       const errorData = await zeptomailResponse.text();
       console.error('Zeptomail API error:', errorData);
+      console.error('Response status:', zeptomailResponse.status);
       return NextResponse.json(
-        { error: 'Failed to send email' },
+        { error: 'Failed to send email', details: errorData },
         { status: 500 }
       );
     }
@@ -172,8 +176,9 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Contact form error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
   }
