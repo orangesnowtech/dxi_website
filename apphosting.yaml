@@ -32,17 +32,23 @@ env:
     availability:
       - RUNTIME
 
-  - variable: ZEPTOMAIL_TOKEN
-    secret: ZEPTOMAIL_TOKEN
+  - variable: NEXT_PUBLIC_ZEPTOMAIL_HOST
+    secret: NEXT_PUBLIC_ZEPTOMAIL_HOST
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_ZEPTOMAIL_TOKEN
+    secret: NEXT_PUBLIC_ZEPTOMAIL_TOKEN
     availability:
       - RUNTIME
 
-  - variable: ZEPTOMAIL_BOUNCE_ADDRESS
-    secret: ZEPTOMAIL_BOUNCE_ADDRESS
+  - variable: NEXT_PUBLIC_ZEPTOMAIL_BOUNCE_ADDRESS
+    secret: NEXT_PUBLIC_ZEPTOMAIL_BOUNCE_ADDRESS
     availability:
       - RUNTIME
 
-  - variable: CONTACT_FORM_RECIPIENT_EMAIL
-    secret: CONTACT_FORM_RECIPIENT_EMAIL
+  - variable: NEXT_PUBLIC_CONTACT_FORM_RECIPIENT_EMAIL
+    secret: NEXT_PUBLIC_CONTACT_FORM_RECIPIENT_EMAIL
     availability:
       - RUNTIME
