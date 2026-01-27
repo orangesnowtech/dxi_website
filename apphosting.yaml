@@ -31,3 +31,18 @@ env:
     secret: SANITY_REVALIDATE_SECRET
     availability:
       - RUNTIME
+
+  - variable: ZEPTOMAIL_TOKEN
+    secret: ZEPTOMAIL_TOKEN
+    availability:
+      - RUNTIME
+
+  - variable: ZEPTOMAIL_BOUNCE_ADDRESS
+    secret: ZEPTOMAIL_BOUNCE_ADDRESS
+    availability:
+      - RUNTIME
+
+  - variable: CONTACT_FORM_RECIPIENT_EMAIL
+    secret: CONTACT_FORM_RECIPIENT_EMAIL
+    availability:
+      - RUNTIME
