@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Zoho-enczapikey ${zeptomailToken}`,
+        Authorization: zeptomailToken, // Token already includes "Zoho-enczapikey" prefix
       },
       body: JSON.stringify(zeptomailPayload),
     });
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Zoho-enczapikey ${zeptomailToken}`,
+          Authorization: zeptomailToken, // Token already includes "Zoho-enczapikey" prefix
         },
         body: JSON.stringify(confirmationPayload),
       }).catch((err) => {
