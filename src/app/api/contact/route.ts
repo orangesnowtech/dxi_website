@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { writeClient } from '@sanity-shared/lib/writeClient';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,10 +23,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Save to Sanity first (as backup)
+    const phoneNumber = `${countryCode} ${phone}`;
+    try {
+      await writeClient.create({
+        _type: 'contactSubmission',
+        fullname,
+        email,
+        company: company || '',
+        service,
+        phone: phoneNumber,
+        projectDetails: projectDetails || '',
+        submittedAt: new Date().toISOString(),
+        status: 'new',
+      });
+    } catch (sanityError) {
+      console.error('Failed to save to Sanity:', sanityError);
+      // Continue with email sending even if Sanity save fails
+    }
+
     // Get Zeptomail credentials from environment variables
-    const zeptomailToken = process.env.ZEPTOMAIL_TOKEN;
-    const zeptomailBounceAddress = process.env.ZEPTOMAIL_BOUNCE_ADDRESS;
-    const recipientEmail = process.env.CONTACT_FORM_RECIPIENT_EMAIL || process.env.ZEPTOMAIL_TO_EMAIL;
+    const zeptomailToken = process.env.NEXT_PUBLIC_ZEPTOMAIL_TOKEN;
+    const zeptomailBounceAddress = process.env.NEXT_PUBLIC_ZEPTOMAIL_BOUNCE_ADDRESS;
+    const recipientEmail = process.env.NEXT_PUBLIC_CONTACT_FORM_RECIPIENT_EMAIL;
 
     if (!zeptomailToken || !zeptomailBounceAddress || !recipientEmail) {
       console.error('Zeptomail configuration missing');
@@ -36,7 +56,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare email content
-    const phoneNumber = `${countryCode} ${phone}`;
     const emailSubject = `New Contact Form Submission - ${service}`;
     
     const emailBody = `
