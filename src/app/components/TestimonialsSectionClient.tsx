@@ -86,7 +86,7 @@ export default function TestimonialsSectionClient() {
             <button
               aria-label="Prev testimonial"
               onClick={() => scrollTestimonials("left")}
-              className="w-12 h-12 rounded-full flex items-center justify-center bg-white/6 hover:bg-white/10 border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
+              className="w-12 h-12 rounded-full flex items-center justify-center bg-white/6 border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
             >
               <svg
                 width="22"
@@ -104,7 +104,7 @@ export default function TestimonialsSectionClient() {
             <button
               aria-label="Next testimonial"
               onClick={() => scrollTestimonials("right")}
-              className="w-12 h-12 rounded-full flex items-center justify-center bg-transparent hover:bg-white/5 border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
+              className="w-12 h-12 rounded-full flex items-center justify-center bg-transparent border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
             >
               <svg
                 width="22"
@@ -144,7 +144,7 @@ export default function TestimonialsSectionClient() {
                 </div>
 
                 <div className="mt-auto pt-6 md:pt-8">
-                  <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
+                  <div className="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center shrink-0">
                     <svg
                       width="32"
                       height="32"

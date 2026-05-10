@@ -70,6 +70,11 @@ export default function Nav({ isSticky }: NavProps) {
                 Insights
               </Link>
             </li>
+            <li>
+              <Link href="/business-profile" className={linkClass("/business-profile")}>
+                Business Profile
+              </Link>
+            </li>
           </ul>
 
           {/* Desktop Contact Btn */}
@@ -151,6 +156,14 @@ export default function Nav({ isSticky }: NavProps) {
             onClick={() => setOpen(false)}
           >
             Insights
+          </Link>
+
+          <Link
+            href="/business-profile"
+            className={`block ${linkClass("/business-profile")}`}
+            onClick={() => setOpen(false)}
+          >
+            Business Profile
           </Link>
 
           <Link
