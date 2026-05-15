@@ -249,10 +249,16 @@ function validateFields(payload: BusinessProfilePayload) {
 }
 
 function getZeptoConfig() {
+  const senderAddress = (
+    process.env.ZEPTOMAIL_SENDER_ADDRESS ||
+    process.env.ZEPTOMAIL_BOUNCE_ADDRESS ||
+    "info@dximarketing.com"
+  ).trim();
+
   return {
-    token: process.env.ZEPTOMAIL_TOKEN || process.env.NEXT_PUBLIC_ZEPTOMAIL_TOKEN,
-    bounceAddress:
-      process.env.ZEPTOMAIL_BOUNCE_ADDRESS || process.env.NEXT_PUBLIC_ZEPTOMAIL_BOUNCE_ADDRESS,
+    token: (process.env.ZEPTOMAIL_TOKEN || process.env.NEXT_PUBLIC_ZEPTOMAIL_TOKEN || "").trim(),
+    bounceAddress: senderAddress,
+    fromAddress: senderAddress,
     recipientEmail: "info@dximarketing.com",
   };
 }
@@ -322,9 +328,9 @@ export async function POST(request: NextRequest) {
       submittedAt: new Date().toISOString(),
     });
 
-    const { token, bounceAddress, recipientEmail } = getZeptoConfig();
+    const { token, bounceAddress, fromAddress, recipientEmail } = getZeptoConfig();
 
-    if (!token || !bounceAddress || !recipientEmail) {
+    if (!token || !bounceAddress || !fromAddress || !recipientEmail) {
       console.error("Business profile email configuration missing");
       return NextResponse.json(
         {
@@ -394,9 +400,8 @@ export async function POST(request: NextRequest) {
     try {
       await sendZeptoEmail(
         {
-          bounce_address: bounceAddress,
           from: {
-            address: bounceAddress,
+            address: fromAddress,
             name: "DXI Business Profile Form",
           },
           to: [
@@ -419,9 +424,8 @@ export async function POST(request: NextRequest) {
     try {
       await sendZeptoEmail(
         {
-          bounce_address: bounceAddress,
           from: {
-            address: bounceAddress,
+            address: fromAddress,
             name: "DXI Marketing",
           },
           to: [
