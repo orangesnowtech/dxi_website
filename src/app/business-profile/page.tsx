@@ -31,7 +31,7 @@ type BusinessProfileForm = {
   hasStaff: string;
   staffCount: string;
   isMakingSales: string;
-  annualRevenue: string;
+  monthlyRevenue: string;
   salesChannels: string;
   onSocialMedia: string;
   socialMediaProfiles: SocialMediaProfile[];
@@ -39,6 +39,7 @@ type BusinessProfileForm = {
   hasWebsite: string;
   websiteUrl: string;
   supportAreaNeeded: string;
+  businessGoalsNextSixMonths: string;
   preferredContactDay: string;
   preferredContactTime: string;
 };
@@ -65,7 +66,7 @@ const initialFormData: BusinessProfileForm = {
   hasStaff: "",
   staffCount: "",
   isMakingSales: "",
-  annualRevenue: "",
+  monthlyRevenue: "",
   salesChannels: "",
   onSocialMedia: "",
   socialMediaProfiles: [],
@@ -73,6 +74,7 @@ const initialFormData: BusinessProfileForm = {
   hasWebsite: "",
   websiteUrl: "",
   supportAreaNeeded: "",
+  businessGoalsNextSixMonths: "",
   preferredContactDay: "",
   preferredContactTime: "",
 };
@@ -102,15 +104,15 @@ const contactTimes = [
   "4:00 PM - 6:00 PM",
 ];
 
-const annualRevenueRanges = [
+const monthlyRevenueRanges = [
   "No revenue yet",
-  "Under ₦500,000",
-  "₦500,000 - ₦2,000,000",
-  "₦2,000,001 - ₦5,000,000",
-  "₦5,000,001 - ₦10,000,000",
-  "₦10,000,001 - ₦25,000,000",
-  "₦25,000,001 - ₦50,000,000",
-  "Above ₦50,000,000",
+  "Under ₦50,000",
+  "₦50,000 - ₦200,000",
+  "₦200,001 - ₦500,000",
+  "₦500,001 - ₦1,000,000",
+  "₦1,000,001 - ₦2,500,000",
+  "₦2,500,001 - ₦5,000,000",
+  "Above ₦5,000,000",
 ];
 
 const nigerianStates = [
@@ -190,6 +192,7 @@ export default function BusinessProfilePage() {
   const [formData, setFormData] = useState<BusinessProfileForm>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isContactDayPickerOpen, setIsContactDayPickerOpen] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
     type: "success" | "error" | null;
     message: string;
@@ -237,6 +240,7 @@ export default function BusinessProfilePage() {
 
       if (name === "wantsBusinessSupport" && value === "No") {
         next.supportAreaNeeded = "";
+        next.businessGoalsNextSixMonths = "";
         next.preferredContactDay = "";
         next.preferredContactTime = "";
       }
@@ -289,7 +293,7 @@ export default function BusinessProfilePage() {
       return;
     }
 
-    input.click();
+    setIsContactDayPickerOpen((prev) => !prev);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -327,6 +331,7 @@ export default function BusinessProfilePage() {
         message: "Thank you. Your business profile has been saved and we will contact you soon.",
       });
       setIsSubmitted(true);
+      setIsContactDayPickerOpen(false);
       setFormData(initialFormData);
     } catch (error) {
       setSubmitStatus({
@@ -770,16 +775,16 @@ export default function BusinessProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">What is your approximate annual revenue? (₦) *</label>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">What is your approximate monthly revenue? (₦) *</label>
                   <select
-                    name="annualRevenue"
-                    value={formData.annualRevenue}
+                    name="monthlyRevenue"
+                    value={formData.monthlyRevenue}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent bg-white text-gray-900"
                   >
                     <option value="">Select a revenue range</option>
-                    {annualRevenueRanges.map((range) => (
+                    {monthlyRevenueRanges.map((range) => (
                       <option key={range} value={range}>
                         {range}
                       </option>
@@ -958,27 +963,70 @@ export default function BusinessProfilePage() {
                 </div>
 
                 {formData.wantsBusinessSupport !== "No" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">What are your business goals in the next 6 months?</label>
+                    <textarea
+                      name="businessGoalsNextSixMonths"
+                      value={formData.businessGoalsNextSixMonths}
+                      onChange={handleInputChange}
+                      required={formData.wantsBusinessSupport === "Yes"}
+                      minLength={10}
+                      maxLength={500}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent text-gray-900 resize-y"
+                      placeholder="Example: Increase monthly sales, launch a website, and improve customer retention."
+                    />
+                  </div>
+                )}
+
+                {formData.wantsBusinessSupport !== "No" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-2">Preferred contact day</label>
-                      <input
-                        ref={contactDayInputRef}
-                        type="date"
-                        name="preferredContactDay"
-                        value={formData.preferredContactDay}
-                        min={minContactDate}
-                        onChange={handleInputChange}
-                        className="sr-only"
-                        tabIndex={-1}
-                        aria-hidden="true"
-                      />
-                      <button
-                        type="button"
-                        onClick={openContactDayCalendar}
-                        className="w-full text-left px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent"
-                      >
-                        {formatSelectedDate(formData.preferredContactDay)}
-                      </button>
+                      <div className="relative">
+                        <input
+                          ref={contactDayInputRef}
+                          type="date"
+                          name="preferredContactDay"
+                          value={formData.preferredContactDay}
+                          min={minContactDate}
+                          onChange={handleInputChange}
+                          className="absolute h-0 w-0 opacity-0 pointer-events-none"
+                          tabIndex={-1}
+                          aria-hidden="true"
+                        />
+                        <button
+                          type="button"
+                          onClick={openContactDayCalendar}
+                          className="w-full text-left px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent"
+                        >
+                          {formatSelectedDate(formData.preferredContactDay)}
+                        </button>
+
+                        {isContactDayPickerOpen && (
+                          <div className="absolute z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+                            <label className="block text-sm font-medium text-gray-900 mb-2">Choose a date</label>
+                            <input
+                              type="date"
+                              name="preferredContactDay"
+                              value={formData.preferredContactDay}
+                              min={minContactDate}
+                              onChange={(e) => {
+                                handleInputChange(e);
+                                setIsContactDayPickerOpen(false);
+                              }}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent text-gray-900"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setIsContactDayPickerOpen(false)}
+                              className="mt-3 w-full px-3 py-2 rounded-lg border border-gray-300 text-gray-900 hover:bg-gray-50"
+                            >
+                              Close
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div>

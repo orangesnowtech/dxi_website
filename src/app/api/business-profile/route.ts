@@ -27,7 +27,7 @@ type BusinessProfilePayload = {
   hasStaff: string;
   staffCount: string;
   isMakingSales: string;
-  annualRevenue: string;
+  monthlyRevenue: string;
   salesChannels: string;
   onSocialMedia: string;
   socialMediaProfiles: Array<{
@@ -38,19 +38,20 @@ type BusinessProfilePayload = {
   hasWebsite: string;
   websiteUrl: string;
   supportAreaNeeded: string;
+  businessGoalsNextSixMonths: string;
   preferredContactDay: string;
   preferredContactTime: string;
 };
 
-const annualRevenueRanges = new Set([
+const monthlyRevenueRanges = new Set([
   "No revenue yet",
-  "Under ₦500,000",
-  "₦500,000 - ₦2,000,000",
-  "₦2,000,001 - ₦5,000,000",
-  "₦5,000,001 - ₦10,000,000",
-  "₦10,000,001 - ₦25,000,000",
-  "₦25,000,001 - ₦50,000,000",
-  "Above ₦50,000,000",
+  "Under ₦50,000",
+  "₦50,000 - ₦200,000",
+  "₦200,001 - ₦500,000",
+  "₦500,001 - ₦1,000,000",
+  "₦1,000,001 - ₦2,500,000",
+  "₦2,500,001 - ₦5,000,000",
+  "Above ₦5,000,000",
 ]);
 
 const contactMethods = new Set(["Phone Call", "WhatsApp", "Email", "SMS"]);
@@ -80,7 +81,7 @@ const requiredStringFields: Array<keyof Omit<BusinessProfilePayload, "socialMedi
   "isBusinessRegistered",
   "hasStaff",
   "isMakingSales",
-  "annualRevenue",
+  "monthlyRevenue",
   "salesChannels",
   "onSocialMedia",
   "wantsBusinessSupport",
@@ -120,6 +121,9 @@ function getMissingFields(payload: BusinessProfilePayload) {
   if (payload.wantsBusinessSupport === "Yes") {
     if (!payload.supportAreaNeeded.trim()) {
       missing.push("supportAreaNeeded");
+    }
+    if (!payload.businessGoalsNextSixMonths.trim()) {
+      missing.push("businessGoalsNextSixMonths");
     }
     if (!payload.preferredContactDay.trim()) {
       missing.push("preferredContactDay");
@@ -185,8 +189,16 @@ function validateFields(payload: BusinessProfilePayload) {
     invalidFields.add("businessDescription");
   }
 
-  if (!annualRevenueRanges.has(payload.annualRevenue.trim())) {
-    invalidFields.add("annualRevenue");
+  if (!monthlyRevenueRanges.has(payload.monthlyRevenue.trim())) {
+    invalidFields.add("monthlyRevenue");
+  }
+
+  if (
+    payload.wantsBusinessSupport === "Yes" &&
+    (payload.businessGoalsNextSixMonths.trim().length < 10 ||
+      payload.businessGoalsNextSixMonths.trim().length > 500)
+  ) {
+    invalidFields.add("businessGoalsNextSixMonths");
   }
 
   if (!yesNoValues.has(payload.onSocialMedia.trim())) {
@@ -332,7 +344,7 @@ export async function POST(request: NextRequest) {
       <p><strong>Has Staff:</strong> ${escapeHtml(normalizedPayload.hasStaff)}</p>
       <p><strong>Staff Count:</strong> ${escapeHtml(normalizedPayload.staffCount || "Not provided")}</p>
       <p><strong>Making Sales:</strong> ${escapeHtml(normalizedPayload.isMakingSales)}</p>
-      <p><strong>Annual Revenue:</strong> ${escapeHtml(normalizedPayload.annualRevenue || "Not provided")}</p>
+      <p><strong>Monthly Revenue:</strong> ${escapeHtml(normalizedPayload.monthlyRevenue || "Not provided")}</p>
       <p><strong>Main Sales Channel:</strong> ${escapeHtml(normalizedPayload.salesChannels)}</p>
       <p><strong>On Social Media:</strong> ${escapeHtml(normalizedPayload.onSocialMedia)}</p>
       <p><strong>Social Profiles:</strong></p>
@@ -352,6 +364,7 @@ export async function POST(request: NextRequest) {
       <p><strong>Has Website:</strong> ${escapeHtml(normalizedPayload.hasWebsite)}</p>
       <p><strong>Website URL:</strong> ${escapeHtml(normalizedPayload.websiteUrl || "Not provided")}</p>
       <p><strong>Support Needed First:</strong> ${escapeHtml(normalizedPayload.supportAreaNeeded)}</p>
+      <p><strong>Business Goals (Next 6 Months):</strong> ${escapeHtml(normalizedPayload.businessGoalsNextSixMonths || "Not provided")}</p>
       <p><strong>Preferred Contact Day:</strong> ${escapeHtml(normalizedPayload.preferredContactDay)}</p>
       <p><strong>Preferred Contact Time:</strong> ${escapeHtml(normalizedPayload.preferredContactTime)}</p>
     `;
