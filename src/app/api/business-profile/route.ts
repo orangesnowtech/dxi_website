@@ -58,10 +58,26 @@ const contactMethods = new Set(["Phone Call", "WhatsApp", "Email", "SMS"]);
 
 const yesNoValues = new Set(["Yes", "No"]);
 
-const urlPattern = /^https?:\/\/.+/i;
 const phonePattern = /^\+?[0-9\s()-]{7,20}$/;
 const namePattern = /^[A-Za-z][A-Za-z' -]*$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidUrl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+
+  const hasProtocol = /^[a-zA-Z][a-zA-Z\d+.-]*:\/\//.test(trimmed);
+  const candidate = hasProtocol ? trimmed : `https://${trimmed}`;
+
+  try {
+    const parsed = new URL(candidate);
+    return Boolean(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
 
 const requiredStringFields: Array<keyof Omit<BusinessProfilePayload, "socialMediaProfiles">> = [
   "firstName",
@@ -205,13 +221,13 @@ function validateFields(payload: BusinessProfilePayload) {
     invalidFields.add("onSocialMedia");
   }
 
-  if (payload.hasWebsite === "Yes" && !urlPattern.test(payload.websiteUrl.trim())) {
+  if (payload.hasWebsite === "Yes" && !isValidUrl(payload.websiteUrl)) {
     invalidFields.add("websiteUrl");
   }
 
   if (payload.onSocialMedia === "Yes") {
     const hasInvalidProfileUrl = payload.socialMediaProfiles.some(
-      (profile) => !urlPattern.test(profile.url.trim())
+      (profile) => !isValidUrl(profile.url)
     );
 
     if (hasInvalidProfileUrl) {
@@ -237,8 +253,7 @@ function getZeptoConfig() {
     token: process.env.ZEPTOMAIL_TOKEN || process.env.NEXT_PUBLIC_ZEPTOMAIL_TOKEN,
     bounceAddress:
       process.env.ZEPTOMAIL_BOUNCE_ADDRESS || process.env.NEXT_PUBLIC_ZEPTOMAIL_BOUNCE_ADDRESS,
-    recipientEmail:
-      process.env.BUSINESS_PROFILE_RECIPIENT_EMAIL || process.env.NEXT_PUBLIC_CONTACT_FORM_RECIPIENT_EMAIL,
+    recipientEmail: "info@dximarketing.com",
   };
 }
 
@@ -320,53 +335,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const socialProfilesHtml =
+      normalizedPayload.socialMediaProfiles.length > 0
+        ? normalizedPayload.socialMediaProfiles
+            .map(
+              (profile) =>
+                `<li>${escapeHtml(profile.platform)}: <a href="${escapeHtml(profile.url)}">${escapeHtml(profile.url)}</a></li>`
+            )
+            .join("")
+        : "<li>Not provided</li>";
+
     const adminEmailBody = `
-      <h2>New Business Profile Submission</h2>
-      <p><strong>Submission ID:</strong> ${escapeHtml(submissionRef.id)}</p>
-      <p><strong>First Name:</strong> ${escapeHtml(normalizedPayload.firstName)}</p>
-      <p><strong>Last Name:</strong> ${escapeHtml(normalizedPayload.lastName)}</p>
-      <p><strong>Phone Number:</strong> ${escapeHtml(normalizedPayload.phoneNumber)}</p>
-      <p><strong>Email Address:</strong> ${escapeHtml(normalizedPayload.emailAddress)}</p>
-      <p><strong>Preferred Contact Method:</strong> ${escapeHtml(normalizedPayload.preferredContactMethod)}</p>
-      <p><strong>Country:</strong> ${escapeHtml(normalizedPayload.country)}</p>
-      <p><strong>State:</strong> ${escapeHtml(normalizedPayload.state)}</p>
-      <p><strong>City or Area:</strong> ${escapeHtml(normalizedPayload.cityOrArea)}</p>
-      <p><strong>Business Offering:</strong> ${escapeHtml(normalizedPayload.businessOffering)}</p>
-      <p><strong>Business Description:</strong> ${escapeHtml(normalizedPayload.businessDescription)}</p>
-      <p><strong>Physical Location:</strong> ${escapeHtml(normalizedPayload.hasPhysicalLocation)}</p>
-      <p><strong>Location Type:</strong> ${escapeHtml(normalizedPayload.locationType || "Not provided")}</p>
-      <p><strong>Business Running:</strong> ${escapeHtml(normalizedPayload.isBusinessRunning)}</p>
-      <p><strong>Business Duration:</strong> ${escapeHtml(normalizedPayload.businessDuration)}</p>
-      <p><strong>Full-time Business:</strong> ${escapeHtml(normalizedPayload.isFullTimeBusiness)}</p>
-      <p><strong>If Not Full-time:</strong> ${escapeHtml(normalizedPayload.businessTypeIfNotFullTime || "Not provided")}</p>
-      <p><strong>Business Registered:</strong> ${escapeHtml(normalizedPayload.isBusinessRegistered)}</p>
-      <p><strong>Needs Registration Help:</strong> ${escapeHtml(normalizedPayload.needsRegistrationHelp || "Not provided")}</p>
-      <p><strong>Has Staff:</strong> ${escapeHtml(normalizedPayload.hasStaff)}</p>
-      <p><strong>Staff Count:</strong> ${escapeHtml(normalizedPayload.staffCount || "Not provided")}</p>
-      <p><strong>Making Sales:</strong> ${escapeHtml(normalizedPayload.isMakingSales)}</p>
-      <p><strong>Monthly Revenue:</strong> ${escapeHtml(normalizedPayload.monthlyRevenue || "Not provided")}</p>
-      <p><strong>Main Sales Channel:</strong> ${escapeHtml(normalizedPayload.salesChannels)}</p>
-      <p><strong>On Social Media:</strong> ${escapeHtml(normalizedPayload.onSocialMedia)}</p>
-      <p><strong>Social Profiles:</strong></p>
-      <ul>
-        ${
-          normalizedPayload.socialMediaProfiles.length > 0
-            ? normalizedPayload.socialMediaProfiles
-                .map(
-                  (profile) =>
-                    `<li>${escapeHtml(profile.platform)}: <a href="${escapeHtml(profile.url)}">${escapeHtml(profile.url)}</a></li>`
-                )
-                .join("")
-            : "<li>Not provided</li>"
-        }
-      </ul>
-      <p><strong>Wants Support:</strong> ${escapeHtml(normalizedPayload.wantsBusinessSupport)}</p>
-      <p><strong>Has Website:</strong> ${escapeHtml(normalizedPayload.hasWebsite)}</p>
-      <p><strong>Website URL:</strong> ${escapeHtml(normalizedPayload.websiteUrl || "Not provided")}</p>
-      <p><strong>Support Needed First:</strong> ${escapeHtml(normalizedPayload.supportAreaNeeded)}</p>
-      <p><strong>Business Goals (Next 6 Months):</strong> ${escapeHtml(normalizedPayload.businessGoalsNextSixMonths || "Not provided")}</p>
-      <p><strong>Preferred Contact Day:</strong> ${escapeHtml(normalizedPayload.preferredContactDay)}</p>
-      <p><strong>Preferred Contact Time:</strong> ${escapeHtml(normalizedPayload.preferredContactTime)}</p>
+      <div style="font-family:Arial,Helvetica,sans-serif;color:#111827;line-height:1.5;">
+        <h2 style="margin:0 0 16px;color:#b91c1c;">New Business Profile Submission</h2>
+        <p style="margin:0 0 16px;">
+          <strong>Submission ID:</strong> ${escapeHtml(submissionRef.id)}<br />
+          <strong>Submitted By:</strong> ${escapeHtml(fullName)}
+        </p>
+
+        <h3 style="margin:20px 0 8px;">Contact Information</h3>
+        <table style="border-collapse:collapse;width:100%;max-width:700px;">
+          <tr><td style="padding:6px 8px;"><strong>Email</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.emailAddress)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Phone</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.phoneNumber)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Preferred Contact Method</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.preferredContactMethod)}</td></tr>
+        </table>
+
+        <h3 style="margin:20px 0 8px;">Business Snapshot</h3>
+        <table style="border-collapse:collapse;width:100%;max-width:700px;">
+          <tr><td style="padding:6px 8px;"><strong>Location</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.cityOrArea)}, ${escapeHtml(normalizedPayload.state)}, ${escapeHtml(normalizedPayload.country)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Offering</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.businessOffering)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Business Running</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.isBusinessRunning)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Duration</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.businessDuration)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Monthly Revenue</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.monthlyRevenue || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Main Sales Channel</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.salesChannels)}</td></tr>
+        </table>
+
+        <h3 style="margin:20px 0 8px;">Support Request</h3>
+        <table style="border-collapse:collapse;width:100%;max-width:700px;">
+          <tr><td style="padding:6px 8px;"><strong>Wants Support</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.wantsBusinessSupport)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Priority Area</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.supportAreaNeeded || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Goals (Next 6 Months)</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.businessGoalsNextSixMonths || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Preferred Contact Day</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.preferredContactDay || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Preferred Contact Time</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.preferredContactTime || "Not provided")}</td></tr>
+        </table>
+
+        <h3 style="margin:20px 0 8px;">Additional Details</h3>
+        <p style="margin:0 0 8px;"><strong>Business Description:</strong> ${escapeHtml(normalizedPayload.businessDescription)}</p>
+        <p style="margin:0 0 8px;"><strong>Physical Location:</strong> ${escapeHtml(normalizedPayload.hasPhysicalLocation)} (${escapeHtml(normalizedPayload.locationType || "Not provided")})</p>
+        <p style="margin:0 0 8px;"><strong>Full-time Business:</strong> ${escapeHtml(normalizedPayload.isFullTimeBusiness)} (${escapeHtml(normalizedPayload.businessTypeIfNotFullTime || "Not provided")})</p>
+        <p style="margin:0 0 8px;"><strong>Business Registered:</strong> ${escapeHtml(normalizedPayload.isBusinessRegistered)} (${escapeHtml(normalizedPayload.needsRegistrationHelp || "Not provided")})</p>
+        <p style="margin:0 0 8px;"><strong>Has Staff:</strong> ${escapeHtml(normalizedPayload.hasStaff)} (${escapeHtml(normalizedPayload.staffCount || "Not provided")})</p>
+        <p style="margin:0 0 8px;"><strong>On Social Media:</strong> ${escapeHtml(normalizedPayload.onSocialMedia)}</p>
+        <ul style="margin:0 0 8px 20px;">${socialProfilesHtml}</ul>
+        <p style="margin:0;"><strong>Has Website:</strong> ${escapeHtml(normalizedPayload.hasWebsite)} (${escapeHtml(normalizedPayload.websiteUrl || "Not provided")})</p>
+      </div>
     `;
 
     try {
@@ -410,15 +432,23 @@ export async function POST(request: NextRequest) {
               },
             },
           ],
-          subject: "We received your business profile",
+          subject: "We have received your business profile",
           htmlbody: `
-            <h2>Thank you for sharing your business profile</h2>
-            <p>Hi ${escapeHtml(normalizedPayload.firstName)},</p>
-            <p>We have received your submission and will contact you via ${escapeHtml(normalizedPayload.preferredContactMethod)}.</p>
-            <p><strong>Support area selected:</strong> ${escapeHtml(normalizedPayload.supportAreaNeeded)}</p>
-            <p><strong>Preferred contact day:</strong> ${escapeHtml(normalizedPayload.preferredContactDay)}</p>
-            <p><strong>Preferred contact time:</strong> ${escapeHtml(normalizedPayload.preferredContactTime)}</p>
-            <p>Best regards,<br />DXI Marketing</p>
+            <div style="font-family:Arial,Helvetica,sans-serif;color:#111827;line-height:1.5;">
+              <h2 style="margin:0 0 16px;color:#b91c1c;">Thank You For Your Submission</h2>
+              <p>Hi ${escapeHtml(normalizedPayload.firstName)},</p>
+              <p>We have received your business profile and our team will review it shortly.</p>
+              <p>Here is a quick summary of what you submitted:</p>
+              <ul>
+                <li><strong>Support area:</strong> ${escapeHtml(normalizedPayload.supportAreaNeeded || "Not provided")}</li>
+                <li><strong>Goals (next 6 months):</strong> ${escapeHtml(normalizedPayload.businessGoalsNextSixMonths || "Not provided")}</li>
+                <li><strong>Preferred contact method:</strong> ${escapeHtml(normalizedPayload.preferredContactMethod)}</li>
+                <li><strong>Preferred contact day:</strong> ${escapeHtml(normalizedPayload.preferredContactDay || "Not provided")}</li>
+                <li><strong>Preferred contact time:</strong> ${escapeHtml(normalizedPayload.preferredContactTime || "Not provided")}</li>
+              </ul>
+              <p>If you need to update any detail, you can reply to this email.</p>
+              <p style="margin-top:20px;">Best regards,<br />DXI Marketing</p>
+            </div>
           `,
         },
         token

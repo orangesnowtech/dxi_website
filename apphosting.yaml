@@ -40,7 +40,7 @@ env:
 
   - variable: NEXT_PUBLIC_ZEPTOMAIL_TOKEN
     secret: NEXT_PUBLIC_ZEPTOMAIL_TOKEN
-    version: "3"
+    version: "4"
     availability:
       - RUNTIME
 
