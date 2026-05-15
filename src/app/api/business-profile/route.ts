@@ -226,11 +226,11 @@ function validateFields(payload: BusinessProfilePayload) {
   }
 
   if (payload.onSocialMedia === "Yes") {
-    const hasInvalidProfileUrl = payload.socialMediaProfiles.some(
-      (profile) => !isValidUrl(profile.url)
+    const hasEmptyProfile = payload.socialMediaProfiles.some(
+      (profile) => !profile.url || !profile.url.trim()
     );
 
-    if (hasInvalidProfileUrl) {
+    if (hasEmptyProfile) {
       invalidFields.add("socialMediaProfiles");
     }
   }

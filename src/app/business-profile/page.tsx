@@ -852,14 +852,13 @@ export default function BusinessProfilePage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-2">Profile URL</label>
+                          <label className="block text-sm font-medium text-gray-900 mb-2">Username / Handle</label>
                           <input
                             type="text"
-                            inputMode="url"
                             value={profile.url}
                             onChange={(e) => handleSocialProfileChange(index, "url", e.target.value)}
                             required
-                            placeholder="example.com or https://example.com"
+                            placeholder="e.g. @mybusiness"
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent text-gray-900"
                           />
                         </div>
