@@ -249,17 +249,27 @@ function validateFields(payload: BusinessProfilePayload) {
 }
 
 function getZeptoConfig() {
-  const senderAddress = (
-    process.env.ZEPTOMAIL_SENDER_ADDRESS ||
+  const bounceAddress = (
     process.env.ZEPTOMAIL_BOUNCE_ADDRESS ||
+    process.env.ZEPTOMAIL_SENDER_ADDRESS ||
+    "info@dximarketing.com"
+  ).trim();
+
+  const fromAddress = (
+    process.env.ZEPTOMAIL_SENDER_ADDRESS ||
+    bounceAddress ||
     "info@dximarketing.com"
   ).trim();
 
   return {
     token: (process.env.ZEPTOMAIL_TOKEN || process.env.NEXT_PUBLIC_ZEPTOMAIL_TOKEN || "").trim(),
-    bounceAddress: senderAddress,
-    fromAddress: senderAddress,
-    recipientEmail: "info@dximarketing.com",
+    bounceAddress,
+    fromAddress,
+    recipientEmail: (
+      process.env.BUSINESS_PROFILE_RECIPIENT_EMAIL ||
+      process.env.CONTACT_FORM_RECIPIENT_EMAIL ||
+      "info@dximarketing.com"
+    ).trim(),
   };
 }
 

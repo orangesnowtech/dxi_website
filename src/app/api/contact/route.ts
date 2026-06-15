@@ -1,8 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { FieldValue } from 'firebase-admin/firestore';
 import { writeClient } from '@sanity-shared/lib/writeClient';
+import { firestore } from '@/lib/firebase/admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getZeptoConfig() {
+  const bounceAddress = (
+    process.env.ZEPTOMAIL_BOUNCE_ADDRESS ||
+    process.env.ZEPTOMAIL_SENDER_ADDRESS ||
+    'info@dximarketing.com'
+  ).trim();
+
+  const fromAddress = (
+    process.env.ZEPTOMAIL_SENDER_ADDRESS ||
+    bounceAddress ||
+    'info@dximarketing.com'
+  ).trim();
+
+  return {
+    token: (process.env.ZEPTOMAIL_TOKEN || process.env.NEXT_PUBLIC_ZEPTOMAIL_TOKEN || '').trim(),
+    bounceAddress,
+    fromAddress,
+    recipientEmail: (
+      process.env.CONTACT_FORM_RECIPIENT_EMAIL ||
+      'info@dximarketing.com'
+    ).trim(),
+  };
+}
+
+async function sendZeptoEmail(payload: Record<string, unknown>, token: string) {
+  const response = await fetch('https://api.zeptomail.com/v1.1/email', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token,
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`ZeptoMail error ${response.status}: ${errorText}`);
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,16 +97,39 @@ export async function POST(request: NextRequest) {
       // Continue with email sending even if Sanity save fails
     }
 
-    // Get Zeptomail credentials from environment variables
-    const zeptomailToken = process.env.NEXT_PUBLIC_ZEPTOMAIL_TOKEN;
-    const zeptomailBounceAddress = process.env.NEXT_PUBLIC_ZEPTOMAIL_BOUNCE_ADDRESS;
-    const recipientEmail = process.env.NEXT_PUBLIC_CONTACT_FORM_RECIPIENT_EMAIL;
+    let submissionRef;
+    try {
+      submissionRef = await firestore.collection('contactSubmissions').add({
+        fullName: fullname,
+        emailAddress: email,
+        phoneNumber,
+        company: company || '',
+        service,
+        projectDetails: projectDetails || '',
+        attachmentName: projectBrief?.name || '',
+        attachmentContentType: projectBrief?.type || '',
+        attachmentSize: projectBrief?.size || 0,
+        status: 'new',
+        source: 'website',
+        createdAt: FieldValue.serverTimestamp(),
+        submittedAt: new Date().toISOString(),
+      });
+      console.log('Contact submission saved to Firebase:', submissionRef.id);
+    } catch (firebaseError) {
+      console.error('Failed to save to Firebase:', firebaseError);
+      throw new Error(`Firebase save failed: ${firebaseError instanceof Error ? firebaseError.message : 'Unknown error'}`);
+    }
 
-    if (!zeptomailToken || !zeptomailBounceAddress || !recipientEmail) {
+    const { token: zeptomailToken, bounceAddress, fromAddress, recipientEmail } = getZeptoConfig();
+
+    if (!zeptomailToken || !bounceAddress || !fromAddress || !recipientEmail) {
       console.error('Zeptomail configuration missing');
       return NextResponse.json(
-        { error: 'Email service configuration error' },
-        { status: 500 }
+        {
+          message: 'Contact form submitted successfully, but email notifications are not configured.',
+          submissionId: submissionRef.id,
+        },
+        { status: 200 }
       );
     }
 
@@ -63,19 +138,20 @@ export async function POST(request: NextRequest) {
     
     const emailBody = `
       <h2>New Contact Form Submission</h2>
-      <p><strong>Full Name:</strong> ${fullname}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Company/Brand:</strong> ${company || 'Not provided'}</p>
-      <p><strong>Service of Interest:</strong> ${service}</p>
-      <p><strong>Phone Number:</strong> ${phoneNumber}</p>
-      ${projectDetails ? `<p><strong>Project Details:</strong><br/>${projectDetails.replace(/\n/g, '<br/>')}</p>` : ''}
+      <p><strong>Submission ID:</strong> ${escapeHtml(submissionRef.id)}</p>
+      <p><strong>Full Name:</strong> ${escapeHtml(fullname)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+      <p><strong>Company/Brand:</strong> ${escapeHtml(company || 'Not provided')}</p>
+      <p><strong>Service of Interest:</strong> ${escapeHtml(service)}</p>
+      <p><strong>Phone Number:</strong> ${escapeHtml(phoneNumber)}</p>
+      ${projectDetails ? `<p><strong>Project Details:</strong><br/>${escapeHtml(projectDetails).replace(/\n/g, '<br/>')}</p>` : ''}
     `;
 
     // Prepare Zeptomail API request
     const zeptomailPayload: any = {
-      bounce_address: zeptomailBounceAddress,
+      bounce_address: bounceAddress,
       from: {
-        address: zeptomailBounceAddress,
+        address: fromAddress,
         name: 'DXI Website Contact Form',
       },
       to: [
@@ -109,34 +185,19 @@ export async function POST(request: NextRequest) {
 
     // Send email via Zeptomail API (non-blocking, won't fail the submission)
     try {
-      const zeptomailResponse = await fetch('https://api.zeptomail.com/v1.1/email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: zeptomailToken, // Token already includes "Zoho-enczapikey" prefix
-        },
-        body: JSON.stringify(zeptomailPayload),
-        signal: AbortSignal.timeout(10000), // 10 second timeout
-      });
-
-      if (!zeptomailResponse.ok) {
-        const errorData = await zeptomailResponse.text();
-        console.error('Zeptomail API error:', errorData);
-        console.error('Response status:', zeptomailResponse.status);
-      } else {
-        console.log('Email sent successfully to:', recipientEmail);
-      }
+      await sendZeptoEmail(zeptomailPayload, zeptomailToken);
+      console.log('Email sent successfully to:', recipientEmail);
     } catch (emailError) {
       console.error('Failed to send email (submission still saved):', emailError);
-      // Don't fail the request if email fails - submission is already in Sanity
+      // Don't fail the request if email fails - submission is already saved
     }
 
     // Optionally send a confirmation email to the user
     if (email) {
       const confirmationPayload = {
-        bounce_address: zeptomailBounceAddress,
+        bounce_address: bounceAddress,
         from: {
-          address: zeptomailBounceAddress,
+          address: fromAddress,
           name: 'DXI Marketing',
         },
         to: [
@@ -150,32 +211,25 @@ export async function POST(request: NextRequest) {
         subject: 'Thank you for contacting DXI Marketing',
         htmlbody: `
           <h2>Thank you for contacting us!</h2>
-          <p>Hi ${fullname},</p>
+          <p>Hi ${escapeHtml(fullname)},</p>
           <p>We've received your message and our team will get back to you shortly.</p>
           <p>Here's a summary of your inquiry:</p>
           <ul>
-            <li><strong>Service:</strong> ${service}</li>
-            ${company ? `<li><strong>Company:</strong> ${company}</li>` : ''}
+            <li><strong>Service:</strong> ${escapeHtml(service)}</li>
+            ${company ? `<li><strong>Company:</strong> ${escapeHtml(company)}</li>` : ''}
           </ul>
           <p>Best regards,<br/>The DXI Marketing Team</p>
         `,
       };
 
       // Send confirmation email (non-blocking)
-      fetch('https://api.zeptomail.com/v1.1/email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: zeptomailToken, // Token already includes "Zoho-enczapikey" prefix
-        },
-        body: JSON.stringify(confirmationPayload),
-      }).catch((err) => {
+      sendZeptoEmail(confirmationPayload, zeptomailToken).catch((err) => {
         console.error('Failed to send confirmation email:', err);
       });
     }
 
     return NextResponse.json(
-      { message: 'Form submitted successfully' },
+      { message: 'Form submitted successfully', submissionId: submissionRef.id },
       { status: 200 }
     );
   } catch (error) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { DocumentData, Query } from "firebase-admin/firestore";
 import { firestore } from "@/lib/firebase/admin";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    let query = firestore.collection("businessProfileSubmissions");
+    let query: Query<DocumentData> = firestore.collection("businessProfileSubmissions");
 
     // Filter by status if provided
     if (status) {

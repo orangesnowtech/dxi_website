@@ -54,6 +54,27 @@ env:
     availability:
       - RUNTIME
 
+  - variable: ZEPTOMAIL_TOKEN
+    secret: NEXT_PUBLIC_ZEPTOMAIL_TOKEN
+    version: "4"
+    availability:
+      - RUNTIME
+
+  - variable: ZEPTOMAIL_BOUNCE_ADDRESS
+    secret: NEXT_PUBLIC_ZEPTOMAIL_BOUNCE_ADDRESS
+    availability:
+      - RUNTIME
+
+  - variable: ZEPTOMAIL_SENDER_ADDRESS
+    secret: NEXT_PUBLIC_ZEPTOMAIL_BOUNCE_ADDRESS
+    availability:
+      - RUNTIME
+
+  - variable: CONTACT_FORM_RECIPIENT_EMAIL
+    secret: NEXT_PUBLIC_CONTACT_FORM_RECIPIENT_EMAIL
+    availability:
+      - RUNTIME
+
   - variable: BUSINESS_PROFILE_RECIPIENT_EMAIL
     secret: BUSINESS_PROFILE_RECIPIENT_EMAIL
     availability:
