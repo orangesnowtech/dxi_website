@@ -384,7 +384,7 @@ export default function BusinessProfilePage() {
                       required
                       minLength={2}
                       maxLength={50}
-                      pattern="[A-Za-z][A-Za-z' -]*"
+                      pattern="[A-Za-z][A-Za-z' \-]*"
                       title="First name should contain only letters, spaces, apostrophes, or hyphens."
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent text-gray-900"
                     />
@@ -400,7 +400,7 @@ export default function BusinessProfilePage() {
                       required
                       minLength={2}
                       maxLength={50}
-                      pattern="[A-Za-z][A-Za-z' -]*"
+                      pattern="[A-Za-z][A-Za-z' \-]*"
                       title="Last name should contain only letters, spaces, apostrophes, or hyphens."
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent text-gray-900"
                     />
@@ -418,7 +418,7 @@ export default function BusinessProfilePage() {
                       required
                       minLength={7}
                       maxLength={20}
-                      pattern="^\\+?[0-9\\s()-]{7,20}$"
+                      pattern="^\+?[0-9\s\(\)\-]{7,20}$"
                       title="Enter a valid phone number (digits, spaces, +, parentheses, or hyphens)."
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent text-gray-900"
                     />
@@ -502,7 +502,7 @@ export default function BusinessProfilePage() {
                         required
                         minLength={2}
                         maxLength={80}
-                        pattern="[A-Za-z][A-Za-z' -]*"
+                        pattern="[A-Za-z][A-Za-z' \-]*"
                         title="State/region should contain only letters, spaces, apostrophes, or hyphens."
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent text-gray-900"
                         placeholder="Enter state/region"
@@ -521,7 +521,7 @@ export default function BusinessProfilePage() {
                       required
                       minLength={2}
                       maxLength={80}
-                      pattern="[A-Za-z][A-Za-z' -]*"
+                      pattern="[A-Za-z][A-Za-z' \-]*"
                       title="City/area should contain only letters, spaces, apostrophes, or hyphens."
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF1111] focus:border-transparent text-gray-900"
                     />
