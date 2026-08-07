@@ -1,178 +1,66 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { SiteSettings } from "@/lib/sanity/types";
+import { pagePath } from "@/lib/content";
+import Button from "./ui/Button";
 
-type NavProps = {
-  isSticky?: boolean;
-};
-
-export default function Nav({ isSticky }: NavProps) {
-  const pathname = usePathname() || "/";
+export default function Nav({ settings }: { settings: SiteSettings | null }) {
   const [open, setOpen] = useState(false);
-
-  const linkClass = (path: string) =>
-    `${
-      pathname === path || (path !== "/" && pathname.startsWith(path))
-        ? "text-black font-semibold"
-        : "text-gray-600 font-medium hover:text-black"
-    } text-sm`;
+  const pathname = usePathname();
+  const links = settings?.navLinks ?? [];
 
   return (
-    <nav
-      className={`z-50 transition-all duration-300 sticky top-0
-        ${
-          isSticky
-            ? "bg-white/95 shadow-md backdrop-blur"
-            : "bg-white"
-        }`}
-    >
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <div className="relative w-14 h-14 mr-3">
-              <Image
-                src="/images/dxilogo.png"
-                alt="DXI Marketing Logo"
-                fill
-                className="object-contain"
-              />
-            </div>
-          </Link>
+    <nav className="sticky top-0 z-100 border-b border-line bg-paper">
+      <div className="mx-auto flex h-16 w-full max-w-wrap items-center justify-between px-6">
+        <Link href="/" className="font-disp text-[22px] uppercase tracking-[0.02em]">
+          DX<span className="text-signal">I</span>
+        </Link>
 
-          {/* Desktop Links */}
-          <ul className="hidden md:flex justify-center space-x-10 items-center">
-            <li>
-              <Link href="/" className={linkClass("/")}>
-                Home
+        <button
+          type="button"
+          aria-label="Menu"
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="cursor-pointer border-none bg-transparent text-[26px] leading-none text-ink wide:hidden"
+        >
+          ☰
+        </button>
+
+        <div
+          className={`${
+            open ? "flex" : "hidden"
+          } absolute top-16 right-0 left-0 flex-col gap-[18px] border-b border-line bg-paper p-[22px] wide:static wide:flex wide:flex-row wide:items-center wide:gap-[26px] wide:border-0 wide:p-0`}
+        >
+          {links.map((link) => {
+            const href = pagePath(link.slug);
+            const active = pathname === href;
+            return (
+              <Link
+                key={link._key}
+                href={href}
+                onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={`border-b-2 py-1 font-mono text-[13px] tracking-[0.03em] transition-colors ${
+                  active
+                    ? "border-signal text-signal"
+                    : "border-transparent hover:border-signal"
+                }`}
+              >
+                {link.label}
               </Link>
-            </li>
-            <li>
-              <Link href="/clients" className={linkClass("/clients")}>
-                Clients
-              </Link>
-            </li>
-            <li>
-              <Link href="/projects" className={linkClass("/projects")}>
-                Projects
-              </Link>
-            </li>
-            <li>
-              <Link href="/concepts" className={linkClass("/concepts")}>
-                Concepts
-              </Link>
-            </li>
-            <li>
-              <Link href="/insights" className={linkClass("/insights")}>
-                Insights
-              </Link>
-            </li>
-            <li>
-              <Link href="/business-profile" className={linkClass("/business-profile")}>
-                Business Profile
-              </Link>
-            </li>
-          </ul>
+            );
+          })}
 
-          {/* Desktop Contact Btn */}
-          <div className="hidden md:flex justify-end">
-            <Link
-              href="/contact-us"
-              className="bg-[#EF1111] text-white px-6 py-2 rounded-full text-sm border border-transparent transition-colors hover:bg-white hover:text-[#EF1111] hover:border-[#EF1111]"
-            >
-              Contact Us
-            </Link>
-          </div>
-
-          {/* Mobile Hamburger */}
-          <button
-            className="md:hidden flex flex-col space-y-1"
-            onClick={() => setOpen(!open)}
-          >
-            <span
-              className={`w-6 h-0.5 bg-black transition-all ${
-                open ? "rotate-45 translate-y-1.5" : ""
-              }`}
-            ></span>
-            <span
-              className={`w-6 h-0.5 bg-black transition-all ${
-                open ? "opacity-0" : ""
-              }`}
-            ></span>
-            <span
-              className={`w-6 h-0.5 bg-black transition-all ${
-                open ? "-rotate-45 -translate-y-1.5" : ""
-              }`}
-            ></span>
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <div
-        className={`md:hidden overflow-hidden transition-all duration-300 bg-white shadow-lg ${
-          open ? "max-h-60 py-4" : "max-h-0 py-0"
-        }`}
-      >
-        <div className="px-6 space-y-4">
-          <Link
-            href="/"
-            className={`block ${linkClass("/")}`}
-            onClick={() => setOpen(false)}
-          >
-            Home
-          </Link>
-
-          <Link
-            href="/clients"
-            className={`block ${linkClass("/clients")}`}
-            onClick={() => setOpen(false)}
-          >
-            Clients
-          </Link>
-
-          <Link
-            href="/projects"
-            className={`block ${linkClass("/projects")}`}
-            onClick={() => setOpen(false)}
-          >
-            Projects
-          </Link>
-
-          <Link
-            href="/concepts"
-            className={`block ${linkClass("/concepts")}`}
-            onClick={() => setOpen(false)}
-          >
-            Concepts
-          </Link>
-
-          <Link
-            href="/insights"
-            className={`block ${linkClass("/insights")}`}
-            onClick={() => setOpen(false)}
-          >
-            Insights
-          </Link>
-
-          <Link
-            href="/business-profile"
-            className={`block ${linkClass("/business-profile")}`}
-            onClick={() => setOpen(false)}
-          >
-            Business Profile
-          </Link>
-
-          <Link
-            href="/contact-us"
-            className="block bg-[#EF1111] text-white px-4 py-2 rounded-full text-sm mt-3"
-            onClick={() => setOpen(false)}
-          >
-            Contact Us
-          </Link>
+          {settings?.navCta && (
+            <Button
+              cta={settings.navCta}
+              settings={settings}
+              className="!px-[18px] !py-2.5 !text-xs"
+            />
+          )}
         </div>
       </div>
     </nav>

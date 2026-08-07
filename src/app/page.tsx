@@ -1,42 +1,23 @@
-import Footer from "./components/Footer";
-import BrandsSection from "./components/BrandsSection";
-import InsightsSection from "./components/InsightsSection";
-import WhoWeAreSection from "./components/WhoWeAreSection";
-import ServicesSection from "./components/ServicesSection";
-import TestimonialsSection from "./components/TestimonialsSection";
-import HomeClientWrapper from "./components/HomeClientWrapper";
-import { getHomepageSettings } from "@/lib/sanity/queries";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getPage, getSiteSettings } from "@/lib/data";
+import PageView from "./components/PageView";
 
-export default async function Home() {
-  const homepageSettings = await getHomepageSettings();
+/** The front page is the content entry with the slug "home". */
+const HOME_SLUG = "home";
 
-  return (
-    <main className="min-h-screen font-sans">
-      <HomeClientWrapper
-        heroImage={homepageSettings?.heroImage}
-        heading1={homepageSettings?.heading1}
-        heading2={homepageSettings?.heading2}
-        buttonText={homepageSettings?.buttonText}
-        buttonLink={homepageSettings?.buttonLink}
-      />
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPage(HOME_SLUG);
+  if (!page?.seo) return {};
+  return {
+    title: page.seo.title,
+    description: page.seo.description,
+    openGraph: page.seo.imageUrl ? { images: [{ url: page.seo.imageUrl }] } : undefined,
+  };
+}
 
-      {/* WHO WE ARE */}
-      <WhoWeAreSection />
-
-      {/* Services */}
-      <ServicesSection />
-
-      {/* Brands We Represent */}
-      <BrandsSection />
-
-      {/* Testimonials */}
-      <TestimonialsSection />
-
-      {/* Our Insights */}
-      <InsightsSection />
-
-      {/* Footer */}
-      <Footer />
-    </main>
-  );
+export default async function HomePage() {
+  const [page, settings] = await Promise.all([getPage(HOME_SLUG), getSiteSettings()]);
+  if (!page) notFound();
+  return <PageView page={page} settings={settings} />;
 }

@@ -1,8 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Nav from "../components/Nav";
-import Footer from "../components/Footer";
 
 type SocialMediaProfile = {
   platform: string;
@@ -345,7 +343,6 @@ export default function BusinessProfilePage() {
 
   return (
     <main className="min-h-screen font-sans bg-black">
-      <Nav isSticky={false} />
 
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6">
@@ -1085,7 +1082,6 @@ export default function BusinessProfilePage() {
         </div>
       </section>
 
-      <Footer />
     </main>
   );
 }

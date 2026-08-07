@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Nav from "@/app/components/Nav";
-import Footer from "@/app/components/Footer";
 import styles from "./admin.module.css";
 
 type SocialMediaProfile = {
@@ -138,7 +136,6 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.container}>
-      <Nav />
 
       <main className={styles.main}>
         <div className={styles.header}>
@@ -546,7 +543,6 @@ export default function AdminDashboard() {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }

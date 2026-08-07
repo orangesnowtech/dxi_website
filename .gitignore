@@ -38,6 +38,10 @@ yarn-error.log*
 serviceAccount.json
 firebaseConfig.js
 
+# local secret material — never commit. These were tracked until Aug 2026;
+# the values in git history are compromised and must be rotated.
+.secrets/
+
 # vercel
 .vercel
 
