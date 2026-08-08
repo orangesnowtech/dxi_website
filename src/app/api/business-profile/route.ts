@@ -39,6 +39,19 @@ type BusinessProfilePayload = {
   websiteUrl: string;
   supportAreaNeeded: string;
   businessGoalsNextSixMonths: string;
+  // Section G — financing history and needs. Only the two trigger questions are
+  // required; the follow-ups stay optional so nobody is forced to disclose.
+  hasActiveDebt: string;
+  borrowedAmount: string;
+  outstandingDebtAmount: string;
+  debtRepaymentTerms: string;
+  previousFinancingApplication: string;
+  financingReceivedAmount: string;
+  financingType: string;
+  rejectionReason: string;
+  financingSoughtNextYear: string;
+  financingPurpose: string;
+  hasCollateralOrGuarantors: string;
   preferredContactDay: string;
   preferredContactTime: string;
 };
@@ -86,7 +99,6 @@ const requiredStringFields: Array<keyof Omit<BusinessProfilePayload, "socialMedi
   "emailAddress",
   "preferredContactMethod",
   "country",
-  "state",
   "cityOrArea",
   "businessOffering",
   "businessDescription",
@@ -102,6 +114,7 @@ const requiredStringFields: Array<keyof Omit<BusinessProfilePayload, "socialMedi
   "onSocialMedia",
   "wantsBusinessSupport",
   "hasWebsite",
+  "hasActiveDebt",
 ];
 
 function escapeHtml(value: string) {
@@ -117,6 +130,18 @@ function getMissingFields(payload: BusinessProfilePayload) {
   const missing: Array<keyof BusinessProfilePayload> = requiredStringFields.filter(
     (field) => !payload[field]?.trim()
   );
+
+  // State is only collected for Nigeria — the form disables and clears it for
+  // every other country, so requiring it unconditionally rejected them all.
+  if (payload.country === "Nigeria" && !payload.state?.trim()) {
+    missing.push("state");
+  }
+
+  // An active loan already establishes that they have applied for financing
+  // before, so the form disables that question and the answer arrives empty.
+  if (payload.hasActiveDebt !== "Yes" && !payload.previousFinancingApplication?.trim()) {
+    missing.push("previousFinancingApplication");
+  }
 
   if (payload.hasPhysicalLocation === "Yes" && !payload.locationType.trim()) {
     missing.push("locationType");
@@ -193,7 +218,9 @@ function validateFields(payload: BusinessProfilePayload) {
     invalidFields.add("preferredContactMethod");
   }
 
-  if (!namePattern.test(payload.state.trim())) {
+  // Only shape-check state when one was actually given — it is absent by
+  // design for countries other than Nigeria.
+  if (payload.state?.trim() && !namePattern.test(payload.state.trim())) {
     invalidFields.add("state");
   }
 
@@ -310,6 +337,20 @@ export async function POST(request: NextRequest) {
         : [],
     };
 
+    // The Academy only operates in Nigeria for now. The form stops at the
+    // country question, but enforce it here too — a stale tab or a direct POST
+    // would otherwise create submissions nobody can act on.
+    if (normalizedPayload.country !== "Nigeria") {
+      return NextResponse.json(
+        {
+          error:
+            "The DXI Academy is only available to Nigerian businesses for now.",
+          field: "country",
+        },
+        { status: 422 }
+      );
+    }
+
     const fullName = `${normalizedPayload.firstName.trim()} ${normalizedPayload.lastName.trim()}`;
     const missingFields = getMissingFields(normalizedPayload);
 
@@ -393,6 +434,21 @@ export async function POST(request: NextRequest) {
           <tr><td style="padding:6px 8px;"><strong>Goals (Next 6 Months)</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.businessGoalsNextSixMonths || "Not provided")}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Preferred Contact Day</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.preferredContactDay || "Not provided")}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Preferred Contact Time</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.preferredContactTime || "Not provided")}</td></tr>
+        </table>
+
+        <h3 style="margin:20px 0 8px;">Financing History &amp; Needs</h3>
+        <table style="border-collapse:collapse;width:100%;max-width:700px;">
+          <tr><td style="padding:6px 8px;"><strong>Active Loans / Debt</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.hasActiveDebt || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Amount Borrowed</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.borrowedAmount || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Outstanding Amount</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.outstandingDebtAmount || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Repayment Terms</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.debtRepaymentTerms || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Applied Before</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.previousFinancingApplication || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Amount Received</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.financingReceivedAmount || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Financing Type</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.financingType || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Rejection Reason</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.rejectionReason || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Sought (Next 12 Months)</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.financingSoughtNextYear || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Intended Use</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.financingPurpose || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Collateral / Guarantors</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.hasCollateralOrGuarantors || "Not provided")}</td></tr>
         </table>
 
         <h3 style="margin:20px 0 8px;">Additional Details</h3>

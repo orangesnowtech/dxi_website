@@ -97,6 +97,33 @@ body {
   transform: rotate(45deg);
 }
 
+/* ── Form controls ─────────────────────────────────────────────────────
+   The red chevron is a data URI, and conditional panels slide in when a
+   trigger answer reveals them. Both need real CSS rather than utilities.
+   ─────────────────────────────────────────────────────────────────────── */
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23E90000' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  cursor: pointer;
+}
+
+@keyframes conditional-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.conditional-panel {
+  animation: conditional-slide-in 0.25s ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;
@@ -106,5 +133,9 @@ body {
 
   .faq-item summary::after {
     transition: none;
+  }
+
+  .conditional-panel {
+    animation: none;
   }
 }

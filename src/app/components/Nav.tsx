@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { SiteSettings } from "@/lib/sanity/types";
 import { pagePath } from "@/lib/content";
@@ -15,8 +16,20 @@ export default function Nav({ settings }: { settings: SiteSettings | null }) {
   return (
     <nav className="sticky top-0 z-100 border-b border-line bg-paper">
       <div className="mx-auto flex h-16 w-full max-w-wrap items-center justify-between px-6">
-        <Link href="/" className="font-disp text-[22px] uppercase tracking-[0.02em]">
-          DX<span className="text-signal">I</span>
+        <Link href="/" className="flex items-center" aria-label="DXI Marketing — home">
+          {/*
+            Square stacked lockup (mark over wordmark). width/height are the
+            rendered size, not the source's 1500px — passing the source size
+            makes Next request a 3840px variant for a 48px logo.
+          */}
+          <Image
+            src="/images/dxilogo.png"
+            alt="DXI Marketing"
+            width={48}
+            height={48}
+            priority
+            className="h-12 w-auto"
+          />
         </Link>
 
         <button
