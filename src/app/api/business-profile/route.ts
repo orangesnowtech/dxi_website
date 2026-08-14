@@ -9,6 +9,7 @@ type BusinessProfilePayload = {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  alternatePhoneNumber: string;
   emailAddress: string;
   preferredContactMethod: string;
   country: string;
@@ -22,32 +23,34 @@ type BusinessProfilePayload = {
   businessDuration: string;
   isFullTimeBusiness: string;
   businessTypeIfNotFullTime: string;
+  salesLocation: string;
+  onlineSalesChannel: string;
+  otherPlatformName: string;
+  websiteUrl: string;
   isBusinessRegistered: string;
   needsRegistrationHelp: string;
   hasStaff: string;
   staffCount: string;
   isMakingSales: string;
   monthlyRevenue: string;
-  salesChannels: string;
   onSocialMedia: string;
   socialMediaProfiles: Array<{
     platform: string;
     url: string;
   }>;
   wantsBusinessSupport: string;
-  hasWebsite: string;
-  websiteUrl: string;
   supportAreaNeeded: string;
   businessGoalsNextSixMonths: string;
-  // Section G — financing history and needs. Only the two trigger questions are
+  // Section G — financing history and needs. Only the trigger question is
   // required; the follow-ups stay optional so nobody is forced to disclose.
-  hasActiveDebt: string;
-  borrowedAmount: string;
-  outstandingDebtAmount: string;
-  debtRepaymentTerms: string;
   previousFinancingApplication: string;
-  financingReceivedAmount: string;
+  loanAmountRange: string;
   financingType: string;
+  fundingInstitution: string;
+  interestRate: string;
+  isLoanRepaid: string;
+  repaymentPeriod: string;
+  outstandingDebtAmount: string;
   rejectionReason: string;
   financingSoughtNextYear: string;
   financingPurpose: string;
@@ -67,7 +70,7 @@ const monthlyRevenueRanges = new Set([
   "Above ₦5,000,000",
 ]);
 
-const contactMethods = new Set(["Phone Call", "WhatsApp", "Email", "SMS"]);
+const contactMethods = new Set(["Phone", "WhatsApp", "Email"]);
 
 const yesNoValues = new Set(["Yes", "No"]);
 
@@ -106,15 +109,14 @@ const requiredStringFields: Array<keyof Omit<BusinessProfilePayload, "socialMedi
   "isBusinessRunning",
   "businessDuration",
   "isFullTimeBusiness",
+  "salesLocation",
   "isBusinessRegistered",
   "hasStaff",
   "isMakingSales",
   "monthlyRevenue",
-  "salesChannels",
   "onSocialMedia",
   "wantsBusinessSupport",
-  "hasWebsite",
-  "hasActiveDebt",
+  "previousFinancingApplication",
 ];
 
 function escapeHtml(value: string) {
@@ -137,12 +139,6 @@ function getMissingFields(payload: BusinessProfilePayload) {
     missing.push("state");
   }
 
-  // An active loan already establishes that they have applied for financing
-  // before, so the form disables that question and the answer arrives empty.
-  if (payload.hasActiveDebt !== "Yes" && !payload.previousFinancingApplication?.trim()) {
-    missing.push("previousFinancingApplication");
-  }
-
   if (payload.hasPhysicalLocation === "Yes" && !payload.locationType.trim()) {
     missing.push("locationType");
   }
@@ -155,8 +151,21 @@ function getMissingFields(payload: BusinessProfilePayload) {
     missing.push("staffCount");
   }
 
-  if (payload.hasWebsite === "Yes" && !payload.websiteUrl.trim()) {
-    missing.push("websiteUrl");
+  // Selling online opens a follow-up chain: which channel, then the platform
+  // name or the website address depending on the answer.
+  if (payload.salesLocation === "Online" || payload.salesLocation === "Both") {
+    if (!payload.onlineSalesChannel?.trim()) {
+      missing.push("onlineSalesChannel");
+    }
+    if (
+      payload.onlineSalesChannel === "Other third-party platform" &&
+      !payload.otherPlatformName?.trim()
+    ) {
+      missing.push("otherPlatformName");
+    }
+    if (payload.onlineSalesChannel === "Website" && !payload.websiteUrl?.trim()) {
+      missing.push("websiteUrl");
+    }
   }
 
   if (payload.wantsBusinessSupport === "Yes") {
@@ -248,8 +257,12 @@ function validateFields(payload: BusinessProfilePayload) {
     invalidFields.add("onSocialMedia");
   }
 
-  if (payload.hasWebsite === "Yes" && !isValidUrl(payload.websiteUrl)) {
+  if (payload.websiteUrl?.trim() && !isValidUrl(payload.websiteUrl)) {
     invalidFields.add("websiteUrl");
+  }
+
+  if (payload.alternatePhoneNumber?.trim() && !phonePattern.test(payload.alternatePhoneNumber.trim())) {
+    invalidFields.add("alternatePhoneNumber");
   }
 
   if (payload.onSocialMedia === "Yes") {
@@ -414,6 +427,7 @@ export async function POST(request: NextRequest) {
         <table style="border-collapse:collapse;width:100%;max-width:700px;">
           <tr><td style="padding:6px 8px;"><strong>Email</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.emailAddress)}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Phone</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.phoneNumber)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Alternate Phone</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.alternatePhoneNumber || "Not provided")}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Preferred Contact Method</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.preferredContactMethod)}</td></tr>
         </table>
 
@@ -424,7 +438,9 @@ export async function POST(request: NextRequest) {
           <tr><td style="padding:6px 8px;"><strong>Business Running</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.isBusinessRunning)}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Duration</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.businessDuration)}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Monthly Revenue</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.monthlyRevenue || "Not provided")}</td></tr>
-          <tr><td style="padding:6px 8px;"><strong>Main Sales Channel</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.salesChannels)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Sells Via</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.salesLocation)}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Online Channel</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.onlineSalesChannel || "Not applicable")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Other Platform</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.otherPlatformName || "Not applicable")}</td></tr>
         </table>
 
         <h3 style="margin:20px 0 8px;">Support Request</h3>
@@ -438,13 +454,14 @@ export async function POST(request: NextRequest) {
 
         <h3 style="margin:20px 0 8px;">Financing History &amp; Needs</h3>
         <table style="border-collapse:collapse;width:100%;max-width:700px;">
-          <tr><td style="padding:6px 8px;"><strong>Active Loans / Debt</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.hasActiveDebt || "Not provided")}</td></tr>
-          <tr><td style="padding:6px 8px;"><strong>Amount Borrowed</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.borrowedAmount || "Not provided")}</td></tr>
-          <tr><td style="padding:6px 8px;"><strong>Outstanding Amount</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.outstandingDebtAmount || "Not provided")}</td></tr>
-          <tr><td style="padding:6px 8px;"><strong>Repayment Terms</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.debtRepaymentTerms || "Not provided")}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Applied Before</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.previousFinancingApplication || "Not provided")}</td></tr>
-          <tr><td style="padding:6px 8px;"><strong>Amount Received</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.financingReceivedAmount || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Loan Amount</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.loanAmountRange || "Not provided")}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Financing Type</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.financingType || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Funding Institution</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.fundingInstitution || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Interest Rate</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.interestRate || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Loan Repaid</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.isLoanRepaid || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Repayment Period</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.repaymentPeriod || "Not provided")}</td></tr>
+          <tr><td style="padding:6px 8px;"><strong>Outstanding Amount</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.outstandingDebtAmount || "Not provided")}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Rejection Reason</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.rejectionReason || "Not provided")}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Sought (Next 12 Months)</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.financingSoughtNextYear || "Not provided")}</td></tr>
           <tr><td style="padding:6px 8px;"><strong>Intended Use</strong></td><td style="padding:6px 8px;">${escapeHtml(normalizedPayload.financingPurpose || "Not provided")}</td></tr>
@@ -459,7 +476,7 @@ export async function POST(request: NextRequest) {
         <p style="margin:0 0 8px;"><strong>Has Staff:</strong> ${escapeHtml(normalizedPayload.hasStaff)} (${escapeHtml(normalizedPayload.staffCount || "Not provided")})</p>
         <p style="margin:0 0 8px;"><strong>On Social Media:</strong> ${escapeHtml(normalizedPayload.onSocialMedia)}</p>
         <ul style="margin:0 0 8px 20px;">${socialProfilesHtml}</ul>
-        <p style="margin:0;"><strong>Has Website:</strong> ${escapeHtml(normalizedPayload.hasWebsite)} (${escapeHtml(normalizedPayload.websiteUrl || "Not provided")})</p>
+        <p style="margin:0;"><strong>Website:</strong> ${escapeHtml(normalizedPayload.websiteUrl || "Not provided")}</p>
       </div>
     `;
 

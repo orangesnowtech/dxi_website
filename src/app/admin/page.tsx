@@ -15,6 +15,7 @@ type Submission = {
   lastName: string;
   emailAddress: string;
   phoneNumber: string;
+  alternatePhoneNumber?: string;
   preferredContactMethod: string;
   businessOffering: string;
   businessDescription: string;
@@ -33,14 +34,27 @@ type Submission = {
   staffCount?: string;
   isMakingSales: string;
   monthlyRevenue: string;
-  salesChannels: string;
+  salesLocation: string;
+  onlineSalesChannel?: string;
+  otherPlatformName?: string;
   onSocialMedia: string;
   socialMediaProfiles?: SocialMediaProfile[];
   wantsBusinessSupport: string;
-  hasWebsite: string;
   websiteUrl?: string;
   supportAreaNeeded?: string;
   businessGoalsNextSixMonths?: string;
+  previousFinancingApplication?: string;
+  loanAmountRange?: string;
+  financingType?: string;
+  fundingInstitution?: string;
+  interestRate?: string;
+  isLoanRepaid?: string;
+  repaymentPeriod?: string;
+  outstandingDebtAmount?: string;
+  rejectionReason?: string;
+  financingSoughtNextYear?: string;
+  financingPurpose?: string;
+  hasCollateralOrGuarantors?: string;
   preferredContactDay?: string;
   preferredContactTime?: string;
   status: "new" | "contacted" | "qualified" | "rejected" | "archived";
@@ -320,6 +334,16 @@ export default function AdminDashboard() {
                         </a>
                       </p>
                     </div>
+                    {selectedSubmission.alternatePhoneNumber && (
+                      <div className={styles.field}>
+                        <label>Alternate Phone</label>
+                        <p>
+                          <a href={`tel:${selectedSubmission.alternatePhoneNumber}`}>
+                            {selectedSubmission.alternatePhoneNumber}
+                          </a>
+                        </p>
+                      </div>
+                    )}
                     <div className={styles.field}>
                       <label>Preferred Contact Method</label>
                       <p>{selectedSubmission.preferredContactMethod}</p>
@@ -419,9 +443,21 @@ export default function AdminDashboard() {
                       <p>{selectedSubmission.monthlyRevenue}</p>
                     </div>
                     <div className={styles.field}>
-                      <label>Sales Channels</label>
-                      <p>{selectedSubmission.salesChannels}</p>
+                      <label>Sells Via</label>
+                      <p>{selectedSubmission.salesLocation}</p>
                     </div>
+                    {selectedSubmission.onlineSalesChannel && (
+                      <div className={styles.field}>
+                        <label>Online Channel</label>
+                        <p>{selectedSubmission.onlineSalesChannel}</p>
+                      </div>
+                    )}
+                    {selectedSubmission.otherPlatformName && (
+                      <div className={styles.field}>
+                        <label>Platform</label>
+                        <p>{selectedSubmission.otherPlatformName}</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.section}>
@@ -452,10 +488,6 @@ export default function AdminDashboard() {
                           </ul>
                         </div>
                       )}
-                    <div className={styles.field}>
-                      <label>Has Website</label>
-                      <p>{selectedSubmission.hasWebsite}</p>
-                    </div>
                     {selectedSubmission.websiteUrl && (
                       <div className={styles.field}>
                         <label>Website URL</label>
@@ -493,6 +525,82 @@ export default function AdminDashboard() {
                         <label>Preferred Contact Time</label>
                         <p>{selectedSubmission.preferredContactTime}</p>
                       </div>
+                    </div>
+                  )}
+
+                  {selectedSubmission.previousFinancingApplication && (
+                    <div className={styles.section}>
+                      <h3>Financing History &amp; Needs</h3>
+                      <div className={styles.field}>
+                        <label>Applied Before</label>
+                        <p>{selectedSubmission.previousFinancingApplication}</p>
+                      </div>
+                      {selectedSubmission.loanAmountRange && (
+                        <div className={styles.field}>
+                          <label>Loan Amount</label>
+                          <p>{selectedSubmission.loanAmountRange}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.financingType && (
+                        <div className={styles.field}>
+                          <label>Financing Type</label>
+                          <p>{selectedSubmission.financingType}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.fundingInstitution && (
+                        <div className={styles.field}>
+                          <label>Funding Institution</label>
+                          <p>{selectedSubmission.fundingInstitution}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.interestRate && (
+                        <div className={styles.field}>
+                          <label>Interest Rate</label>
+                          <p>{selectedSubmission.interestRate}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.isLoanRepaid && (
+                        <div className={styles.field}>
+                          <label>Loan Repaid</label>
+                          <p>{selectedSubmission.isLoanRepaid}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.repaymentPeriod && (
+                        <div className={styles.field}>
+                          <label>Repayment Period</label>
+                          <p>{selectedSubmission.repaymentPeriod}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.outstandingDebtAmount && (
+                        <div className={styles.field}>
+                          <label>Outstanding Amount</label>
+                          <p>{selectedSubmission.outstandingDebtAmount}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.rejectionReason && (
+                        <div className={styles.field}>
+                          <label>Rejection Reason</label>
+                          <p>{selectedSubmission.rejectionReason}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.financingSoughtNextYear && (
+                        <div className={styles.field}>
+                          <label>Sought (Next 12 Months)</label>
+                          <p>{selectedSubmission.financingSoughtNextYear}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.financingPurpose && (
+                        <div className={styles.field}>
+                          <label>Intended Use</label>
+                          <p>{selectedSubmission.financingPurpose}</p>
+                        </div>
+                      )}
+                      {selectedSubmission.hasCollateralOrGuarantors && (
+                        <div className={styles.field}>
+                          <label>Collateral / Guarantors</label>
+                          <p>{selectedSubmission.hasCollateralOrGuarantors}</p>
+                        </div>
+                      )}
                     </div>
                   )}
 

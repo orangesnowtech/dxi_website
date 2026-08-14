@@ -24,6 +24,7 @@ type BusinessProfileForm = {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  alternatePhoneNumber: string;
   emailAddress: string;
   preferredContactMethod: string;
   country: string;
@@ -37,28 +38,31 @@ type BusinessProfileForm = {
   businessDuration: string;
   isFullTimeBusiness: string;
   businessTypeIfNotFullTime: string;
+  salesLocation: string;
+  onlineSalesChannel: string;
+  otherPlatformName: string;
+  websiteUrl: string;
   isBusinessRegistered: string;
   needsRegistrationHelp: string;
   hasStaff: string;
   staffCount: string;
   isMakingSales: string;
   monthlyRevenue: string;
-  salesChannels: string;
   onSocialMedia: string;
   socialMediaProfiles: SocialMediaProfile[];
   wantsBusinessSupport: string;
-  hasWebsite: string;
-  websiteUrl: string;
   supportAreaNeeded: string;
   businessGoalsNextSixMonths: string;
-  // Section G — financing history and needs
-  hasActiveDebt: string;
-  borrowedAmount: string;
-  outstandingDebtAmount: string;
-  debtRepaymentTerms: string;
+  // Section G — financing history and needs. Everything branches off whether
+  // they have applied for financing before.
   previousFinancingApplication: string;
-  financingReceivedAmount: string;
+  loanAmountRange: string;
   financingType: string;
+  fundingInstitution: string;
+  interestRate: string;
+  isLoanRepaid: string;
+  repaymentPeriod: string;
+  outstandingDebtAmount: string;
   rejectionReason: string;
   financingSoughtNextYear: string;
   financingPurpose: string;
@@ -71,6 +75,7 @@ const initialFormData: BusinessProfileForm = {
   firstName: "",
   lastName: "",
   phoneNumber: "",
+  alternatePhoneNumber: "",
   emailAddress: "",
   preferredContactMethod: "",
   country: "Nigeria",
@@ -84,27 +89,29 @@ const initialFormData: BusinessProfileForm = {
   businessDuration: "",
   isFullTimeBusiness: "",
   businessTypeIfNotFullTime: "",
+  salesLocation: "",
+  onlineSalesChannel: "",
+  otherPlatformName: "",
+  websiteUrl: "",
   isBusinessRegistered: "",
   needsRegistrationHelp: "",
   hasStaff: "",
   staffCount: "",
   isMakingSales: "",
   monthlyRevenue: "",
-  salesChannels: "",
   onSocialMedia: "",
   socialMediaProfiles: [],
   wantsBusinessSupport: "",
-  hasWebsite: "",
-  websiteUrl: "",
   supportAreaNeeded: "",
   businessGoalsNextSixMonths: "",
-  hasActiveDebt: "",
-  borrowedAmount: "",
-  outstandingDebtAmount: "",
-  debtRepaymentTerms: "",
   previousFinancingApplication: "",
-  financingReceivedAmount: "",
+  loanAmountRange: "",
   financingType: "",
+  fundingInstitution: "",
+  interestRate: "",
+  isLoanRepaid: "",
+  repaymentPeriod: "",
+  outstandingDebtAmount: "",
   rejectionReason: "",
   financingSoughtNextYear: "",
   financingPurpose: "",
@@ -123,7 +130,7 @@ const countries = [
   "United States",
   "Other",
 ];
-const contactMethods = ["Phone Call", "WhatsApp", "Email", "SMS"];
+const contactMethods = ["Phone", "WhatsApp", "Email"];
 const locationTypes = [
   "Shop",
   "Office",
@@ -137,10 +144,13 @@ const offerings = ["Product", "Service", "Both"];
 const businessDurations = [
   "Not started yet",
   "Less than 6 months",
-  "6 months to 1 year",
-  "1 to 3 years",
-  "Over 3 years",
+  "6 - 12 months",
+  "1 - 3 years",
+  "3 - 6 years",
+  "6 years and above",
 ];
+const salesLocations = ["Online", "Physical store", "Both"];
+const onlineSalesChannels = ["Website", "Social media", "Other third-party platform"];
 const partTimeTypes = ["Part-time", "Side gig", "Weekend business", "Still testing the idea"];
 const registrationStatuses = ["Yes", "No", "In progress", "Not sure"];
 const staffCounts = ["1 person", "2 to 5 people", "6 to 10 people", "More than 10 people"];
@@ -154,15 +164,6 @@ const monthlyRevenueRanges = [
   "₦1,000,001 - ₦2,500,000",
   "₦2,500,001 - ₦5,000,000",
   "Above ₦5,000,000",
-];
-const salesChannelOptions = [
-  "Physical Store",
-  "WhatsApp",
-  "Instagram",
-  "Website",
-  "Online Marketplace",
-  "Referrals",
-  "Other",
 ];
 const socialPlatformOptions = [
   "Instagram",
@@ -207,12 +208,21 @@ const nigerianStates = [
 ];
 
 // Financing
-const debtRanges = [
-  "Under ₦100,000",
-  "₦100,000 - ₦500,000",
+const loanAmountRanges = [
+  "Below ₦100,000",
+  "₦100,000 - ₦300,000",
+  "₦300,001 - ₦500,000",
   "₦500,001 - ₦1,000,000",
   "₦1,000,001 - ₦5,000,000",
   "Above ₦5,000,000",
+];
+const interestRates = ["Below 5%", "5% - 10%", "11% - 20%", "Above 20%", "Don't remember"];
+const repaymentPeriods = [
+  "Less than 6 months",
+  "6 - 12 months",
+  "1 - 2 years",
+  "2 - 5 years",
+  "More than 5 years",
 ];
 const financingApplicationStatuses = [
   "Yes, and I received it",
@@ -238,7 +248,14 @@ const rejectionReasons = [
   "No clear reason given",
   "Other",
 ];
-const financingSoughtRanges = ["None right now", ...debtRanges];
+const financingSoughtRanges = [
+  "None",
+  "Under ₦100,000",
+  "₦100,000 - ₦500,000",
+  "₦500,001 - ₦1,000,000",
+  "₦1,000,001 - ₦5,000,000",
+  "Above ₦5,000,000",
+];
 const financingPurposes = [
   "Inventory / stock",
   "Equipment",
@@ -331,9 +348,19 @@ export default function BusinessProfilePage() {
       if (name === "hasPhysicalLocation" && value !== "Yes") next.locationType = "";
       if (name === "isFullTimeBusiness" && value !== "No") next.businessTypeIfNotFullTime = "";
       if (name === "hasStaff" && value !== "Yes") next.staffCount = "";
-      if (name === "hasWebsite" && value !== "Yes") next.websiteUrl = "";
       if (name === "country" && value !== "Nigeria") next.state = "";
       if (name === "isBusinessRegistered" && value !== "No") next.needsRegistrationHelp = "";
+
+      // Selling physically only means none of the online follow-ups apply.
+      if (name === "salesLocation" && value === "Physical store") {
+        next.onlineSalesChannel = "";
+        next.otherPlatformName = "";
+        next.websiteUrl = "";
+      }
+      if (name === "onlineSalesChannel") {
+        if (value !== "Other third-party platform") next.otherPlatformName = "";
+        if (value !== "Website") next.websiteUrl = "";
+      }
 
       if (name === "onSocialMedia" && value !== "Yes") next.socialMediaProfiles = [];
       if (name === "onSocialMedia" && value === "Yes" && next.socialMediaProfiles.length === 0) {
@@ -347,30 +374,28 @@ export default function BusinessProfilePage() {
         next.preferredContactTime = "";
       }
 
-      if (name === "hasActiveDebt") {
-        if (value !== "Yes") {
-          next.borrowedAmount = "";
-          next.outstandingDebtAmount = "";
-          next.debtRepaymentTerms = "";
-        } else {
-          // An active loan already answers whether they have ever applied, so
-          // that branch is switched off and its answers cleared.
-          next.previousFinancingApplication = "";
-          next.financingReceivedAmount = "";
-          next.rejectionReason = "";
-        }
-        // financingType is asked by both branches — reset it on any switch.
-        next.financingType = "";
-      }
-
       if (name === "previousFinancingApplication") {
-        if (value !== "Yes, and I received it") {
-          next.financingReceivedAmount = "";
+        if (!value.startsWith("Yes")) {
+          next.loanAmountRange = "";
           next.financingType = "";
+          next.fundingInstitution = "";
+        }
+        // Interest, repayment and balance only exist once money changed hands.
+        if (value !== "Yes, and I received it") {
+          next.interestRate = "";
+          next.isLoanRepaid = "";
+          next.repaymentPeriod = "";
+          next.outstandingDebtAmount = "";
         }
         if (value !== "Yes, but I was rejected") {
           next.rejectionReason = "";
         }
+      }
+
+      // A settled loan has no remaining term or balance to report.
+      if (name === "isLoanRepaid" && value !== "No") {
+        next.repaymentPeriod = "";
+        next.outstandingDebtAmount = "";
       }
 
       return next;
@@ -454,7 +479,10 @@ export default function BusinessProfilePage() {
 
   const wantsSupport = formData.wantsBusinessSupport === "Yes";
   const isNigeria = formData.country === "Nigeria";
-  const hasActiveDebt = formData.hasActiveDebt === "Yes";
+  const sellsOnline = formData.salesLocation === "Online" || formData.salesLocation === "Both";
+  const hasAppliedBefore = formData.previousFinancingApplication.startsWith("Yes");
+  const loanReceived = formData.previousFinancingApplication === "Yes, and I received it";
+  const loanRejected = formData.previousFinancingApplication === "Yes, but I was rejected";
 
   return (
     <main>
@@ -522,10 +550,15 @@ export default function BusinessProfilePage() {
                       <TextInput id="phoneNumber" name="phoneNumber" type="tel" inputMode="tel" value={formData.phoneNumber} onChange={handleInputChange} required />
                     </Field>
                     <Field half>
-                      <Label htmlFor="emailAddress" required>Email Address</Label>
-                      <TextInput id="emailAddress" name="emailAddress" type="email" inputMode="email" value={formData.emailAddress} onChange={handleInputChange} required />
+                      <Label htmlFor="alternatePhoneNumber">Alternate Phone Number</Label>
+                      <TextInput id="alternatePhoneNumber" name="alternatePhoneNumber" type="tel" inputMode="tel" value={formData.alternatePhoneNumber} onChange={handleInputChange} />
+                      <Hint>Optional — a second number we can try if the first one doesn&rsquo;t connect.</Hint>
                     </Field>
                   </Row>
+                  <Field>
+                    <Label htmlFor="emailAddress" required>Email Address</Label>
+                    <TextInput id="emailAddress" name="emailAddress" type="email" inputMode="email" value={formData.emailAddress} onChange={handleInputChange} required />
+                  </Field>
                   <Field>
                     <Label htmlFor="preferredContactMethod" required>Preferred Method of Contact</Label>
                     <Select id="preferredContactMethod" name="preferredContactMethod" value={formData.preferredContactMethod} onChange={handleInputChange} options={contactMethods} required />
@@ -598,6 +631,28 @@ export default function BusinessProfilePage() {
                       <Select id="businessTypeIfNotFullTime" name="businessTypeIfNotFullTime" value={formData.businessTypeIfNotFullTime} onChange={handleInputChange} options={partTimeTypes} required />
                     </Field>
                   </Conditional>
+                  <Field>
+                    <Label htmlFor="salesLocation" required>Where do you sell your product or service?</Label>
+                    <Select id="salesLocation" name="salesLocation" value={formData.salesLocation} onChange={handleInputChange} options={salesLocations} required />
+                  </Field>
+                  <Conditional when={sellsOnline}>
+                    <Field>
+                      <Label htmlFor="onlineSalesChannel" required>Where online?</Label>
+                      <Select id="onlineSalesChannel" name="onlineSalesChannel" value={formData.onlineSalesChannel} onChange={handleInputChange} options={onlineSalesChannels} required />
+                    </Field>
+                    <Conditional when={formData.onlineSalesChannel === "Other third-party platform"}>
+                      <Field>
+                        <Label htmlFor="otherPlatformName" required>Which platform?</Label>
+                        <TextInput id="otherPlatformName" name="otherPlatformName" value={formData.otherPlatformName} onChange={handleInputChange} placeholder="e.g. Jumia, Konga, Selar" required />
+                      </Field>
+                    </Conditional>
+                    <Conditional when={formData.onlineSalesChannel === "Website"}>
+                      <Field>
+                        <Label htmlFor="websiteUrl" required>What is your website address?</Label>
+                        <TextInput id="websiteUrl" name="websiteUrl" value={formData.websiteUrl} onChange={handleInputChange} placeholder="yourbusiness.com" required />
+                      </Field>
+                    </Conditional>
+                  </Conditional>
                 </fieldset>
 
                 {/* D — Setup */}
@@ -637,19 +692,9 @@ export default function BusinessProfilePage() {
                     <Select id="monthlyRevenue" name="monthlyRevenue" value={formData.monthlyRevenue} onChange={handleInputChange} options={monthlyRevenueRanges} placeholder="Select a revenue range" required />
                   </Field>
                   <Field>
-                    <Label htmlFor="salesChannels" required>Where do you mainly sell your products or services?</Label>
-                    <Select id="salesChannels" name="salesChannels" value={formData.salesChannels} onChange={handleInputChange} options={salesChannelOptions} required />
+                    <Label htmlFor="onSocialMedia" required>Are you on social media?</Label>
+                    <Select id="onSocialMedia" name="onSocialMedia" value={formData.onSocialMedia} onChange={handleInputChange} options={yesNo} required />
                   </Field>
-                  <Row>
-                    <Field half>
-                      <Label htmlFor="onSocialMedia" required>Are you on social media?</Label>
-                      <Select id="onSocialMedia" name="onSocialMedia" value={formData.onSocialMedia} onChange={handleInputChange} options={yesNo} required />
-                    </Field>
-                    <Field half>
-                      <Label htmlFor="hasWebsite" required>Do you currently have a website?</Label>
-                      <Select id="hasWebsite" name="hasWebsite" value={formData.hasWebsite} onChange={handleInputChange} options={yesNo} required />
-                    </Field>
-                  </Row>
 
                   <Conditional when={formData.onSocialMedia === "Yes"}>
                     {formData.socialMediaProfiles.map((profile, index) => (
@@ -695,13 +740,6 @@ export default function BusinessProfilePage() {
                       + Add another platform
                     </button>
                   </Conditional>
-
-                  <Conditional when={formData.hasWebsite === "Yes"}>
-                    <Field>
-                      <Label htmlFor="websiteUrl" required>What is your website address?</Label>
-                      <TextInput id="websiteUrl" name="websiteUrl" value={formData.websiteUrl} onChange={handleInputChange} placeholder="yourbusiness.com" required />
-                    </Field>
-                  </Conditional>
                 </fieldset>
 
                 {/* F — Support */}
@@ -736,30 +774,7 @@ export default function BusinessProfilePage() {
                   </Frame>
 
                   <Field>
-                    <Label htmlFor="hasActiveDebt" required>Do you currently have any active business loans or debt?</Label>
-                    <Select id="hasActiveDebt" name="hasActiveDebt" value={formData.hasActiveDebt} onChange={handleInputChange} options={yesNo} required />
-                  </Field>
-                  <Conditional when={hasActiveDebt}>
-                    <Field>
-                      <Label htmlFor="borrowedAmount">How much was originally borrowed or received?</Label>
-                      <Select id="borrowedAmount" name="borrowedAmount" value={formData.borrowedAmount} onChange={handleInputChange} options={debtRanges} placeholder="Select a range" />
-                    </Field>
-                    <Field>
-                      <Label htmlFor="outstandingDebtAmount">And roughly how much is still outstanding?</Label>
-                      <Select id="outstandingDebtAmount" name="outstandingDebtAmount" value={formData.outstandingDebtAmount} onChange={handleInputChange} options={debtRanges} placeholder="Select a range" />
-                    </Field>
-                    <Field>
-                      <Label htmlFor="financingType">What kind of financing is it?</Label>
-                      <Select id="financingType" name="financingType" value={formData.financingType} onChange={handleInputChange} options={financingTypes} />
-                    </Field>
-                    <Field>
-                      <Label htmlFor="debtRepaymentTerms">What are the repayment terms, briefly?</Label>
-                      <TextInput id="debtRepaymentTerms" name="debtRepaymentTerms" value={formData.debtRepaymentTerms} onChange={handleInputChange} placeholder="e.g. 18 months, 5% monthly, from a microfinance bank" />
-                    </Field>
-                  </Conditional>
-
-                  <Field>
-                    <Label htmlFor="previousFinancingApplication" required={!hasActiveDebt}>
+                    <Label htmlFor="previousFinancingApplication" required>
                       Have you ever applied for a business loan or grant before?
                     </Label>
                     <Select
@@ -768,36 +783,60 @@ export default function BusinessProfilePage() {
                       value={formData.previousFinancingApplication}
                       onChange={handleInputChange}
                       options={financingApplicationStatuses}
-                      placeholder={hasActiveDebt ? "Already answered above" : "Select an option"}
-                      required={!hasActiveDebt}
-                      disabled={hasActiveDebt}
+                      required
                     />
-                    {hasActiveDebt && (
-                      <Hint>
-                        An active loan already tells us you&rsquo;ve applied before, so we
-                        won&rsquo;t ask again.
-                      </Hint>
-                    )}
                   </Field>
-                  <Conditional when={formData.previousFinancingApplication === "Yes, and I received it"}>
+
+                  <Conditional when={hasAppliedBefore}>
                     <Field>
-                      <Label htmlFor="financingReceivedAmount">Roughly how much did you receive?</Label>
-                      <Select id="financingReceivedAmount" name="financingReceivedAmount" value={formData.financingReceivedAmount} onChange={handleInputChange} options={debtRanges} placeholder="Select a range" />
+                      <Label htmlFor="loanAmountRange">
+                        {loanReceived ? "Roughly how much did you receive?" : "How much did you apply for?"}
+                      </Label>
+                      <Select id="loanAmountRange" name="loanAmountRange" value={formData.loanAmountRange} onChange={handleInputChange} options={loanAmountRanges} placeholder="Select a range" />
                     </Field>
                     <Field>
                       <Label htmlFor="financingType">What kind of financing was it?</Label>
                       <Select id="financingType" name="financingType" value={formData.financingType} onChange={handleInputChange} options={financingTypes} />
                     </Field>
-                  </Conditional>
-                  <Conditional when={formData.previousFinancingApplication === "Yes, but I was rejected"}>
                     <Field>
-                      <Label htmlFor="rejectionReason">If you were rejected, what reason were you given?</Label>
-                      <Select id="rejectionReason" name="rejectionReason" value={formData.rejectionReason} onChange={handleInputChange} options={rejectionReasons} />
-                      <Hint>
-                        There&rsquo;s no wrong answer here — most of these are exactly what the
-                        Academy helps you fix.
-                      </Hint>
+                      <Label htmlFor="fundingInstitution">Which institution or organisation?</Label>
+                      <TextInput id="fundingInstitution" name="fundingInstitution" value={formData.fundingInstitution} onChange={handleInputChange} placeholder="e.g. LAPO Microfinance Bank, BOI, Tony Elumelu Foundation" />
                     </Field>
+
+                    {loanReceived && (
+                      <>
+                        <Field>
+                          <Label htmlFor="interestRate">What is the interest rate?</Label>
+                          <Select id="interestRate" name="interestRate" value={formData.interestRate} onChange={handleInputChange} options={interestRates} />
+                        </Field>
+                        <Field>
+                          <Label htmlFor="isLoanRepaid">Has the loan been paid off?</Label>
+                          <Select id="isLoanRepaid" name="isLoanRepaid" value={formData.isLoanRepaid} onChange={handleInputChange} options={yesNo} />
+                        </Field>
+                        {/* Term and balance only matter while the loan is live. */}
+                        <Conditional when={formData.isLoanRepaid === "No"}>
+                          <Field>
+                            <Label htmlFor="repaymentPeriod">How long is the repayment period?</Label>
+                            <Select id="repaymentPeriod" name="repaymentPeriod" value={formData.repaymentPeriod} onChange={handleInputChange} options={repaymentPeriods} />
+                          </Field>
+                          <Field>
+                            <Label htmlFor="outstandingDebtAmount">Roughly how much is still remaining?</Label>
+                            <Select id="outstandingDebtAmount" name="outstandingDebtAmount" value={formData.outstandingDebtAmount} onChange={handleInputChange} options={loanAmountRanges} placeholder="Select a range" />
+                          </Field>
+                        </Conditional>
+                      </>
+                    )}
+
+                    {loanRejected && (
+                      <Field>
+                        <Label htmlFor="rejectionReason">What reason were you given?</Label>
+                        <Select id="rejectionReason" name="rejectionReason" value={formData.rejectionReason} onChange={handleInputChange} options={rejectionReasons} />
+                        <Hint>
+                          There&rsquo;s no wrong answer here — most of these are exactly what the
+                          Academy helps you fix.
+                        </Hint>
+                      </Field>
+                    )}
                   </Conditional>
 
                   <Field>
