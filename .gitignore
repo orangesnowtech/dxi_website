@@ -48,3 +48,6 @@ firebaseConfig.js
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# stray Chrome/Electron crash log
+debug.log

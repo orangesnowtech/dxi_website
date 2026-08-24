@@ -29,7 +29,8 @@
       "@sanity-shared/*": [
         "./packages/sanity-shared/*"
       ]
-    }
+    },
+    "allowImportingTsExtensions": true
   },
   "include": [
     "next-env.d.ts",

@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "./admin.module.css";
+import { useRouter } from "next/navigation";
+import {
+  SUBMISSION_STATUSES,
+  SUBMISSION_STATUS_COLORS,
+  SUBMISSION_STATUS_LABELS,
+} from "@/lib/submission-status";
+import { formatNaira, type RedeemedReferral } from "@/lib/referral";
+import styles from "../admin.module.css";
 
 type SocialMediaProfile = {
   platform: string;
@@ -57,20 +64,29 @@ type Submission = {
   hasCollateralOrGuarantors?: string;
   preferredContactDay?: string;
   preferredContactTime?: string;
-  status: "new" | "contacted" | "qualified" | "rejected" | "archived";
+  status: string;
   createdAt: string;
   submittedAt: string;
+  updatedAt?: string;
+  paymentDetailsSentAt?: string;
+  paymentReference?: string;
+  rejectionSentAt?: string;
+  rejectionNote?: string;
+  referralCode?: string;
+  /** Frozen at redemption — what this applicant was actually quoted. */
+  referral?: RedeemedReferral | null;
 };
 
-const statusColors: Record<string, string> = {
-  new: "#3b82f6",
-  contacted: "#f59e0b",
-  qualified: "#10b981",
-  rejected: "#ef4444",
-  archived: "#6b7280",
-};
+function statusLabel(status: string) {
+  return SUBMISSION_STATUS_LABELS[status] || status;
+}
+
+function statusColor(status: string) {
+  return SUBMISSION_STATUS_COLORS[status] || "#6b7280";
+}
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +96,10 @@ export default function AdminDashboard() {
   const [pageSize] = useState(50);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
     fetchSubmissions();
@@ -101,6 +121,11 @@ export default function AdminDashboard() {
 
       const response = await fetch(`/api/admin/submissions?${params}`);
 
+      if (response.status === 401) {
+        router.replace("/admin/login");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error("Failed to fetch submissions");
       }
@@ -108,6 +133,7 @@ export default function AdminDashboard() {
       const data = await response.json();
       setSubmissions(data.submissions);
       setTotalCount(data.total);
+      setIsSuperAdmin(Boolean(data.viewer?.isSuperAdmin));
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       console.error(err);
@@ -128,6 +154,11 @@ export default function AdminDashboard() {
         body: JSON.stringify({ status: newStatus }),
       });
 
+      if (response.status === 401) {
+        router.replace("/admin/login");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error("Failed to update submission status");
       }
@@ -135,14 +166,168 @@ export default function AdminDashboard() {
       // Update local state
       setSubmissions(
         submissions.map((sub) =>
-          sub.id === submissionId ? { ...sub, status: newStatus as any } : sub
+          sub.id === submissionId ? { ...sub, status: newStatus } : sub
         )
       );
+      setNotice(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       console.error(err);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleSendPaymentDetails = async (submission: Submission) => {
+    const confirmed = window.confirm(
+      `Email the ₦50,000 membership payment details to ${submission.fullName} (${submission.emailAddress})?\n\n` +
+        "They will be asked to pay by direct bank transfer. This cannot be unsent."
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setSendingId(submission.id);
+      setError(null);
+      setNotice(null);
+
+      const response = await fetch(
+        `/api/admin/submissions/payment-details?id=${submission.id}`,
+        { method: "POST" }
+      );
+
+      if (response.status === 401) {
+        router.replace("/admin/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send payment details");
+      }
+
+      setSubmissions(
+        submissions.map((sub) =>
+          sub.id === submission.id
+            ? {
+                ...sub,
+                paymentDetailsSentAt: data.paymentDetailsSentAt,
+                paymentReference: data.paymentReference,
+              }
+            : sub
+        )
+      );
+      setNotice(
+        `Payment details sent to ${submission.emailAddress} (reference ${data.paymentReference}).`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error(err);
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  const handleSendRejection = async (submission: Submission) => {
+    // The prompt is the confirmation step: it names the recipient, and
+    // cancelling it (null) aborts the send.
+    const note = window.prompt(
+      `Send the rejection email to ${submission.fullName} (${submission.emailAddress})?\n\n` +
+        "Optionally add a note explaining the decision — it is included in the email.\n" +
+        "Leave blank to send the standard message. Cancel to abort.",
+      ""
+    );
+
+    if (note === null) {
+      return;
+    }
+
+    try {
+      setSendingId(submission.id);
+      setError(null);
+      setNotice(null);
+
+      const response = await fetch(
+        `/api/admin/submissions/rejection?id=${submission.id}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note }),
+        }
+      );
+
+      if (response.status === 401) {
+        router.replace("/admin/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send rejection");
+      }
+
+      setSubmissions(
+        submissions.map((sub) =>
+          sub.id === submission.id
+            ? { ...sub, rejectionSentAt: data.rejectionSentAt, rejectionNote: note }
+            : sub
+        )
+      );
+      setNotice(`Rejection sent to ${submission.emailAddress}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error(err);
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  const handleDelete = async (submission: Submission) => {
+    const typed = window.prompt(
+      `Permanently delete the submission from ${submission.fullName}?\n\n` +
+        "This cannot be undone and erases their answers, including revenue and " +
+        "financing details. Archive instead if you only want it off the list." + "\n\n" +
+        `Type "${submission.fullName}" to confirm.`
+    );
+
+    if (typed === null) {
+      return;
+    }
+
+    try {
+      setDeletingId(submission.id);
+      setError(null);
+      setNotice(null);
+
+      const response = await fetch(`/api/admin/submissions?id=${submission.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmName: typed }),
+      });
+
+      if (response.status === 401) {
+        router.replace("/admin/login");
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete submission");
+      }
+
+      setSubmissions(submissions.filter((sub) => sub.id !== submission.id));
+      setTotalCount((count) => Math.max(0, count - 1));
+      setNotice(`Deleted the submission from ${submission.fullName}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error(err);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -154,10 +339,14 @@ export default function AdminDashboard() {
       <main className={styles.main}>
         <div className={styles.header}>
           <h1>Admin Dashboard</h1>
-          <p className={styles.subtitle}>Business Profile Submissions</p>
+          <p className={styles.subtitle}>
+            Business Profile Submissions — review each profile, then send payment details
+            to approved applicants only.
+          </p>
         </div>
 
         {error && <div className={styles.error}>{error}</div>}
+        {notice && <div className={styles.success}>{notice}</div>}
 
         <div className={styles.controls}>
           <div className={styles.filterGroup}>
@@ -171,12 +360,13 @@ export default function AdminDashboard() {
               }}
               className={styles.select}
             >
-              <option value="">All Statuses</option>
-              <option value="new">New</option>
-              <option value="contacted">Contacted</option>
-              <option value="qualified">Qualified</option>
-              <option value="rejected">Rejected</option>
-              <option value="archived">Archived</option>
+              <option value="">Active (hides archived)</option>
+              <option value="all">All, including archived</option>
+              {SUBMISSION_STATUSES.map((value) => (
+                <option key={value} value={value}>
+                  {statusLabel(value)}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -214,7 +404,17 @@ export default function AdminDashboard() {
                 <tbody>
                   {submissions.map((submission) => (
                     <tr key={submission.id} className={styles.row}>
-                      <td className={styles.name}>{submission.fullName}</td>
+                      <td className={styles.name}>
+                        {submission.fullName}
+                        {submission.referralCode && (
+                          <span className={styles.referralNote}>
+                            via {submission.referralCode}
+                            {submission.referral && submission.referral.discountNaira > 0
+                              ? ` · pays ${formatNaira(submission.referral.finalFeeNaira)}`
+                              : ""}
+                          </span>
+                        )}
+                      </td>
                       <td>
                         <a href={`mailto:${submission.emailAddress}`}>
                           {submission.emailAddress}
@@ -241,14 +441,19 @@ export default function AdminDashboard() {
                           disabled={updatingId === submission.id}
                           className={styles.statusSelect}
                           style={{
-                            borderColor: statusColors[submission.status],
+                            borderColor: statusColor(submission.status),
                           }}
                         >
-                          <option value="new">New</option>
-                          <option value="contacted">Contacted</option>
-                          <option value="qualified">Qualified</option>
-                          <option value="rejected">Rejected</option>
-                          <option value="archived">Archived</option>
+                          {!SUBMISSION_STATUSES.includes(submission.status) && (
+                            <option value={submission.status}>
+                              {statusLabel(submission.status)}
+                            </option>
+                          )}
+                          {SUBMISSION_STATUSES.map((value) => (
+                            <option key={value} value={value}>
+                              {statusLabel(value)}
+                            </option>
+                          ))}
                         </select>
                       </td>
                       <td>
@@ -262,12 +467,70 @@ export default function AdminDashboard() {
                         )}
                       </td>
                       <td>
-                        <button
-                          onClick={() => setSelectedSubmission(submission)}
-                          className={styles.viewDetailsBtn}
-                        >
-                          View Details
-                        </button>
+                        <div className={styles.actionCell}>
+                          <button
+                            onClick={() => setSelectedSubmission(submission)}
+                            className={styles.viewDetailsBtn}
+                          >
+                            View Details
+                          </button>
+                          {submission.status === "rejected" &&
+                            (submission.rejectionSentAt ? (
+                              <span className={styles.sentNote}>
+                                Rejection sent{" "}
+                                {new Date(
+                                  submission.rejectionSentAt
+                                ).toLocaleDateString("en-NG", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleSendRejection(submission)}
+                                disabled={sendingId === submission.id}
+                                className={styles.revokeBtn}
+                              >
+                                {sendingId === submission.id
+                                  ? "Sending…"
+                                  : "Send rejection"}
+                              </button>
+                            ))}
+                          {submission.status === "approved" &&
+                            (submission.paymentDetailsSentAt ? (
+                              <span className={styles.sentNote}>
+                                Payment details sent{" "}
+                                {new Date(
+                                  submission.paymentDetailsSentAt
+                                ).toLocaleDateString("en-NG", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleSendPaymentDetails(submission)}
+                                disabled={sendingId === submission.id}
+                                className={styles.sendPaymentBtn}
+                              >
+                                {sendingId === submission.id
+                                  ? "Sending…"
+                                  : "Send payment details"}
+                              </button>
+                            ))}
+                          {isSuperAdmin && (
+                            <button
+                              onClick={() => handleDelete(submission)}
+                              disabled={deletingId === submission.id}
+                              className={styles.deleteBtn}
+                              title="Permanently delete this submission"
+                            >
+                              {deletingId === submission.id ? "Deleting…" : "Delete"}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -312,6 +575,40 @@ export default function AdminDashboard() {
 
               <div className={styles.modalContent}>
                 <div className={styles.submissionGrid}>
+                  {selectedSubmission.referralCode && (
+                    <div className={styles.section}>
+                      <h3>Referral</h3>
+                      <div className={styles.field}>
+                        <label>Code</label>
+                        <p>{selectedSubmission.referralCode}</p>
+                      </div>
+                      {selectedSubmission.referral && (
+                        <>
+                          <div className={styles.field}>
+                            <label>Belongs to</label>
+                            <p>{selectedSubmission.referral.label}</p>
+                          </div>
+                          <div className={styles.field}>
+                            <label>Discount</label>
+                            <p>
+                              {selectedSubmission.referral.discountNaira > 0
+                                ? `${formatNaira(selectedSubmission.referral.discountNaira)} off`
+                                : "None — tracking only"}
+                            </p>
+                          </div>
+                          <div className={styles.field}>
+                            <label>Membership payable</label>
+                            <p>
+                              {selectedSubmission.referral.finalFeeNaira <= 0
+                                ? "Fully covered — nothing to pay"
+                                : formatNaira(selectedSubmission.referral.finalFeeNaira)}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   <div className={styles.section}>
                     <h3>Personal Information</h3>
                     <div className={styles.field}>
@@ -612,11 +909,39 @@ export default function AdminDashboard() {
                         <span
                           className={styles.statusBadge}
                           style={{
-                            backgroundColor: statusColors[selectedSubmission.status],
+                            backgroundColor: statusColor(selectedSubmission.status),
                           }}
                         >
-                          {selectedSubmission.status}
+                          {statusLabel(selectedSubmission.status)}
                         </span>
+                      </p>
+                    </div>
+                    <div className={styles.field}>
+                      <label>Membership Payment Details</label>
+                      <p>
+                        {selectedSubmission.paymentDetailsSentAt
+                          ? `Sent ${new Date(
+                              selectedSubmission.paymentDetailsSentAt
+                            ).toLocaleString("en-NG")}${
+                              selectedSubmission.paymentReference
+                                ? ` · reference ${selectedSubmission.paymentReference}`
+                                : ""
+                            }`
+                          : "Not sent yet"}
+                      </p>
+                    </div>
+                    <div className={styles.field}>
+                      <label>Rejection Email</label>
+                      <p>
+                        {selectedSubmission.rejectionSentAt
+                          ? `Sent ${new Date(
+                              selectedSubmission.rejectionSentAt
+                            ).toLocaleString("en-NG")}${
+                              selectedSubmission.rejectionNote
+                                ? ` · note: ${selectedSubmission.rejectionNote}`
+                                : ""
+                            }`
+                          : "Not sent"}
                       </p>
                     </div>
                     <div className={styles.field}>

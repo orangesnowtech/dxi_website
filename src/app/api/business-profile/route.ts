@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { firestore } from "@/lib/firebase/admin";
+import {
+  escapeHtml,
+  getBusinessProfileRecipient,
+  getZeptoConfig,
+  sendZeptoEmail,
+} from "@/lib/zeptomail";
+import {
+  APPLICANT_FROM_NAME,
+  buildSubmissionConfirmationEmail,
+} from "@/lib/emails/academy";
+import { redeemReferralCode, REFERRAL_CODES_COLLECTION } from "@/lib/firebase/referral-codes";
+import {
+  REFERRAL_REJECTION_MESSAGES,
+  formatNaira,
+  normalizeReferralCode,
+  type RedeemedReferral,
+} from "@/lib/referral";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -57,6 +74,8 @@ type BusinessProfilePayload = {
   hasCollateralOrGuarantors: string;
   preferredContactDay: string;
   preferredContactTime: string;
+  /** Optional. Attributes the signup and may discount the membership fee. */
+  referralCode?: string;
 };
 
 const monthlyRevenueRanges = new Set([
@@ -118,15 +137,6 @@ const requiredStringFields: Array<keyof Omit<BusinessProfilePayload, "socialMedi
   "wantsBusinessSupport",
   "previousFinancingApplication",
 ];
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
 
 function getMissingFields(payload: BusinessProfilePayload) {
   const missing: Array<keyof BusinessProfilePayload> = requiredStringFields.filter(
@@ -288,48 +298,6 @@ function validateFields(payload: BusinessProfilePayload) {
   return Array.from(invalidFields);
 }
 
-function getZeptoConfig() {
-  const bounceAddress = (
-    process.env.ZEPTOMAIL_BOUNCE_ADDRESS ||
-    process.env.ZEPTOMAIL_SENDER_ADDRESS ||
-    "info@dximarketing.com"
-  ).trim();
-
-  const fromAddress = (
-    process.env.ZEPTOMAIL_SENDER_ADDRESS ||
-    bounceAddress ||
-    "info@dximarketing.com"
-  ).trim();
-
-  return {
-    token: (process.env.ZEPTOMAIL_TOKEN || process.env.NEXT_PUBLIC_ZEPTOMAIL_TOKEN || "").trim(),
-    bounceAddress,
-    fromAddress,
-    recipientEmail: (
-      process.env.BUSINESS_PROFILE_RECIPIENT_EMAIL ||
-      process.env.CONTACT_FORM_RECIPIENT_EMAIL ||
-      "info@dximarketing.com"
-    ).trim(),
-  };
-}
-
-async function sendZeptoEmail(payload: Record<string, unknown>, token: string) {
-  const response = await fetch("https://api.zeptomail.com/v1.1/email", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token,
-    },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(10000),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`ZeptoMail error ${response.status}: ${errorText}`);
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json()) as BusinessProfilePayload;
@@ -383,16 +351,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const submissionRef = await firestore.collection("businessProfileSubmissions").add({
-      ...normalizedPayload,
-      fullName,
-      status: "new",
-      source: "website",
-      createdAt: FieldValue.serverTimestamp(),
-      submittedAt: new Date().toISOString(),
-    });
+    // The code is claimed before the submission is written, because a claim is
+    // the thing that can legitimately fail: a limited code may have run out
+    // between the form checking it and this request arriving. Failing here
+    // means nothing was saved and the applicant is told why, rather than being
+    // quietly charged full price for a gift they were promised.
+    const requestedCode = normalizeReferralCode(normalizedPayload.referralCode || "");
+    let referral: RedeemedReferral | null = null;
 
-    const { token, bounceAddress, fromAddress, recipientEmail } = getZeptoConfig();
+    if (requestedCode) {
+      const redemption = await redeemReferralCode(requestedCode);
+
+      if (!redemption.ok) {
+        return NextResponse.json(
+          {
+            error: REFERRAL_REJECTION_MESSAGES[redemption.reason],
+            field: "referralCode",
+          },
+          { status: 422 }
+        );
+      }
+
+      referral = redemption.referral;
+    }
+
+    let submissionRef;
+
+    try {
+      submissionRef = await firestore.collection("businessProfileSubmissions").add({
+        ...normalizedPayload,
+        referralCode: referral?.code || "",
+        referral,
+        fullName,
+        status: "new",
+        source: "website",
+        createdAt: FieldValue.serverTimestamp(),
+        submittedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      // Give the use back rather than leave a limited code one short because
+      // of a write that never landed.
+      if (referral) {
+        await firestore
+          .collection(REFERRAL_CODES_COLLECTION)
+          .doc(referral.code)
+          .update({ usageCount: FieldValue.increment(-1) })
+          .catch((releaseError) =>
+            console.error(`Could not release referral code ${referral?.code}:`, releaseError)
+          );
+      }
+
+      throw error;
+    }
+
+    const { token, bounceAddress, fromAddress } = getZeptoConfig();
+    const recipientEmail = getBusinessProfileRecipient();
 
     if (!token || !bounceAddress || !fromAddress || !recipientEmail) {
       console.error("Business profile email configuration missing");
@@ -420,7 +433,16 @@ export async function POST(request: NextRequest) {
         <h2 style="margin:0 0 16px;color:#b91c1c;">New Business Profile Submission</h2>
         <p style="margin:0 0 16px;">
           <strong>Submission ID:</strong> ${escapeHtml(submissionRef.id)}<br />
-          <strong>Submitted By:</strong> ${escapeHtml(fullName)}
+          <strong>Submitted By:</strong> ${escapeHtml(fullName)}<br />
+          <strong>Referral Code:</strong> ${
+            referral
+              ? `${escapeHtml(referral.code)} (${escapeHtml(referral.label)}) &mdash; ${
+                  referral.discountNaira > 0
+                    ? `${escapeHtml(formatNaira(referral.discountNaira))} off, membership is ${escapeHtml(formatNaira(referral.finalFeeNaira))}`
+                    : "no discount, tracking only"
+                }`
+              : "None"
+          }
         </p>
 
         <h3 style="margin:20px 0 8px;">Contact Information</h3>
@@ -504,12 +526,25 @@ export async function POST(request: NextRequest) {
       console.error("Failed to send business profile notification email:", error);
     }
 
+    const confirmationEmail = buildSubmissionConfirmationEmail({
+      firstName: normalizedPayload.firstName,
+      referralCode: referral?.code,
+      referralFinalFeeLabel: referral ? formatNaira(referral.finalFeeNaira) : undefined,
+      referralDiscountLabel:
+        referral && referral.discountNaira > 0 ? formatNaira(referral.discountNaira) : undefined,
+      supportAreaNeeded: normalizedPayload.supportAreaNeeded,
+      businessGoalsNextSixMonths: normalizedPayload.businessGoalsNextSixMonths,
+      preferredContactMethod: normalizedPayload.preferredContactMethod,
+      preferredContactDay: normalizedPayload.preferredContactDay,
+      preferredContactTime: normalizedPayload.preferredContactTime,
+    });
+
     try {
       await sendZeptoEmail(
         {
           from: {
             address: fromAddress,
-            name: "DXI Marketing",
+            name: APPLICANT_FROM_NAME,
           },
           to: [
             {
@@ -519,24 +554,8 @@ export async function POST(request: NextRequest) {
               },
             },
           ],
-          subject: "We have received your business profile",
-          htmlbody: `
-            <div style="font-family:Arial,Helvetica,sans-serif;color:#111827;line-height:1.5;">
-              <h2 style="margin:0 0 16px;color:#b91c1c;">Thank You For Your Submission</h2>
-              <p>Hi ${escapeHtml(normalizedPayload.firstName)},</p>
-              <p>We have received your business profile and our team will review it shortly.</p>
-              <p>Here is a quick summary of what you submitted:</p>
-              <ul>
-                <li><strong>Support area:</strong> ${escapeHtml(normalizedPayload.supportAreaNeeded || "Not provided")}</li>
-                <li><strong>Goals (next 6 months):</strong> ${escapeHtml(normalizedPayload.businessGoalsNextSixMonths || "Not provided")}</li>
-                <li><strong>Preferred contact method:</strong> ${escapeHtml(normalizedPayload.preferredContactMethod)}</li>
-                <li><strong>Preferred contact day:</strong> ${escapeHtml(normalizedPayload.preferredContactDay || "Not provided")}</li>
-                <li><strong>Preferred contact time:</strong> ${escapeHtml(normalizedPayload.preferredContactTime || "Not provided")}</li>
-              </ul>
-              <p>If you need to update any detail, you can reply to this email.</p>
-              <p style="margin-top:20px;">Best regards,<br />DXI Marketing</p>
-            </div>
-          `,
+          subject: confirmationEmail.subject,
+          htmlbody: confirmationEmail.html,
         },
         token
       );

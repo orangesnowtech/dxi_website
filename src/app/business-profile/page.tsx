@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { siteSettings } from "@/content/site";
+import { MEMBERSHIP_FEE_LABEL } from "@/lib/academy";
+import { normalizeReferralCode } from "@/lib/referral";
 import {
   SectionLabel,
   Field,
@@ -69,6 +71,8 @@ type BusinessProfileForm = {
   hasCollateralOrGuarantors: string;
   preferredContactDay: string;
   preferredContactTime: string;
+  /** Optional. Attributes the signup, and may discount the membership fee. */
+  referralCode: string;
 };
 
 const initialFormData: BusinessProfileForm = {
@@ -118,6 +122,7 @@ const initialFormData: BusinessProfileForm = {
   hasCollateralOrGuarantors: "",
   preferredContactDay: "",
   preferredContactTime: "",
+  referralCode: "",
 };
 
 const yesNo = ["Yes", "No"];
@@ -335,6 +340,74 @@ export default function BusinessProfilePage() {
     message: string;
   }>({ type: null, message: "" });
 
+  // Result of the live referral lookup. "idle" also covers an empty field —
+  // the code is optional, so saying nothing is a perfectly good answer.
+  const [referralCheck, setReferralCheck] = useState<{
+    status: "idle" | "checking" | "valid" | "invalid" | "unavailable";
+    message: string;
+  }>({ status: "idle", message: "" });
+
+  const referralCode = formData.referralCode;
+
+  /**
+   * Checks the code a moment after typing stops, so the applicant knows it
+   * worked before they spend ten minutes on the rest of the form. Nothing is
+   * claimed here — the use is only taken when the profile is submitted.
+   */
+  useEffect(() => {
+    if (!referralCode) {
+      setReferralCheck({ status: "idle", message: "" });
+      return;
+    }
+
+    if (referralCode.length < 3) {
+      setReferralCheck({ status: "idle", message: "" });
+      return;
+    }
+
+    setReferralCheck({ status: "checking", message: "Checking…" });
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `/api/referral-codes/validate?code=${encodeURIComponent(referralCode)}`,
+          { signal: controller.signal }
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          // A lookup outage must not block an application: the server checks
+          // the code again on submit either way.
+          setReferralCheck({
+            status: "unavailable",
+            message: data.error || "We could not check that code. You can still submit.",
+          });
+          return;
+        }
+
+        setReferralCheck({
+          status: data.valid ? "valid" : "invalid",
+          message: data.message,
+        });
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          return;
+        }
+
+        setReferralCheck({
+          status: "unavailable",
+          message: "We could not check that code. You can still submit.",
+        });
+      }
+    }, 450);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [referralCode]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -342,6 +415,10 @@ export default function BusinessProfilePage() {
 
     setFormData((prev) => {
       const next = { ...prev, [name]: value };
+
+      // Codes travel on flyers and over the phone, so accept whatever case and
+      // spacing they arrive in and settle on the one canonical form.
+      if (name === "referralCode") next.referralCode = normalizeReferralCode(value);
 
       // Clear follow-up answers whenever their trigger stops applying, so a
       // changed mind cannot leave stale values in the submission.
@@ -447,6 +524,17 @@ export default function BusinessProfilePage() {
       return;
     }
 
+    // A code we already know is bad would only be rejected by the server a
+    // moment later, after they had watched the whole form submit.
+    if (formData.referralCode && referralCheck.status === "invalid") {
+      setSubmitStatus({
+        type: "error",
+        message: `${referralCheck.message} You can also clear the field and submit without a code.`,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/business-profile", {
         method: "POST",
@@ -462,10 +550,11 @@ export default function BusinessProfilePage() {
       setSubmitStatus({
         type: "success",
         message:
-          "Thank you. Your business profile has been saved and we will contact you soon.",
+          "Thank you. Your business profile is now with our team for review, and we will be in touch either way.",
       });
       setIsSubmitted(true);
       setFormData(initialFormData);
+      setReferralCheck({ status: "idle", message: "" });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       setSubmitStatus({
@@ -520,8 +609,9 @@ export default function BusinessProfilePage() {
               <h2 className="mb-3 font-disp text-2xl uppercase">Profile submitted.</h2>
               <p className="mb-6 text-[15px] text-smoke">{submitStatus.message}</p>
               <p className="font-mono text-sm text-smoke">
-                We&rsquo;ll send your ₦50,000 membership payment details shortly. Once settled,
-                you&rsquo;re in.
+                Next: our team reviews your profile. If you&rsquo;re approved, we&rsquo;ll email
+                you the ₦50,000 membership payment details. Please don&rsquo;t send any payment
+                until you receive that email from us.
               </p>
             </div>
           ) : (
@@ -870,6 +960,54 @@ export default function BusinessProfilePage() {
                   </fieldset>
                 )}
 
+                {/* Referral — lettered off H so the sequence stays contiguous
+                    whether or not the scheduling section is showing. */}
+                <fieldset className="mb-13 border-none">
+                  <SectionLabel tag={wantsSupport ? "I" : "H"}>Referral Code</SectionLabel>
+                  <Field>
+                    <Label htmlFor="referralCode">
+                      Were you given a referral code?
+                    </Label>
+                    <TextInput
+                      id="referralCode"
+                      name="referralCode"
+                      value={formData.referralCode}
+                      onChange={handleInputChange}
+                      placeholder="e.g. GIFT-K7P2QM"
+                      autoComplete="off"
+                      spellCheck={false}
+                      maxLength={24}
+                      aria-describedby="referralCode-status"
+                    />
+                    <Hint>
+                      Optional. If someone from our team referred you, or your training is
+                      being covered as a gift, enter their code here — it tells us who sent
+                      you and applies any discount on the {MEMBERSHIP_FEE_LABEL} membership.
+                    </Hint>
+                    <div
+                      id="referralCode-status"
+                      role="status"
+                      aria-live="polite"
+                      className="mt-2 min-h-[20px] font-mono text-[12.5px]"
+                    >
+                      {referralCheck.status === "checking" && (
+                        <span className="text-smoke">{referralCheck.message}</span>
+                      )}
+                      {referralCheck.status === "valid" && (
+                        <span className="text-ink">
+                          <b className="text-signal">✓</b> {referralCheck.message}
+                        </span>
+                      )}
+                      {referralCheck.status === "invalid" && (
+                        <span className="text-signal">{referralCheck.message}</span>
+                      )}
+                      {referralCheck.status === "unavailable" && (
+                        <span className="text-smoke">{referralCheck.message}</span>
+                      )}
+                    </div>
+                  </Field>
+                </fieldset>
+
                 {submitStatus.type === "error" && (
                   <div className="mb-6 border-l-[3px] border-signal bg-ash px-5 py-4 font-mono text-[13px] text-ink">
                     {submitStatus.message}
@@ -885,8 +1023,8 @@ export default function BusinessProfilePage() {
                     {isSubmitting ? "Submitting…" : "Submit Business Profile"}
                   </button>
                   <p className="mt-4 font-mono text-sm text-smoke">
-                    Right after you submit, we&rsquo;ll send your ₦50,000 membership payment
-                    details. Once settled, you&rsquo;re in.
+                    Your profile goes to our team for review. Approved applicants receive
+                    their ₦50,000 membership payment details by email.
                   </p>
                 </div>
                   </>

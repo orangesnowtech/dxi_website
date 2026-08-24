@@ -91,7 +91,7 @@ export const academy: Page = {
       columns: 2,
       eyebrow: "Get started",
       heading: "Two steps to join",
-      body: "Membership opens the moment both are done. No waiting list, no interview — just the work.",
+      body: "Every profile is reviewed before a place is offered. Get through review, settle your membership, and you're in.",
       cards: keyed([
         {
           step: "01",
@@ -104,16 +104,16 @@ export const academy: Page = {
         },
         {
           step: "02",
-          title: "Pay your membership",
-          body: "Right after you submit your profile, you'll receive your membership payment details — ₦50,000 for the year. Once it's settled, you're in: your community, your mentors, your member rates, all live.",
+          title: "Get reviewed, then join",
+          body: "Our team reviews every profile. If you're approved, we'll email you your membership payment details — ₦50,000 for the year, by direct bank transfer. Once it's settled, you're in: your community, your mentors, your member rates, all live.",
           tone: "dark" as const,
           emphasis: true,
           showTick: false,
-          cta: staticCta("Sent after your profile"),
+          cta: staticCta("Sent once you're approved"),
         },
       ]),
       band: {
-        text: "One profile, one payment, one year of being taken seriously — *₦50,000.*",
+        text: "One profile, one review, one year of being taken seriously — *₦50,000.*",
         cta: toPath("Start now", "/business-profile"),
       },
     }),
