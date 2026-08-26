@@ -56,7 +56,9 @@ Each event carries a **square** poster, uploaded in the dashboard and stored in
 Firebase Storage (`dxi-website-backed.firebasestorage.app`, under
 `event-posters/<slug>/`). Square because the listing card crops to 1:1 — a
 portrait flyer loses its top and bottom there, so the aspect is part of the
-brief rather than a rendering detail. A URL can be pasted instead of uploading.
+brief rather than a rendering detail. Non-square artwork is cropped from the
+top, not the centre, since a poster leads with its title and key art. A URL can
+be pasted instead of uploading.
 
 Objects are **not** made public. Buckets created today default to uniform
 bucket-level access, where per-object ACLs are rejected outright, so each upload

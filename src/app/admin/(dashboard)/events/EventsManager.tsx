@@ -550,7 +550,7 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                   <span className={styles.codeHint}>
                     {uploading
                       ? "Uploading…"
-                      : "JPEG, PNG or WebP, up to 5MB. Cropped to a square on the card, so upload it square."}
+                      : "JPEG, PNG or WebP, up to 5MB. Cropped to a square from the top on the card, so upload it square."}
                   </span>
 
                   <input

@@ -131,7 +131,7 @@ export default async function EventPage({ params }: Props) {
                   <img
                     src={event.posterUrl}
                     alt={`Poster for ${event.title}`}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover object-top"
                   />
                 </div>
               </div>
