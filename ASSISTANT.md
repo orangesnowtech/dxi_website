@@ -62,6 +62,34 @@ The widget polls `GET /api/bot/chat` for agent replies, but only once handed off
 and only while open — polling every visitor's widget would be a request every few
 seconds for messages that, in the bot's own conversations, never arrive.
 
+## Whisper
+
+A private steer to the bot, written from the thread composer with the **Whisper
+to bot** toggle. It is stored in the conversation, shown to staff in amber, and
+never sent to the customer or replayed as a conversation turn — it goes into the
+model's instructions instead.
+
+The point is to redirect a conversation *without* taking it over, so a whisper
+deliberately does not change the mode: the bot carries on answering, following
+the steer from its next reply. Whispers persist for the rest of the
+conversation, newest winning where two disagree, capped at
+`MAX_ACTIVE_WHISPERS`.
+
+    "Steer them to the Academy, not the Sales Engine."
+    "Do not quote below ₦400k."
+    "This is Ada's client — be generous with time."
+
+Whispers are **subordinate to the hard rules**, and the prompt says so
+explicitly. Without that, "just give him the account number" — typed by a
+colleague in a hurry, or talked into a colleague by a customer — would be a way
+around the safety rules. Verified: a whisper asking the bot to post the bank
+details and promise doubled sales got both refused.
+
+`activeWhispers` sorts ascending on purpose. That is the direction the
+rate-limit index already covers, and Firestore treats a descending sort as a
+different index; the cap is applied in memory instead, which costs nothing when
+whispers are written by hand.
+
 ## Gemini 3 notes
 
 Two things differ from the Purch code and both look like broken integrations:

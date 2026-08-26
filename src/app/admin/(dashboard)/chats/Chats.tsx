@@ -29,6 +29,8 @@ export default function Chats({ configured }: { configured: boolean }) {
   const [messages, setMessages] = useState<BotMessage[]>([]);
   const [selected, setSelected] = useState<BotConversation | null>(null);
   const [draft, setDraft] = useState("");
+  /** Whether the composer sends to the customer or steers the bot. */
+  const [kind, setKind] = useState<"reply" | "whisper">("reply");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,11 +104,11 @@ export default function Chats({ configured }: { configured: boolean }) {
       const response = await fetch(`/api/admin/chats/${encodeURIComponent(selectedId)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, kind }),
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Could not send that reply");
+      if (!response.ok) throw new Error(data.error || "Could not send that");
 
       setDraft("");
       await fetchThread(selectedId);
@@ -237,17 +239,21 @@ export default function Chats({ configured }: { configured: boolean }) {
                       className={`${styles.chatBubble} ${
                         message.role === "user"
                           ? styles.chatBubbleUser
-                          : message.role === "agent"
-                            ? styles.chatBubbleAgent
-                            : styles.chatBubbleBot
+                          : message.role === "whisper"
+                            ? styles.chatBubbleWhisper
+                            : message.role === "agent"
+                              ? styles.chatBubbleAgent
+                              : styles.chatBubbleBot
                       }`}
                     >
                       <span className={styles.chatBubbleMeta}>
                         {message.role === "user"
                           ? "Them"
-                          : message.role === "agent"
-                            ? message.sentBy || "Agent"
-                            : "Assistant"}{" "}
+                          : message.role === "whisper"
+                            ? `Whisper · ${message.sentBy || "team"} · only the bot sees this`
+                            : message.role === "agent"
+                              ? message.sentBy || "Agent"
+                              : "Assistant"}{" "}
                         · {when(message.at)}
                       </span>
                       {message.text}
@@ -255,32 +261,58 @@ export default function Chats({ configured }: { configured: boolean }) {
                   ))}
                 </div>
 
-                <div className={styles.chatComposer}>
-                  <textarea
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        sendReply();
+                <div className={styles.composerWrap}>
+                  <div className={styles.composerModes}>
+                    <button
+                      type="button"
+                      className={`${styles.composerMode} ${kind === "reply" ? styles.composerModeOn : ""}`}
+                      onClick={() => setKind("reply")}
+                    >
+                      Reply
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.composerMode} ${kind === "whisper" ? styles.composerModeWhisperOn : ""}`}
+                      onClick={() => setKind("whisper")}
+                    >
+                      Whisper to bot
+                    </button>
+                    <span className={styles.composerHint}>
+                      {kind === "whisper"
+                        ? "Steers the bot from its next reply. The customer never sees it, and the bot keeps answering."
+                        : selected.mode === "human"
+                          ? "Goes straight to the customer."
+                          : "Goes to the customer, and takes this conversation off the bot."}
+                    </span>
+                  </div>
+
+                  <div className={styles.chatComposer}>
+                    <textarea
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          sendReply();
+                        }
+                      }}
+                      placeholder={
+                        kind === "whisper"
+                          ? "e.g. Do not quote below ₦400k. Push the Academy, not the Sales Engine."
+                          : "Type your reply…"
                       }
-                    }}
-                    placeholder={
-                      selected.mode === "human"
-                        ? "Type your reply…"
-                        : "Replying takes this conversation off the bot."
-                    }
-                    className={styles.chatInput}
-                  />
-                  <button
-                    type="button"
-                    className={styles.loginBtn}
-                    style={{ width: "auto" }}
-                    disabled={sending || !draft.trim()}
-                    onClick={sendReply}
-                  >
-                    {sending ? "Sending…" : "Send"}
-                  </button>
+                      className={`${styles.chatInput} ${kind === "whisper" ? styles.chatInputWhisper : ""}`}
+                    />
+                    <button
+                      type="button"
+                      className={styles.loginBtn}
+                      style={{ width: "auto" }}
+                      disabled={sending || !draft.trim()}
+                      onClick={sendReply}
+                    >
+                      {sending ? "Sending…" : kind === "whisper" ? "Whisper" : "Send"}
+                    </button>
+                  </div>
                 </div>
               </>
             )}

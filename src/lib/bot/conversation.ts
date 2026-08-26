@@ -4,6 +4,7 @@ import { runAgent } from "./agent";
 import { handoffTimeoutMinutes, hourlyMessageLimit } from "./config";
 import {
   AGENT_HISTORY_TURNS,
+  MAX_ACTIVE_WHISPERS,
   type BotChannel,
   type BotConversation,
   type BotMessage,
@@ -98,6 +99,28 @@ export async function recentMessages(id: string, limit = AGENT_HISTORY_TURNS) {
   return snapshot.docs
     .map((doc) => ({ id: doc.id, ...(doc.data() as Omit<BotMessage, "id">) }))
     .reverse();
+}
+
+/**
+ * Standing steers staff have whispered into this conversation.
+ *
+ * Ordered ascending deliberately: that is the direction the rate-limit index
+ * already covers, and Firestore counts a descending sort as a different index
+ * entirely. Capping in memory instead of with `.limit()` costs nothing here,
+ * because whispers are written by hand and a conversation will have a handful,
+ * not thousands.
+ *
+ * The tail is kept so the newest instructions win where two disagree.
+ */
+export async function activeWhispers(id: string): Promise<string[]> {
+  const snapshot = await messagesRef(id)
+    .where("role", "==", "whisper")
+    .orderBy("createdAt", "asc")
+    .get();
+
+  return snapshot.docs
+    .map((doc) => (doc.data() as BotMessage).text)
+    .slice(-MAX_ACTIVE_WHISPERS);
 }
 
 /**
@@ -209,7 +232,12 @@ export async function handleIncomingMessage(
   // separately, so drop the tail to avoid sending it twice.
   const priorTurns = history.slice(0, -1);
 
-  const turn = await runAgent(incoming.channel, priorTurns, incoming.text);
+  const turn = await runAgent(
+    incoming.channel,
+    priorTurns,
+    incoming.text,
+    await activeWhispers(id)
+  );
 
   if (turn.lead) {
     await recordLead(id, turn.lead);

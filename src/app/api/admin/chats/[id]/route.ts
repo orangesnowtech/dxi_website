@@ -64,7 +64,7 @@ export async function POST(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
     }
 
-    const { text } = (await request.json()) as { text?: string };
+    const { text, kind } = (await request.json()) as { text?: string; kind?: string };
     const message = (text || "").trim();
 
     if (!message) {
@@ -72,14 +72,32 @@ export async function POST(request: NextRequest, { params }: Context) {
     }
 
     if (message.length > MAX_USER_MESSAGE_LENGTH) {
-      return NextResponse.json({ error: "That reply is too long." }, { status: 400 });
+      return NextResponse.json({ error: "That is too long." }, { status: 400 });
     }
 
-    if (conversation.mode !== "human") {
-      await setMode(conversationId, "human", session.email);
-    } else if (conversation.awaitingAgent) {
-      // Somebody has answered, so the handoff is no longer unattended and the
-      // bot must not resume behind their back when the timeout passes.
+    /**
+     * A whisper steers the bot instead of replacing it.
+     *
+     * Deliberately does not touch the mode: the entire point is to redirect a
+     * conversation without taking it over, so the bot keeps answering — with
+     * the steer folded into its instructions from the next turn onwards.
+     */
+    if (kind === "whisper") {
+      const whisper = await appendMessage(
+        conversationId,
+        "whisper",
+        message,
+        session.email
+      );
+
+      return NextResponse.json({ message: whisper });
+    }
+
+    // Replying is taking over, so the mode follows the action rather than
+    // waiting for a separate click somebody forgets. Re-set even when already
+    // human, to clear awaitingAgent — otherwise the handoff still counts as
+    // unattended and the bot resumes behind the agent's back at the timeout.
+    if (conversation.mode !== "human" || conversation.awaitingAgent) {
       await setMode(conversationId, "human", session.email);
     }
 

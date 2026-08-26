@@ -1366,3 +1366,82 @@
   outline: none;
   border-color: #b91c1c;
 }
+
+/* ── Whisper ───────────────────────────────────────────────────────────────
+   A steer to the bot rather than a message to the customer. Styled as neither
+   side of the conversation — dashed, amber, full width — because the one
+   mistake that matters here is thinking a whisper was sent to the customer.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.chatBubbleWhisper {
+  align-self: stretch;
+  max-width: 100%;
+  background-color: #fffbeb;
+  border: 1px dashed #f59e0b;
+  color: #78350f;
+  font-style: italic;
+}
+
+.composerWrap {
+  border-top: 1px solid #e5e7eb;
+}
+
+.composerModes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px 0;
+  flex-wrap: wrap;
+}
+
+.composerMode {
+  padding: 5px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  background-color: #ffffff;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.composerMode:hover {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.composerModeOn {
+  background-color: #111827;
+  border-color: #111827;
+  color: #ffffff;
+}
+
+.composerModeWhisperOn {
+  background-color: #b45309;
+  border-color: #b45309;
+  color: #ffffff;
+}
+
+.composerHint {
+  color: #6b7280;
+  font-size: 0.78rem;
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+/* The composer itself changes colour in whisper mode, so the difference is
+   visible at the moment of typing rather than only after sending. */
+.chatInputWhisper {
+  background-color: #fffbeb;
+  border-color: #f59e0b;
+  font-style: italic;
+}
+
+.chatInputWhisper:focus {
+  border-color: #b45309;
+}
+
+.composerWrap .chatComposer {
+  border-top: none;
+}

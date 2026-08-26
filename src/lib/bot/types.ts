@@ -23,7 +23,12 @@ export const BOT_CHANNEL_LABELS: Record<BotChannel, string> = {
   instagram: "Instagram",
 };
 
-export type MessageRole = "user" | "assistant" | "agent" | "system";
+/**
+ * `whisper` is a private steer from staff to the bot. It is stored in the
+ * thread, shown in the dashboard, and never sent to the customer or replayed
+ * as a conversation turn — it goes into the model's instructions instead.
+ */
+export type MessageRole = "user" | "assistant" | "agent" | "system" | "whisper";
 
 export type BotMessage = {
   id: string;
@@ -31,9 +36,12 @@ export type BotMessage = {
   text: string;
   /** ISO. Written by the server, never trusted from a client. */
   at: string;
-  /** Set on `agent` messages — which admin sent it. */
+  /** Set on `agent` and `whisper` messages — which admin wrote it. */
   sentBy?: string;
 };
+
+/** How many standing whispers the agent is given, newest last. */
+export const MAX_ACTIVE_WHISPERS = 8;
 
 /**
  * Who owns the conversation right now.
