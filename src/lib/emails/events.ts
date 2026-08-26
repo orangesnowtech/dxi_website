@@ -149,9 +149,24 @@ export function buildEventTicketEmail(input: {
   accessCode: string;
   /** Only for online events, and only ever here. */
   joinUrl?: string;
+  /**
+   * Self check-in, with the code already attached. In-person events only —
+   * an online attendee joins a call rather than walking through a door.
+   */
+  checkInUrl?: string;
   /** Set when the place was paid for, so the email doubles as a receipt. */
   paidLabel?: string;
 }): BuiltEmail {
+  // One tap beats reading six characters off one screen and typing them into
+  // another while a queue waits. The code stays printed above it for anyone
+  // whose phone is flat or who prefers the desk.
+  const checkInBlock = input.checkInUrl
+    ? `<p style="margin:16px 0;text-align:center;">
+           <a href="${escapeHtml(input.checkInUrl)}" style="display:inline-block;padding:14px 28px;background:#b91c1c;color:#ffffff;font-weight:bold;text-decoration:none;border-radius:4px;">Check in when you arrive</a><br />
+           <span style="color:#6b7280;font-size:13px;display:inline-block;margin-top:8px;">Works from the moment doors open. Your code is already in the link.</span>
+         </p>`
+    : "";
+
   const joinBlock = input.joinUrl
     ? `<p style="margin:16px 0;padding:12px 16px;background:#f9fafb;border-left:3px solid #b91c1c;">
            Join here when it starts:<br />
@@ -161,7 +176,8 @@ export function buildEventTicketEmail(input: {
     : `<p>
            Please arrive about 15 minutes early. Have the code above ready on your phone or
            printed &mdash; it is how we check you in at the door.
-         </p>`;
+         </p>
+         ${checkInBlock}`;
 
   const paidBlock = input.paidLabel
     ? `<p style="color:#6b7280;font-size:13px;">Payment received: ${escapeHtml(input.paidLabel)}. This email is your receipt.</p>`

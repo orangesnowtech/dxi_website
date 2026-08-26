@@ -323,6 +323,82 @@ export function seatsLeft(
   return limits.length > 0 ? Math.max(Math.min(...limits), 0) : null;
 }
 
+/* ── Self check-in window ───────────────────────────────────────────────── */
+
+/**
+ * How long before the start time the public check-in page opens.
+ *
+ * A deliberate softening of "active when the event starts": the ticket email
+ * tells people to arrive about fifteen minutes early, and a door that refuses
+ * everyone until the advertised minute builds the queue it exists to clear.
+ * Set to 0 for a hard open exactly on time.
+ */
+export const CHECK_IN_LEAD_MINUTES = 30;
+
+/**
+ * How long an event is assumed to run when no end time was set, so check-in
+ * still shuts by itself. Without this an event with no `endsAt` would leave
+ * its page open forever.
+ */
+export const ASSUMED_EVENT_HOURS = 6;
+
+export type CheckInWindowState = "before" | "open" | "closed";
+
+export type CheckInWindow = {
+  state: CheckInWindowState;
+  opensAt: Date;
+  closesAt: Date;
+};
+
+/**
+ * When an event's public check-in page is live.
+ *
+ * `now` is passed in rather than read so the page, the route handler and the
+ * transaction that actually records an arrival all agree — the same reason
+ * `eventRejectionReason` takes it.
+ */
+export function checkInWindow(
+  event: Pick<EventRecord, "startsAt" | "endsAt">,
+  now: Date
+): CheckInWindow {
+  const startsAt = new Date(event.startsAt);
+  const opensAt = new Date(startsAt.getTime() - CHECK_IN_LEAD_MINUTES * 60_000);
+
+  const rawEnd = event.endsAt ? new Date(event.endsAt) : null;
+  const closesAt =
+    rawEnd && !Number.isNaN(rawEnd.getTime())
+      ? rawEnd
+      : new Date(startsAt.getTime() + ASSUMED_EVENT_HOURS * 3_600_000);
+
+  if (Number.isNaN(startsAt.getTime())) {
+    return { state: "closed", opensAt, closesAt };
+  }
+
+  if (now < opensAt) {
+    return { state: "before", opensAt, closesAt };
+  }
+
+  return { state: now > closesAt ? "closed" : "open", opensAt, closesAt };
+}
+
+export type SelfCheckInRejection =
+  | "not_open_yet"
+  | "closed"
+  | "unknown_code"
+  | "not_confirmed"
+  | "already_checked_in";
+
+export const SELF_CHECK_IN_MESSAGES: Record<SelfCheckInRejection, string> = {
+  not_open_yet: "Check-in has not opened for this event yet.",
+  closed: "Check-in for this event has closed.",
+  // Deliberately vague. A public box that distinguishes "no such code" from
+  // "that code belongs to another event" is a way to enumerate codes.
+  unknown_code: "We could not find that code for this event. Check it and try again.",
+  not_confirmed:
+    "That registration is not confirmed yet. Please see someone at the desk.",
+  already_checked_in: "You are already checked in.",
+};
+
 /* ── Identifiers ────────────────────────────────────────────────────────── */
 
 const ACCESS_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

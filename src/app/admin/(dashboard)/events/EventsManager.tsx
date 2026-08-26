@@ -191,11 +191,18 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
     }
   };
 
-  /** Copies an event's public URL, built from the browser's own origin. */
-  const handleCopyLink = async (slug: string) => {
+  /**
+   * Copies one of an event's public URLs, built from the browser's own origin.
+   *
+   * `kind` distinguishes the two so the confirmation lands on the button that
+   * was actually pressed rather than both.
+   */
+  const handleCopyLink = async (slug: string, kind: "page" | "check-in") => {
+    const path = kind === "page" ? `/events/${slug}` : `/events/${slug}/check-in`;
+
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/events/${slug}`);
-      setCopied(slug);
+      await navigator.clipboard.writeText(`${window.location.origin}${path}`);
+      setCopied(`${slug}:${kind}`);
       setTimeout(() => setCopied(null), 2000);
     } catch {
       setError("Could not copy — the browser blocked clipboard access.");
@@ -888,10 +895,18 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                         <button
                           type="button"
                           className={styles.copyCodeBtn}
-                          onClick={() => handleCopyLink(event.slug)}
+                          onClick={() => handleCopyLink(event.slug, "page")}
                           title={`Copy the public link for ${event.title}`}
                         >
-                          {copied === event.slug ? "Copied!" : "Copy link"}
+                          {copied === `${event.slug}:page` ? "Copied!" : "Copy link"}
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.copyCodeBtn}
+                          onClick={() => handleCopyLink(event.slug, "check-in")}
+                          title="Copy the self check-in link — for a screen or QR code at the door"
+                        >
+                          {copied === `${event.slug}:check-in` ? "Copied!" : "Copy check-in"}
                         </button>
                         <button
                           type="button"

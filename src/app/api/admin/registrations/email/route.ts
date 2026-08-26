@@ -132,6 +132,10 @@ export async function POST(request: NextRequest) {
         facts,
         accessCode: registration.accessCode,
         joinUrl: event?.format === "online" ? event.joinUrl || undefined : undefined,
+        checkInUrl:
+          event?.format === "venue"
+            ? `${request.nextUrl.origin}/events/${event.slug}/check-in?code=${registration.accessCode}`
+            : undefined,
         paidLabel: registration.feeNaira > 0 ? formatFee(registration.feeNaira) : undefined,
       });
     }

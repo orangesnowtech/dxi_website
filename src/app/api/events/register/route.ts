@@ -168,7 +168,12 @@ export async function POST(request: NextRequest) {
       typeLabel: type.label,
     };
 
-    await sendRegistrationEmails({ registration, event, facts });
+    await sendRegistrationEmails({
+      registration,
+      event,
+      facts,
+      origin: request.nextUrl.origin,
+    });
 
     return NextResponse.json(
       {
@@ -203,10 +208,13 @@ async function sendRegistrationEmails({
   registration,
   event,
   facts,
+  origin,
 }: {
   registration: EventRegistration;
   event: EventRecord;
   facts: EventEmailFacts;
+  /** Taken from the request so the link is right on whichever host served it. */
+  origin: string;
 }) {
   const { token, fromAddress } = getZeptoConfig();
 
@@ -244,6 +252,10 @@ async function sendRegistrationEmails({
       facts,
       accessCode: registration.accessCode,
       joinUrl: event.format === "online" ? event.joinUrl || undefined : undefined,
+      checkInUrl:
+        event.format === "venue"
+          ? `${origin}/events/${event.slug}/check-in?code=${registration.accessCode}`
+          : undefined,
     });
     await send(registrant, email.subject, email.html, EVENTS_FROM_NAME);
   } else if (registration.status === "awaiting_payment") {

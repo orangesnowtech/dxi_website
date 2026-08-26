@@ -144,3 +144,45 @@ cannot drift apart visually.
 - **`datetime-local` uses the admin's own timezone**, not a forced Africa/Lagos.
   An admin in Lagos gets Lagos. Everything *displayed* to registrants is
   formatted in Africa/Lagos regardless.
+
+## Public self check-in
+
+Each event has its own door page at `/events/<slug>/check-in`. Someone enters
+the six-character code from their ticket and is marked as arrived. The ticket
+email for an in-person event carries a **Check in when you arrive** button with
+the code already in the link, so arriving from the email is one tap rather than
+reading six characters off one screen and typing them into another.
+
+The page is live only inside its window, which `checkInWindow` decides:
+
+| | |
+| --- | --- |
+| Opens | `CHECK_IN_LEAD_MINUTES` (30) **before** the start time |
+| Closes | at `endsAt`, or `startsAt + ASSUMED_EVENT_HOURS` (6) when none is set |
+
+The lead time is a deliberate softening of "active when the event starts": the
+ticket email tells people to arrive about fifteen minutes early, and a door that
+refuses everyone until the advertised minute builds the queue it exists to
+clear. Set `CHECK_IN_LEAD_MINUTES` to 0 for a hard open exactly on time.
+
+An event with no end time still closes itself, and an unparseable start time
+fails **closed** — a door left hanging open is the worse failure.
+
+The window is re-checked inside the transaction, not trusted from the rendered
+page, because the page was rendered at some earlier moment.
+
+### Why it only accepts a code
+
+The staff screen at `/admin/check-in` can search by name, email or company
+because it sits behind a session. The public page takes an exact access code and
+nothing else: a box open to anyone with the URL that answers "who is
+registered?" is a way to harvest an attendee list. For the same reason an
+unknown code and a code belonging to another event give the same message.
+
+Attempts are throttled per IP per event (12/minute) — in-memory, so it resets
+when the instance recycles and is not shared between them. That raises the cost
+of a script without pretending to be a security boundary; guessing a code out of
+a 32-letter six-character space was never the real risk.
+
+Self check-ins are stamped `checkedInBy: "self"`, so the dashboard shows who
+walked themselves in versus who a staff member admitted.

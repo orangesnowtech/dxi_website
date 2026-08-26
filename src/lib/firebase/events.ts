@@ -3,6 +3,7 @@ import type { DocumentData, Query, Transaction } from "firebase-admin/firestore"
 import { firestore } from "@/lib/firebase/admin";
 import {
   approvedRegistrationStatus,
+  checkInWindow,
   eventRejectionReason,
   generateAccessCode,
   holdsAPlace,
@@ -15,6 +16,7 @@ import {
   type RegistrationRejection,
   type RegistrationStatus,
   type RegistrationType,
+  type SelfCheckInRejection,
   type VendorDetails,
 } from "@/lib/events";
 
@@ -495,6 +497,89 @@ export async function checkInRegistration(
     return {
       ok: true as const,
       registration: { ...registration, checkedIn: true, checkedInAt: now, checkedInBy: staffEmail },
+    };
+  });
+}
+
+/* ── Public self check-in ───────────────────────────────────────────────── */
+
+export type SelfCheckInResult =
+  | { ok: true; firstName: string; typeLabel: string; checkedInAt: string }
+  | { ok: false; reason: SelfCheckInRejection };
+
+/**
+ * Records an arrival from the public page, keyed only by an access code.
+ *
+ * Scoped to one event and to an exact code — never a name or an email. The
+ * staff screen can search by name because it sits behind a session; this one
+ * is open to anyone who has the URL, and a public box that answers "who is
+ * registered?" is a way to harvest an attendee list.
+ *
+ * The window is re-checked here rather than trusted from the page, because the
+ * page was rendered at some earlier moment and a request can arrive at any
+ * later one.
+ */
+export async function selfCheckIn(
+  eventSlug: string,
+  accessCode: string,
+  now: Date
+): Promise<SelfCheckInResult> {
+  const eventRef = events().doc(eventSlug);
+
+  return firestore.runTransaction(async (transaction) => {
+    const eventSnapshot = await transaction.get(eventRef);
+
+    if (!eventSnapshot.exists) {
+      return { ok: false as const, reason: "unknown_code" as const };
+    }
+
+    const window = checkInWindow(readEvent(eventSnapshot), now);
+
+    if (window.state === "before") {
+      return { ok: false as const, reason: "not_open_yet" as const };
+    }
+
+    if (window.state === "closed") {
+      return { ok: false as const, reason: "closed" as const };
+    }
+
+    const matches = await transaction.get(
+      registrations()
+        .where("eventSlug", "==", eventSlug)
+        .where("accessCode", "==", accessCode)
+        .limit(1)
+    );
+
+    if (matches.empty) {
+      return { ok: false as const, reason: "unknown_code" as const };
+    }
+
+    const doc = matches.docs[0];
+    const registration = doc.data() as EventRegistration;
+
+    if (registration.status !== "confirmed") {
+      return { ok: false as const, reason: "not_confirmed" as const };
+    }
+
+    if (registration.checkedIn) {
+      return { ok: false as const, reason: "already_checked_in" as const };
+    }
+
+    const checkedInAt = now.toISOString();
+
+    transaction.update(doc.ref, {
+      checkedIn: true,
+      checkedInAt,
+      // Distinguishable from a staff email in the dashboard, so the door team
+      // can tell who walked themselves in.
+      checkedInBy: "self",
+    });
+
+    return {
+      ok: true as const,
+      firstName: registration.firstName,
+      typeLabel: registration.typeLabel,
+      checkedInAt,
     };
   });
 }
