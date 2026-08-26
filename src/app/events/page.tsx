@@ -69,10 +69,30 @@ function EventCard({ event, past = false }: { event: PublicEvent; past?: boolean
     <Reveal>
       <Link
         href={`/events/${event.slug}`}
-        className={`group block h-full border border-line bg-paper p-7 transition-colors hover:border-signal ${
+        className={`group block h-full border border-line bg-paper transition-colors hover:border-signal ${
           past ? "opacity-70" : ""
         }`}
       >
+        {/*
+          Fixed 1:1 frame. The poster is cropped to fill rather than letterboxed
+          so a row of cards keeps one rhythm even when someone uploads artwork
+          that is not quite square. Plain <img> rather than next/image: posters
+          come from Firebase Storage and, later, wherever else, and an optimiser
+          allowlist is one more thing to break a card on.
+        */}
+        {event.posterUrl && (
+          <div className="aspect-square w-full overflow-hidden border-b border-line bg-ash">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={event.posterUrl}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            />
+          </div>
+        )}
+
+        <div className="p-7">
         <div className="mb-2.5 flex flex-wrap items-center gap-2">
           <span className="inline-block bg-ink px-[9px] py-[3px] font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-white">
             {EVENT_KIND_LABELS[event.kind]}
@@ -106,6 +126,7 @@ function EventCard({ event, past = false }: { event: PublicEvent; past?: boolean
               {scarcity}
             </span>
           )}
+        </div>
         </div>
       </Link>
     </Reveal>

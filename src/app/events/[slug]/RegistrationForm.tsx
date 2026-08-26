@@ -33,6 +33,7 @@ type FormState = {
   jobTitle: string;
   socialMediaUrl: string;
   howDidYouHear: string;
+  expectations: string;
   notes: string;
   businessName: string;
   offering: string;
@@ -49,6 +50,7 @@ const emptyForm: FormState = {
   jobTitle: "",
   socialMediaUrl: "",
   howDidYouHear: "",
+  expectations: "",
   notes: "",
   businessName: "",
   offering: "",
@@ -119,6 +121,7 @@ export default function RegistrationForm({ event }: { event: PublicEvent }) {
           jobTitle: form.jobTitle,
           socialMediaUrl: form.socialMediaUrl,
           howDidYouHear: form.howDidYouHear,
+          expectations: form.expectations,
           notes: form.notes,
           vendor: isVendor
             ? {
@@ -262,20 +265,18 @@ export default function RegistrationForm({ event }: { event: PublicEvent }) {
           <Hint>Your entry code and joining details go here.</Hint>
         </Field>
         <Field half>
-          <Label htmlFor="phone" required>
-            Phone number
-          </Label>
+          <Label htmlFor="phone">Phone number</Label>
           <TextInput
             id="phone"
             name="phone"
             type="tel"
             value={form.phone}
             onChange={(e) => setField("phone", e.target.value)}
-            required
             inputMode="tel"
             autoComplete="tel"
             placeholder="0807 000 0000"
           />
+          <Hint>Optional. Only used if we need to reach you about the day itself.</Hint>
         </Field>
       </Row>
 
@@ -386,6 +387,23 @@ export default function RegistrationForm({ event }: { event: PublicEvent }) {
           options={HOW_DID_YOU_HEAR_OPTIONS}
           required
         />
+      </Field>
+
+      <Field>
+        <Label htmlFor="expectations" required>
+          What do you hope to get out of this?
+        </Label>
+        <TextArea
+          id="expectations"
+          name="expectations"
+          value={form.expectations}
+          onChange={(e) => setField("expectations", e.target.value)}
+          required
+          placeholder="The problem you want solved, the thing you want to understand, or who you are hoping to meet."
+        />
+        <Hint>
+          We shape the session around these answers, so be specific rather than polite.
+        </Hint>
       </Field>
 
       <Field>

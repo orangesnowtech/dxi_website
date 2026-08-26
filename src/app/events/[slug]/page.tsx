@@ -13,6 +13,7 @@ import Eyebrow from "@/app/components/ui/Eyebrow";
 import Section, { Wrap } from "@/app/components/ui/Section";
 import Reveal from "@/app/components/ui/Reveal";
 import RegistrationForm from "./RegistrationForm";
+import ShareLink from "./ShareLink";
 
 // Seats are counted live on this page, and the form posts against the same
 // numbers. A cached copy would show a place that has already gone.
@@ -28,10 +29,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {};
   }
 
+  // The poster doubles as the social card. A shared event link is mostly seen
+  // as a preview in WhatsApp or on a timeline before anyone opens it, so the
+  // artwork matters more there than on the page itself.
+  const images = event.posterUrl ? [{ url: event.posterUrl, alt: event.title }] : undefined;
+
   return {
     title: event.title,
     description: event.summary,
-    openGraph: { title: event.title, description: event.summary, type: "website" },
+    openGraph: {
+      title: event.title,
+      description: event.summary,
+      type: "website",
+      images,
+    },
+    twitter: {
+      card: event.posterUrl ? "summary_large_image" : "summary",
+      title: event.title,
+      description: event.summary,
+      images: event.posterUrl ? [event.posterUrl] : undefined,
+    },
   };
 }
 
@@ -80,22 +97,45 @@ export default async function EventPage({ params }: Props) {
           aria-hidden
         />
         <div className="relative z-2 mx-auto w-full max-w-wrap px-6 pt-16 pb-14">
-          <Eyebrow>{EVENT_KIND_LABELS[event.kind]}</Eyebrow>
-          <h1 className="mb-[18px] max-w-[16ch] font-disp text-[clamp(34px,5.6vw,72px)] uppercase leading-[0.95] tracking-[-0.01em]">
-            {event.title}
-            <span className="text-signal">.</span>
-          </h1>
-          <p className="mb-[34px] max-w-[620px] text-[clamp(16px,2.1vw,20px)] text-smoke">
-            {event.summary}
-          </p>
+          <div className="flex flex-col gap-10 wide:flex-row wide:items-start">
+            <div className="min-w-0 flex-1">
+              <Eyebrow>{EVENT_KIND_LABELS[event.kind]}</Eyebrow>
+              <h1 className="mb-[18px] max-w-[16ch] font-disp text-[clamp(34px,5.6vw,72px)] uppercase leading-[0.95] tracking-[-0.01em]">
+                {event.title}
+                <span className="text-signal">.</span>
+              </h1>
+              <p className="mb-[34px] max-w-[620px] text-[clamp(16px,2.1vw,20px)] text-smoke">
+                {event.summary}
+              </p>
 
-          <div className="grid grid-cols-1 gap-5 wide:grid-cols-3">
-            <Fact label="When" value={formatEventWhen(event.startsAt, event.endsAt)} />
-            <Fact label="Where" value={formatEventPlace(event)} />
-            <Fact
-              label="Format"
-              value={event.format === "online" ? "Online — link sent on confirmation" : "In person"}
-            />
+              <div className="grid grid-cols-1 gap-5 wide:grid-cols-3">
+                <Fact label="When" value={formatEventWhen(event.startsAt, event.endsAt)} />
+                <Fact label="Where" value={formatEventPlace(event)} />
+                <Fact
+                  label="Format"
+                  value={
+                    event.format === "online"
+                      ? "Online — link sent on confirmation"
+                      : "In person"
+                  }
+                />
+              </div>
+
+              <ShareLink title={event.title} />
+            </div>
+
+            {event.posterUrl && (
+              <div className="w-full shrink-0 border-2 border-ink wide:w-[320px]">
+                <div className="aspect-square w-full overflow-hidden bg-ash">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={event.posterUrl}
+                    alt={`Poster for ${event.title}`}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>

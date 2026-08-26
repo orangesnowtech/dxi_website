@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
     const jobTitle = text(payload, "jobTitle", 120);
     const socialMediaUrl = text(payload, "socialMediaUrl", 200);
     const howDidYouHear = text(payload, "howDidYouHear", 60);
+    const expectations = text(payload, "expectations", 1000);
     const notes = text(payload, "notes", 1000);
 
     if (!namePattern.test(firstName) || firstName.length < 2) {
@@ -90,7 +91,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
     }
 
-    if (!phonePattern.test(phone)) {
+    // Optional. A phone number is how we chase someone about a payment or a
+    // change of venue, not something worth losing a registration over — but a
+    // number that is given must still be usable.
+    if (phone && !phonePattern.test(phone)) {
       return NextResponse.json({ error: "Enter a valid phone number." }, { status: 400 });
     }
 
@@ -129,6 +133,7 @@ export async function POST(request: NextRequest) {
       jobTitle,
       socialMediaUrl,
       howDidYouHear,
+      expectations,
       notes,
       vendor,
     };
@@ -269,6 +274,7 @@ async function sendRegistrationEmails({
     jobTitle: registration.jobTitle,
     socialMediaUrl: registration.socialMediaUrl,
     howDidYouHear: registration.howDidYouHear,
+    expectations: registration.expectations,
     notes: registration.notes,
     status: registration.status,
     feeLabel: formatFee(registration.feeNaira),

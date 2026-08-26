@@ -464,6 +464,15 @@ export default function EventRegistrations({ event }: { event: EventRecord }) {
                   </div>
                 )}
 
+                {selected.expectations && (
+                  <div className={styles.section}>
+                    <h3>What they want out of it</h3>
+                    <div className={`${styles.field} ${styles.multiline}`}>
+                      {selected.expectations}
+                    </div>
+                  </div>
+                )}
+
                 {selected.notes && (
                   <div className={styles.section}>
                     <h3>Notes</h3>
