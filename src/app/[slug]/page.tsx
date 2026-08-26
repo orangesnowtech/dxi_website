@@ -8,7 +8,7 @@ import PageView from "../components/PageView";
  * Next.js already gives static segments priority, but excluding them here keeps
  * a stray content entry from being pre-rendered at a path it is never served from.
  */
-const RESERVED = new Set(["home", "admin", "business-profile", "api"]);
+const RESERVED = new Set(["home", "admin", "business-profile", "events", "api"]);
 
 export async function generateStaticParams() {
   const slugs = await getAllPageSlugs();

@@ -20,6 +20,7 @@ export const siteSettings: SiteSettings = {
     { label: "PR", slug: "pr-engine" },
     { label: "Market Force", slug: "market-force" },
     { label: "Academy", slug: "academy" },
+    { label: "Events", slug: "events" },
   ]),
   navCta: wa("WhatsApp Us", "Hello DXI, I'd like to talk."),
   footerTagline: "DIGITAL eXPERIENCES AND INTEGRATED MARKETING · LAGOS",

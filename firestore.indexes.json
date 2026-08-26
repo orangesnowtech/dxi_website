@@ -1,0 +1,71 @@
+{
+  "//": "Composite indexes for the event portal. Firestore builds single-field indexes automatically, so only the multi-field queries appear here. Deploy with: firebase deploy --only firestore:indexes",
+  "indexes": [
+    {
+      "//": "Public events listing — published events, soonest first.",
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startsAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "//": "Admin events list filtered by status, newest first.",
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startsAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Duplicate check inside the registration transaction.",
+      "collectionGroup": "eventRegistrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventSlug", "order": "ASCENDING" },
+        { "fieldPath": "email", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "//": "One event's registrations, newest first.",
+      "collectionGroup": "eventRegistrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventSlug", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "One event's registrations filtered by status, newest first.",
+      "collectionGroup": "eventRegistrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "eventSlug", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "All registrations filtered by status, newest first.",
+      "collectionGroup": "eventRegistrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Check-in code lookup scoped to one event.",
+      "collectionGroup": "eventRegistrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "accessCode", "order": "ASCENDING" },
+        { "fieldPath": "eventSlug", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -32,6 +32,15 @@ export function getBusinessProfileRecipient() {
   ).trim();
 }
 
+/** Where event registration alerts land. Falls back to the general inbox. */
+export function getEventsRecipient() {
+  return (
+    process.env.EVENTS_RECIPIENT_EMAIL ||
+    process.env.CONTACT_FORM_RECIPIENT_EMAIL ||
+    "info@dximarketing.com"
+  ).trim();
+}
+
 // Single implementation, kept next to the templates that need it most.
 export { escapeHtml } from "./emails/academy";
 

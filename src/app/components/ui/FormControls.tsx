@@ -3,9 +3,11 @@
 import type { ReactNode } from "react";
 
 /**
- * Form primitives for the business profile, in the site's design language:
- * hard 2px borders that turn red on focus, mono labels, and a lettered tag on
- * each section heading.
+ * Form primitives in the site's design language: hard 2px borders that turn
+ * red on focus, mono labels, and a lettered tag on each section heading.
+ *
+ * Shared by the business profile and the event registration form — they are
+ * the site's two long forms and they must not drift apart visually.
  */
 
 const CONTROL =
@@ -170,9 +172,7 @@ export function TextArea({
 /** Revealed when an answer calls for follow-up questions. */
 export function Conditional({ when, children }: { when: boolean; children: ReactNode }) {
   if (!when) return null;
-  return (
-    <div className="conditional-panel mt-1 border-l-2 border-signal pl-5">{children}</div>
-  );
+  return <div className="conditional-panel mt-1 border-l-2 border-signal pl-5">{children}</div>;
 }
 
 /** Grey explanatory panel with a red rule — used for the financing preamble. */

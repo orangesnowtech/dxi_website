@@ -27,6 +27,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/referral-codes" className={styles.adminBarLink}>
           Referral codes
         </Link>
+        <Link href="/admin/events" className={styles.adminBarLink}>
+          Events
+        </Link>
+        <Link href="/admin/check-in" className={styles.adminBarLink}>
+          Check-in
+        </Link>
         {session.isSuperAdmin && (
           <Link href="/admin/admins" className={styles.adminBarLink}>
             Manage admins

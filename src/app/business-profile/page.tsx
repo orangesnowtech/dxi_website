@@ -15,7 +15,7 @@ import {
   TextArea,
   Conditional,
   Frame,
-} from "./FormControls";
+} from "@/app/components/ui/FormControls";
 
 type SocialMediaProfile = {
   platform: string;

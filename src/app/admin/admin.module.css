@@ -875,3 +875,160 @@
   font-size: 0.8rem;
   color: #6b7280;
 }
+
+/* ── Event portal ──────────────────────────────────────────────────────────
+   The event editor nests a repeating sub-form (registration types) inside its
+   card, and the check-in screen is the one admin view designed for a phone
+   held at a door rather than a laptop at a desk.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: #111827;
+}
+
+.typeRows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.typeRow {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.typeRowHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: #111827;
+}
+
+.countPill {
+  background-color: #e0e7ff;
+  border-radius: 20px;
+  color: #3730a3;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #374151;
+}
+
+.checkboxRow input {
+  width: 16px;
+  height: 16px;
+  accent-color: #b91c1c;
+}
+
+/* ── Check-in ──────────────────────────────────────────────────────────── */
+
+.checkInForm {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  align-items: end;
+}
+
+/* Codes get read aloud and typed in a hurry — big, spaced and uppercase. */
+.checkInInput {
+  font-size: 1.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.resultCard {
+  background-color: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.resultHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.resultCode {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #111827;
+}
+
+.resultMeta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.checkedInBadge {
+  background-color: #d1fae5;
+  border-radius: 8px;
+  color: #065f46;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 10px 14px;
+}
+
+/* Deliberately the largest control on the page — it is tapped in a queue. */
+.confirmBtn {
+  background-color: #047857;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 14px 28px;
+  transition: background-color 0.15s ease;
+}
+
+.confirmBtn:hover:not(:disabled) {
+  background-color: #065f46;
+}
+
+.confirmBtn:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.resultNotes {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
