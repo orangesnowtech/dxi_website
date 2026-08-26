@@ -11,8 +11,13 @@ export function geminiApiKey() {
   return (process.env.GEMINI_API_KEY || "").trim();
 }
 
+/**
+ * The Purch bot pins gemini-2.5-flash, which Google has since closed to new
+ * API keys — it answers 404 with a pointer at the current flash model. Copying
+ * that pin across would have looked like a broken integration.
+ */
 export function geminiModel() {
-  return (process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+  return (process.env.GEMINI_MODEL || "gemini-3.6-flash").trim();
 }
 
 /** Whether the assistant is configured well enough to answer at all. */

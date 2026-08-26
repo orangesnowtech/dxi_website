@@ -158,6 +158,11 @@ export type HandleResult = {
   conversationId: string;
   /** Absent when the bot stayed silent, which is not the same as failing. */
   reply: string | null;
+  /**
+   * When the reply was stored. The widget advances its poll cursor to this, so
+   * a message it has already rendered is never handed back to it again.
+   */
+  replyAt: string | null;
   mode: "bot" | "human";
 };
 
@@ -185,7 +190,7 @@ export async function handleIncomingMessage(
       conversation.awaitingAgent && waitedMs > handoffTimeoutMinutes() * 60_000;
 
     if (!timedOut) {
-      return { conversationId: id, reply: null, mode: "human" };
+      return { conversationId: id, reply: null, replyAt: null, mode: "human" };
     }
 
     await setMode(id, "bot");
@@ -194,9 +199,9 @@ export async function handleIncomingMessage(
   if (await overRateLimit(id)) {
     const message =
       "You have sent a lot of messages in a short time, so I am going to pause here. Someone from the team will pick this up.";
-    await appendMessage(id, "assistant", message);
+    const stored = await appendMessage(id, "assistant", message);
     await escalate(id, "Hit the hourly message limit.");
-    return { conversationId: id, reply: message, mode: "human" };
+    return { conversationId: id, reply: message, replyAt: stored.at, mode: "human" };
   }
 
   const history = await recentMessages(id);
@@ -210,7 +215,7 @@ export async function handleIncomingMessage(
     await recordLead(id, turn.lead);
   }
 
-  await appendMessage(id, "assistant", turn.reply);
+  const stored = await appendMessage(id, "assistant", turn.reply);
 
   if (turn.escalated) {
     await escalate(id, turn.lead?.summary || "The assistant asked for a person.");
@@ -219,6 +224,7 @@ export async function handleIncomingMessage(
   return {
     conversationId: id,
     reply: turn.reply,
+    replyAt: stored.at,
     mode: turn.escalated ? "human" : "bot",
   };
 }

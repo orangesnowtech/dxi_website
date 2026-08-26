@@ -67,6 +67,33 @@
       ]
     },
     {
+      "//": "Assistant rate limit — counts a conversation's inbound messages in the last hour.",
+      "collectionGroup": "messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "role", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "//": "Assistant dashboard — conversations filtered by bot/human, most recent first.",
+      "collectionGroup": "botConversations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mode", "order": "ASCENDING" },
+        { "fieldPath": "lastMessageAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Assistant dashboard — captured leads only, most recent first.",
+      "collectionGroup": "botConversations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isLead", "order": "ASCENDING" },
+        { "fieldPath": "lastMessageAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "//": "Check-in code lookup scoped to one event.",
       "collectionGroup": "eventRegistrations",
       "queryScope": "COLLECTION",

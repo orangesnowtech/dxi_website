@@ -44,6 +44,8 @@ export default function ChatWidget() {
   const [busy, setBusy] = useState(false);
   const [handedOff, setHandedOff] = useState(false);
   const threadRef = useRef<HTMLDivElement>(null);
+  /** Newest message already on screen, so a poll only fetches what is new. */
+  const lastSeenRef = useRef<string>(new Date().toISOString());
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -58,6 +60,50 @@ export default function ChatWidget() {
   useEffect(() => {
     threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
   }, [bubbles, busy]);
+
+  /**
+   * Watches for anything a person types on the other side.
+   *
+   * Only runs once a conversation has been handed off, and only while the
+   * window is open — polling every open widget on the site would be a request
+   * per visitor per few seconds for messages that, in the bot's own
+   * conversations, never arrive.
+   */
+  useEffect(() => {
+    if (!open || !handedOff || !sessionId) return;
+
+    let stopped = false;
+
+    const tick = async () => {
+      try {
+        const response = await fetch(
+          `/api/bot/chat?sessionId=${encodeURIComponent(sessionId)}&after=${encodeURIComponent(lastSeenRef.current)}`
+        );
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        for (const message of data.messages ?? []) {
+          if (message.at > lastSeenRef.current) lastSeenRef.current = message.at;
+          if (stopped) return;
+          setBubbles((prev) => [...prev, { role: "assistant", text: message.text }]);
+        }
+
+        if (data.mode === "bot") setHandedOff(false);
+      } catch {
+        // A dropped poll is not worth telling anyone about; the next one runs
+        // in a few seconds.
+      }
+    };
+
+    const timer = setInterval(tick, 5000);
+    tick();
+
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
+  }, [open, handedOff, sessionId]);
 
   const send = async () => {
     const text = draft.trim();
@@ -81,6 +127,10 @@ export default function ChatWidget() {
       }
 
       if (data.mode === "human") setHandedOff(true);
+
+      // Advance past the reply we are about to render, or the first poll after
+      // a handoff would hand it straight back and duplicate the bubble.
+      if (data.replyAt) lastSeenRef.current = data.replyAt;
 
       // A null reply means a person owns the thread and the bot is staying
       // quiet on purpose — say so rather than leaving a dead window.
@@ -157,7 +207,7 @@ export default function ChatWidget() {
             {bubbles.map((bubble, index) => (
               <div
                 key={index}
-                className={`max-w-[85%] px-3.5 py-2.5 text-[14.5px] leading-[1.5] whitespace-pre-wrap ${
+                className={`max-w-[85%] px-3.5 py-2.5 text-[14.5px] leading-normal whitespace-pre-wrap ${
                   bubble.role === "user"
                     ? "ml-auto bg-ink text-white"
                     : "mr-auto border border-line bg-ash text-ink"

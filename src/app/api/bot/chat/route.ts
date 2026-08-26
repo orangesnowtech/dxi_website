@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { botIsConfigured } from "@/lib/bot/config";
-import { handleIncomingMessage } from "@/lib/bot/conversation";
+import {
+  allMessages,
+  conversationId,
+  getConversation,
+  handleIncomingMessage,
+} from "@/lib/bot/conversation";
 import { MAX_USER_MESSAGE_LENGTH } from "@/lib/bot/types";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +25,49 @@ export const runtime = "nodejs";
 
 /** Rejects ids that are not ours, so nothing odd reaches a document path. */
 const SESSION_PATTERN = /^[A-Za-z0-9_-]{12,64}$/;
+
+/**
+ * Polls for anything said since the widget last looked.
+ *
+ * This is what makes a handoff real on the website. The bot going quiet is
+ * only half of it — without somewhere to collect the human's reply, escalation
+ * would be a conversation that simply stops.
+ *
+ * Scoped to one session id, which is the caller's own conversation and grants
+ * nothing else. Reading anybody else's needs an admin session.
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = request.nextUrl;
+    const sessionId = searchParams.get("sessionId") || "";
+    const after = searchParams.get("after") || "";
+
+    if (!SESSION_PATTERN.test(sessionId)) {
+      return NextResponse.json({ error: "Bad session." }, { status: 400 });
+    }
+
+    const conversation = await getConversation(conversationId("web", sessionId));
+
+    if (!conversation) {
+      return NextResponse.json({ messages: [], mode: "bot" });
+    }
+
+    const since = new Date(after);
+    const messages = (await allMessages(conversation.id)).filter(
+      (message) =>
+        (message.role === "assistant" || message.role === "agent") &&
+        (Number.isNaN(since.getTime()) || new Date(message.at) > since)
+    );
+
+    return NextResponse.json({
+      messages: messages.map((message) => ({ text: message.text, at: message.at })),
+      mode: conversation.mode,
+    });
+  } catch (error) {
+    console.error("[bot] poll failed:", error);
+    return NextResponse.json({ messages: [], mode: "bot" });
+  }
+}
 
 export async function POST(request: NextRequest) {
   if (!botIsConfigured()) {
@@ -60,6 +108,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       reply: result.reply,
+      replyAt: result.replyAt,
       // Lets the widget say "someone will pick this up" rather than sitting
       // there looking broken when the bot has deliberately gone quiet.
       mode: result.mode,

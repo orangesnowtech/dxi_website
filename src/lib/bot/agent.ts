@@ -1,4 +1,4 @@
-import { GoogleGenAI, type Content } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel, type Content } from "@google/genai";
 import { geminiApiKey, geminiModel } from "./config";
 import { operationalFacts, siteKnowledge } from "./knowledge";
 import { runTool, toolDeclarations, type ToolContext } from "./tools";
@@ -98,7 +98,13 @@ export async function runAgent(
         systemInstruction: systemPrompt(channel),
         tools: [{ functionDeclarations: toolDeclarations }],
         temperature: 0.4,
-        maxOutputTokens: 800,
+        // Gemini 3 spends thinking tokens out of this same budget, so a limit
+        // sized for the visible answer gets swallowed by reasoning and the
+        // reply arrives cut off mid-sentence. Headroom for both.
+        maxOutputTokens: 2048,
+        // Minimal thinking: this is a front-desk conversation, not a puzzle.
+        // It keeps replies quick and stops deliberation eating the budget.
+        thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
       },
     });
 
@@ -114,14 +120,23 @@ export async function runAgent(
       };
     }
 
-    // Model turn first, then every result, or the next call has no idea what
-    // it asked for.
-    contents.push({
-      role: "model",
-      parts: calls.map((call) => ({
-        functionCall: { name: call.name, args: call.args ?? {} },
-      })),
-    });
+    // The model's own turn goes back verbatim, not rebuilt from name and args.
+    //
+    // Gemini 3 attaches a thought signature to each functionCall part and
+    // rejects the next request if it is missing — reconstructing the turn by
+    // hand silently drops it and the whole call fails with INVALID_ARGUMENT.
+    // Echoing the candidate content preserves whatever the model needs,
+    // including fields we do not know about.
+    const modelTurn = response.candidates?.[0]?.content;
+
+    contents.push(
+      modelTurn ?? {
+        role: "model",
+        parts: calls.map((call) => ({
+          functionCall: { name: call.name, args: call.args ?? {} },
+        })),
+      }
+    );
 
     const results = await Promise.all(
       calls.map(async (call) => {
