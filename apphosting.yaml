@@ -131,3 +131,35 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  # ---- DXI assistant ----
+  # BUILD as well as RUNTIME: the root layout calls botIsConfigured() to decide
+  # whether to render the widget at all, and that runs while the page is being
+  # rendered. Without it at build time the widget would be compiled out.
+  #
+  # Naming a secret here that does not exist in Secret Manager fails the build,
+  # so this was added only after `apphosting:secrets:describe` confirmed it and
+  # both backends were granted access.
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: GEMINI_MODEL
+    value: gemini-3.6-flash
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: BOT_HANDOFF_TIMEOUT_MINUTES
+    value: "15"
+    availability:
+      - RUNTIME
+
+  - variable: BOT_HOURLY_MESSAGE_LIMIT
+    value: "40"
+    availability:
+      - RUNTIME
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
