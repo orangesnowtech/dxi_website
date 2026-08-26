@@ -1032,3 +1032,47 @@
   font-size: 0.9rem;
   white-space: pre-wrap;
 }
+
+/* ── Event poster ──────────────────────────────────────────────────────── */
+
+.posterRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Square, because the public card crops to 1:1 — the preview has to show the
+   same crop the visitor gets, or a poster looks fine here and wrong there. */
+.posterPreview {
+  width: 140px;
+  height: 140px;
+  flex: 0 0 auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.posterPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.posterControls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.posterControls .deleteBtn {
+  align-self: flex-start;
+}

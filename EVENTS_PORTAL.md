@@ -50,6 +50,37 @@ Rejecting or cancelling **gives the seat back**. The tallies are adjusted by the
 difference between what the two statuses hold, inside the same transaction as
 the status write.
 
+## Posters
+
+Each event carries a **square** poster, uploaded in the dashboard and stored in
+Firebase Storage (`dxi-website-backed.firebasestorage.app`, under
+`event-posters/<slug>/`). Square because the listing card crops to 1:1 — a
+portrait flyer loses its top and bottom there, so the aspect is part of the
+brief rather than a rendering detail. A URL can be pasted instead of uploading.
+
+Objects are **not** made public. Buckets created today default to uniform
+bucket-level access, where per-object ACLs are rejected outright, so each upload
+carries a `firebaseStorageDownloadTokens` value instead — the same mechanism
+behind the client SDK's `getDownloadURL`. Signed URLs were the alternative and
+are wrong here: V4 signing caps at seven days, and a poster outliving its own
+link is a broken card on the listing page.
+
+The poster is also the Open Graph and Twitter card image, because a shared event
+link is mostly seen as a preview before anyone opens it.
+
+Posters render through a plain `<img>` rather than `next/image`: they come from
+Storage today and could come from anywhere later, and an optimiser host
+allowlist is one more thing that can break a card.
+
+## Sharing
+
+Events are shareable by design. The dashboard's list has a **Copy link** button
+per event, and the public page carries a copy control that offers the native
+share sheet on phones and falls back to a selectable input where the clipboard
+API is unavailable. Both build the URL from the browser's own origin, so they
+are correct on preview, on the apex domain and on localhost without a base URL
+having to be configured and kept in step.
+
 ## Access codes
 
 Six characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` — no O/0 or I/1, because

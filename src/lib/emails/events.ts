@@ -243,6 +243,7 @@ export function buildEventAdminNotificationEmail(input: {
   jobTitle: string;
   socialMediaUrl: string;
   howDidYouHear: string;
+  expectations: string;
   notes: string;
   status: string;
   feeLabel: string;
@@ -293,6 +294,7 @@ export function buildEventAdminNotificationEmail(input: {
           ${row("Heard about it via", input.howDidYouHear)}
         </table>
         ${vendorBlock}
+        ${input.expectations ? `<h3 style="margin:20px 0 8px;">What they want out of it</h3><p style="margin:0;white-space:pre-wrap;">${escapeHtml(input.expectations)}</p>` : ""}
         ${input.notes ? `<h3 style="margin:20px 0 8px;">Notes</h3><p style="margin:0;white-space:pre-wrap;">${escapeHtml(input.notes)}</p>` : ""}
       </div>
     `,

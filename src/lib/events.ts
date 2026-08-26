@@ -73,6 +73,14 @@ export type EventRecord = {
   title: string;
   kind: EventKind;
   status: EventStatus;
+  /**
+   * Square artwork for the listing card. Any https URL.
+   *
+   * Square because the card crops to 1:1 — a poster laid out for a portrait
+   * flyer loses its top and bottom there, so the aspect is part of the brief
+   * rather than a rendering detail.
+   */
+  posterUrl: string;
   /** One line under the title on the listing card. */
   summary: string;
   /** Long copy on the detail page. Plain text; blank lines split paragraphs. */
@@ -169,6 +177,8 @@ export type EventRegistration = {
   jobTitle: string;
   socialMediaUrl: string;
   howDidYouHear: string;
+  /** What they want out of it. Free text — the answer that shapes the room. */
+  expectations: string;
   notes: string;
   vendor: VendorDetails | null;
   status: RegistrationStatus;
@@ -374,6 +384,7 @@ export type EventPayload = {
   title?: string;
   kind?: string;
   status?: string;
+  posterUrl?: string;
   summary?: string;
   description?: string;
   startsAt?: string | null;
@@ -466,6 +477,18 @@ export function parseEventPayload(
 
   if (!summary) {
     return { error: "Write the one-line summary shown on the events list.", values: null };
+  }
+
+  const posterUrl = (payload.posterUrl || "").trim().slice(0, 600);
+
+  // Optional, but a poster that fails to load leaves a hole in the card, so a
+  // malformed one is rejected at the point it is typed rather than discovered
+  // on the live listing.
+  if (posterUrl && !/^https:\/\/[^\s]+$/i.test(posterUrl)) {
+    return {
+      error: "The poster must be a full https:// image address, or left blank.",
+      values: null,
+    };
   }
 
   const startsAtDate = new Date(payload.startsAt || "");
@@ -598,6 +621,7 @@ export function parseEventPayload(
       title,
       kind,
       status,
+      posterUrl,
       summary,
       description: (payload.description || "").trim().slice(0, 6000),
       startsAt: startsAtDate.toISOString(),

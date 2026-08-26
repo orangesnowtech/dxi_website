@@ -35,6 +35,7 @@ type EventForm = {
   title: string;
   kind: EventKind;
   status: EventStatus;
+  posterUrl: string;
   summary: string;
   description: string;
   startsAt: string;
@@ -64,6 +65,7 @@ const emptyForm = (): EventForm => ({
   title: "",
   kind: "webinar",
   status: "draft",
+  posterUrl: "",
   summary: "",
   description: "",
   startsAt: "",
@@ -117,6 +119,7 @@ function eventToForm(event: EventRecord): EventForm {
     title: event.title,
     kind: event.kind,
     status: event.status,
+    posterUrl: event.posterUrl || "",
     summary: event.summary,
     description: event.description || "",
     startsAt: toLocalInput(event.startsAt),
@@ -151,6 +154,51 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
   const [form, setForm] = useState<EventForm | null>(null);
   /** The slug being edited, or null when the form is creating. */
   const [editing, setEditing] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  /** Slug whose public link was just copied, for the button's confirmation. */
+  const [copied, setCopied] = useState<string | null>(null);
+
+  /**
+   * Sends a poster straight to storage and keeps only the URL on the form.
+   *
+   * Uploading on selection rather than on save means a slow upload never holds
+   * up the rest of the form, and a failure costs the picture rather than
+   * everything else that was typed.
+   */
+  const handlePosterUpload = async (file: File) => {
+    setUploading(true);
+    setError(null);
+
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("slug", form?.slug || normalizeSlug(form?.title || "") || "unfiled");
+
+      const response = await fetch("/api/admin/events/poster", { method: "POST", body });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not upload that poster");
+      }
+
+      setField("posterUrl", data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not upload that poster");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  /** Copies an event's public URL, built from the browser's own origin. */
+  const handleCopyLink = async (slug: string) => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/events/${slug}`);
+      setCopied(slug);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      setError("Could not copy — the browser blocked clipboard access.");
+    }
+  };
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -212,6 +260,7 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
       title: form.title,
       kind: form.kind,
       status: form.status,
+      posterUrl: form.posterUrl,
       summary: form.summary,
       description: form.description,
       startsAt: toIso(form.startsAt),
@@ -470,6 +519,57 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                 <span className={styles.codeHint}>
                   Across every registration type. Blank for uncapped.
                 </span>
+              </div>
+            </div>
+
+            <div className={styles.codeField} style={{ marginTop: 18 }}>
+              <label htmlFor="poster">Square poster</label>
+              <div className={styles.posterRow}>
+                <div className={styles.posterPreview}>
+                  {form.posterUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={form.posterUrl} alt="Poster preview" />
+                  ) : (
+                    <span>No poster</span>
+                  )}
+                </div>
+
+                <div className={styles.posterControls}>
+                  <input
+                    id="poster"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handlePosterUpload(file);
+                      // Cleared so picking the same file twice still fires.
+                      e.target.value = "";
+                    }}
+                  />
+                  <span className={styles.codeHint}>
+                    {uploading
+                      ? "Uploading…"
+                      : "JPEG, PNG or WebP, up to 5MB. Cropped to a square on the card, so upload it square."}
+                  </span>
+
+                  <input
+                    className={styles.grantInput}
+                    value={form.posterUrl}
+                    onChange={(e) => setField("posterUrl", e.target.value)}
+                    placeholder="…or paste an image URL"
+                  />
+
+                  {form.posterUrl && (
+                    <button
+                      type="button"
+                      className={styles.deleteBtn}
+                      onClick={() => setField("posterUrl", "")}
+                    >
+                      Remove poster
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -746,6 +846,14 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                         >
                           Registrations
                         </Link>
+                        <button
+                          type="button"
+                          className={styles.copyCodeBtn}
+                          onClick={() => handleCopyLink(event.slug)}
+                          title={`Copy the public link for ${event.title}`}
+                        >
+                          {copied === event.slug ? "Copied!" : "Copy link"}
+                        </button>
                         <button
                           type="button"
                           className={styles.deleteBtn}

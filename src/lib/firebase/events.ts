@@ -87,6 +87,7 @@ export type RegistrationInput = {
   jobTitle: string;
   socialMediaUrl: string;
   howDidYouHear: string;
+  expectations: string;
   notes: string;
   vendor: VendorDetails | null;
 };
@@ -171,6 +172,7 @@ export async function registerForEvent(input: RegistrationInput): Promise<Regist
       jobTitle: input.jobTitle,
       socialMediaUrl: input.socialMediaUrl,
       howDidYouHear: input.howDidYouHear,
+      expectations: input.expectations,
       notes: input.notes,
       vendor: type.profile === "vendor" ? input.vendor : null,
       status,
