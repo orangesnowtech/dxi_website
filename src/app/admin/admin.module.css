@@ -1063,6 +1063,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Matches the public card. A preview that crops differently to the live one
+     is worse than no preview, because it is believed. */
+  object-position: top;
 }
 
 .posterControls {

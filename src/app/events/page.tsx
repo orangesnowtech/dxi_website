@@ -76,9 +76,11 @@ function EventCard({ event, past = false }: { event: PublicEvent; past?: boolean
         {/*
           Fixed 1:1 frame. The poster is cropped to fill rather than letterboxed
           so a row of cards keeps one rhythm even when someone uploads artwork
-          that is not quite square. Plain <img> rather than next/image: posters
-          come from Firebase Storage and, later, wherever else, and an optimiser
-          allowlist is one more thing to break a card on.
+          that is not quite square. Anchored to the top, not the centre: a
+          poster leads with its title and key art, and a centre crop is what
+          slices the top off a tall one. Plain <img> rather than next/image:
+          posters come from Firebase Storage and, later, wherever else, and an
+          optimiser allowlist is one more thing to break a card on.
         */}
         {event.posterUrl && (
           <div className="aspect-square w-full overflow-hidden border-b border-line bg-ash">
@@ -87,7 +89,7 @@ function EventCard({ event, past = false }: { event: PublicEvent; past?: boolean
               src={event.posterUrl}
               alt=""
               loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             />
           </div>
         )}
