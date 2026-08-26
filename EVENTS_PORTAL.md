@@ -83,6 +83,40 @@ API is unavailable. Both build the URL from the browser's own origin, so they
 are correct on preview, on the apex domain and on localhost without a base URL
 having to be configured and kept in step.
 
+## Short links
+
+`/events/lagos-growth-summit-2025` is fine on a web page and hopeless in the
+places the link actually travels — a WhatsApp reply, a flyer, an address read
+out over a call. Every event therefore gets a short link the moment it is
+created: `/r/lagos-growth`, managed at **/admin/links**.
+
+The code is the Firestore document id, so two admins claiming `lagos25` at once
+cannot both win — `create()` fails on the second rather than overwriting the
+first. The target is editable at any time and the code is not, once anybody has
+followed it: retargeting is the point (the code on the poster stays, the page it
+opens moves), while renaming would break whatever is already carrying the old
+one. Before the first follow a rename is allowed, because that is when a typo
+gets noticed.
+
+The dashboard's **Copy link** button and the public page's share control both
+hand out the short form when the event has one. So does the assistant, which is
+where it matters most — its replies are read in WhatsApp, and it composes them
+with no request to read the host from, so those links are absolute
+(`NEXT_PUBLIC_SITE_URL`, defaulting to `https://dximarketing.com`).
+
+A link can also be made by hand and pointed anywhere, including off-site: that
+is how a printed code survives an event moving to somebody else's ticketing
+page. Attaching such a link to an event in the **Event** field is what makes the
+assistant send it.
+
+Paused links stop redirecting but keep their code claimed and their counts.
+Deletion is super-admin only and refused once a link has been followed —
+freeing a code means something else could later answer an address already
+printed somewhere.
+
+Events created before this existed have no link. The links dashboard lists them
+under **Events with no link** with a one-click create.
+
 ## Access codes
 
 Six characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` — no O/0 or I/1, because
@@ -116,6 +150,10 @@ the tighter of the two.
 | `src/app/admin/(dashboard)/check-in/` | Door screen. |
 | `src/app/api/events/register/` | The one public endpoint. |
 | `src/app/api/admin/{events,registrations,check-in}/` | Behind the admin session. |
+| `src/lib/links.ts` | What a short code and a target may be. Import-free, like `events.ts`. |
+| `src/lib/firebase/links.ts` | Short-link storage, click counting, and the per-event lookup. |
+| `src/app/r/[code]/` | Where a short link lands. A page, not a route handler, so a dead code says so. |
+| `src/app/admin/(dashboard)/links/` | Creating, retargeting, pausing and deleting links. |
 
 `FormControls` moved from `src/app/business-profile/` to
 `src/app/components/ui/` — it is now shared by the site's two long forms so they

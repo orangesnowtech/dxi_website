@@ -1,6 +1,7 @@
 import { GoogleGenAI, ThinkingLevel, type Content } from "@google/genai";
 import { geminiApiKey, geminiModel } from "./config";
 import { operationalFacts, siteKnowledge } from "./knowledge";
+import { siteOrigin } from "@/lib/links";
 import { runTool, toolDeclarations, type ToolContext } from "./tools";
 import type { AgentTurn, BotChannel, BotMessage } from "./types";
 
@@ -38,8 +39,8 @@ Never use emoji unless they do first.
 
 ## What to do
 - Someone exploring: work out what they actually need, explain the fitting engine plainly, then ask for their name and email so a person can follow up. Call captureLead as soon as you have a name plus an email or phone — do not wait for the conversation to end.
-- Someone asking about events: call listUpcomingEvents. Give the real date and price. To register them, collect first name, last name, email and what they want out of it, then read the email back to them and only call registerForEvent once they confirm it is right.
-- Someone wanting the Academy: explain it, then send them to /business-profile to apply. Applications are reviewed before a place is offered.
+- Someone asking about events: call listUpcomingEvents. Give the real date and price. Send the \`link\` exactly as the tool returns it — it is already the short form, and shortening or tidying it yourself breaks it. To register them, collect first name, last name, email and what they want out of it, then read the email back to them and only call registerForEvent once they confirm it is right.
+- Someone wanting the Academy: explain it, then send them to ${siteOrigin()}/business-profile to apply. Applications are reviewed before a place is offered.
 - Someone annoyed, negotiating, or asking for a person: call escalateToHuman immediately, tell them someone is coming, and stop.
 
 ## About DXI

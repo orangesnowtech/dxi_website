@@ -161,3 +161,18 @@ env:
     value: "40"
     availability:
       - RUNTIME
+
+  # ---- Short links ----
+  # The site's own address, for the places that compose a link with no request
+  # to read the host from — the assistant writing a WhatsApp reply, mainly.
+  # Pages that have a browser keep reading window.location.origin instead, so
+  # this being wrong on a preview backend costs nothing there.
+  #
+  # Defaults to https://dximarketing.com in code, so a backend without it still
+  # sends working links; it is set here so that default never becomes load
+  # bearing without anyone noticing.
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://dximarketing.com
+    availability:
+      - BUILD
+      - RUNTIME

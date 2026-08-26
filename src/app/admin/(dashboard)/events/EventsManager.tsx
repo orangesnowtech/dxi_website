@@ -16,6 +16,7 @@ import {
   type EventRecord,
   type EventStatus,
 } from "@/lib/events";
+import { shortLinkPath } from "@/lib/links";
 import styles from "../../admin.module.css";
 
 type TypeForm = {
@@ -159,6 +160,8 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
   const posterInputRef = useRef<HTMLInputElement>(null);
   /** Slug whose public link was just copied, for the button's confirmation. */
   const [copied, setCopied] = useState<string | null>(null);
+  /** `slug -> short code`, for the events that have a link. Managed on /admin/links. */
+  const [shortCodes, setShortCodes] = useState<Record<string, string>>({});
 
   /**
    * Sends a poster straight to storage and keeps only the URL on the form.
@@ -198,7 +201,17 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
    * was actually pressed rather than both.
    */
   const handleCopyLink = async (slug: string, kind: "page" | "check-in") => {
-    const path = kind === "page" ? `/events/${slug}` : `/events/${slug}/check-in`;
+    const code = shortCodes[slug];
+
+    // The short link is what gets copied when there is one: this button feeds
+    // WhatsApp messages and flyers, not browser bars. Check-in is not
+    // shortened — it is read off a screen at the door, not passed around.
+    const path =
+      kind === "check-in"
+        ? `/events/${slug}/check-in`
+        : code
+          ? shortLinkPath(code)
+          : `/events/${slug}`;
 
     try {
       await navigator.clipboard.writeText(`${window.location.origin}${path}`);
@@ -273,6 +286,7 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
       }
 
       setEvents(data.events);
+      setShortCodes(data.shortCodes || {});
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -907,7 +921,10 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                   <tr key={event.slug} className={styles.row}>
                     <td>
                       <div className={styles.name}>{event.title}</div>
-                      <span className={styles.referralNote}>/events/{event.slug}</span>
+                      <span className={styles.referralNote}>
+                        /events/{event.slug}
+                        {shortCodes[event.slug] ? ` · /r/${shortCodes[event.slug]}` : ""}
+                      </span>
                     </td>
                     <td>{EVENT_KIND_LABELS[event.kind]}</td>
                     <td>{formatEventDay(event.startsAt)}</td>
@@ -960,7 +977,11 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                           type="button"
                           className={styles.copyCodeBtn}
                           onClick={() => handleCopyLink(event.slug, "page")}
-                          title={`Copy the public link for ${event.title}`}
+                          title={
+                            shortCodes[event.slug]
+                              ? `Copy /r/${shortCodes[event.slug]} — the short link for ${event.title}`
+                              : `Copy the public link for ${event.title}`
+                          }
                         >
                           {copied === `${event.slug}:page` ? "Copied!" : "Copy link"}
                         </button>

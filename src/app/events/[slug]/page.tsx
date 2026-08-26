@@ -9,6 +9,8 @@ import {
   formatEventWhen,
 } from "@/lib/events";
 import { getEvent, toPublicEvent } from "@/lib/firebase/events";
+import { shortLinkForEvent } from "@/lib/firebase/links";
+import { shortLinkPath } from "@/lib/links";
 import Eyebrow from "@/app/components/ui/Eyebrow";
 import Section, { Wrap } from "@/app/components/ui/Section";
 import Reveal from "@/app/components/ui/Reveal";
@@ -77,6 +79,14 @@ export default async function EventPage({ params }: Props) {
   const rejection = eventRejectionReason(event, new Date());
   const publicEvent = toPublicEvent(event);
 
+  // The share control offers this when there is one. A link that has been
+  // paused deliberately is not offered — that is what pausing means — and a
+  // failure to read it just falls back to the long address.
+  const link = await shortLinkForEvent(slug).catch((error) => {
+    console.error(`Could not read the short link for ${slug}:`, error);
+    return null;
+  });
+
   return (
     <>
       <Wrap className="pt-[18px] font-mono text-xs tracking-[0.08em] text-smoke">
@@ -121,7 +131,10 @@ export default async function EventPage({ params }: Props) {
                 />
               </div>
 
-              <ShareLink title={event.title} />
+              <ShareLink
+                title={event.title}
+                shortPath={link?.active ? shortLinkPath(link.code) : null}
+              />
             </div>
 
             {event.posterUrl && (

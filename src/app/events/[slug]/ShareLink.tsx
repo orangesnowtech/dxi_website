@@ -5,22 +5,32 @@ import { useEffect, useState } from "react";
 /**
  * Copy-the-link control for an event.
  *
- * The URL is read from the browser rather than passed in, so it is right on
- * every origin the site answers on — the preview backend, the apex domain, or
+ * The origin is read from the browser rather than passed in, so it is right on
+ * every host the site answers on — the preview backend, the apex domain, or
  * localhost — without a base URL having to be configured and kept in step.
+ *
+ * `shortPath` is the event's short link when it has one. What gets shared is
+ * what travels, and this address is going into a WhatsApp message far more
+ * often than a browser bar.
  *
  * Falls back to a selectable input where the clipboard API is unavailable,
  * which is any page not served over https and, historically, iOS. Silently
  * doing nothing on a tapped "Copy" button is worse than showing the text.
  */
-export default function ShareLink({ title }: { title: string }) {
+export default function ShareLink({
+  title,
+  shortPath,
+}: {
+  title: string;
+  shortPath?: string | null;
+}) {
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setUrl(window.location.origin + window.location.pathname);
-  }, []);
+    setUrl(window.location.origin + (shortPath || window.location.pathname));
+  }, [shortPath]);
 
   useEffect(() => {
     if (!copied) return;

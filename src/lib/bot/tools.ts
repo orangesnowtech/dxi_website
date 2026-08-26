@@ -7,6 +7,8 @@ import {
   type PublicEvent,
 } from "@/lib/events";
 import { listPublishedEvents, registerForEvent } from "@/lib/firebase/events";
+import { shortLinkCodesForEvents } from "@/lib/firebase/links";
+import { shortLinkUrl, siteOrigin } from "@/lib/links";
 
 /**
  * What the assistant can *do*, as opposed to what it knows.
@@ -94,14 +96,25 @@ export const toolDeclarations: FunctionDeclaration[] = [
 /** What a tool call gives back to the model. */
 export type ToolResult = Record<string, unknown>;
 
-function describeEvent(event: PublicEvent) {
+/**
+ * `shortCode` is the event's short link, when it has one.
+ *
+ * The link is absolute rather than a path because most of these replies are
+ * read in WhatsApp, where `/events/lagos-growth-summit-2025` is not a link at
+ * all — it is a line of text nobody can tap. Short where possible for the same
+ * reason: a long address wraps across three lines on a phone and gets copied
+ * wrong when somebody passes it on.
+ */
+function describeEvent(event: PublicEvent, shortCode?: string) {
   return {
     slug: event.slug,
     title: event.title,
     when: formatEventWhen(event.startsAt, event.endsAt),
     where: formatEventPlace(event),
     summary: event.summary,
-    link: `/events/${event.slug}`,
+    link: shortCode
+      ? shortLinkUrl(shortCode)
+      : `${siteOrigin()}/events/${event.slug}`,
     // Only types that can still be booked, so the model cannot offer a place
     // that has already gone.
     registrationTypes: event.registrationTypes
@@ -136,9 +149,20 @@ export async function runTool(
         .filter((event) => new Date(event.endsAt || event.startsAt) >= now)
         .slice(0, 8);
 
-      return events.length > 0
-        ? { events: events.map(describeEvent) }
-        : { events: [], note: "Nothing is on the calendar right now." };
+      if (events.length === 0) {
+        return { events: [], note: "Nothing is on the calendar right now." };
+      }
+
+      // One query for the whole list. A missing or paused link is not an
+      // error — the long address still works, so the reply falls back to it.
+      const codes = await shortLinkCodesForEvents(events.map((event) => event.slug)).catch(
+        (error) => {
+          console.error("Could not read short links for the events list:", error);
+          return new Map<string, string>();
+        }
+      );
+
+      return { events: events.map((event) => describeEvent(event, codes.get(event.slug))) };
     }
 
     case "registerForEvent": {
