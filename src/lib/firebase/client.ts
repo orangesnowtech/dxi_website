@@ -32,7 +32,23 @@ const firebaseConfig = {
  * that. It fixes the failure, not the noise.
  */
 function resolveAuthDomain() {
-  if (typeof window !== "undefined" && window.location.hostname) {
+  // Off by default. Serving the handler from our own origin also changes the
+  // OAuth redirect_uri to https://<our-host>/__/auth/handler, and Google
+  // rejects that with `redirect_uri_mismatch` until the exact URL is listed on
+  // the OAuth 2.0 web client in Google Cloud Console — a separate list from
+  // Firebase's authorized domains, which is the trap here.
+  //
+  // To turn it on: add https://<host>/__/auth/handler for every host the app
+  // runs on (including localhost:3001) to that client's authorized redirect
+  // URIs, then set NEXT_PUBLIC_FIREBASE_SAME_ORIGIN_AUTH=1. The rewrite in
+  // next.config.ts is already in place and waiting for it.
+  //
+  // Worth doing when Safari matters: it keeps the flow first-party, which is
+  // what stops tracking prevention partitioning the credential away. Chrome
+  // with signInWithRedirect does not need it.
+  const sameOrigin = process.env.NEXT_PUBLIC_FIREBASE_SAME_ORIGIN_AUTH === "1";
+
+  if (sameOrigin && typeof window !== "undefined" && window.location.hostname) {
     return window.location.hostname;
   }
 
