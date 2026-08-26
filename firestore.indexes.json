@@ -1,6 +1,15 @@
 {
-  "//": "Composite indexes for the event portal. Firestore builds single-field indexes automatically, so only the multi-field queries appear here. Deploy with: firebase deploy --only firestore:indexes",
+  "//": "Composite indexes for the whole app, not just the event portal. This file is the DECLARATIVE SOURCE OF TRUTH: an index created by hand in the Firebase console is DELETED by the next `firebase deploy --only firestore:indexes`. Add it here instead. Firestore builds single-field indexes automatically, so only multi-field queries appear below.",
   "indexes": [
+    {
+      "//": "Academy dashboard — submissions filtered by status (both `in` for the default active scope and `==` for one status), newest first. Predates the event portal; the collection had no composite indexes at all, so /admin could not load its list.",
+      "collectionGroup": "businessProfileSubmissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
     {
       "//": "Public events listing — published events, soonest first.",
       "collectionGroup": "events",
