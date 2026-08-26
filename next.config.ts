@@ -33,6 +33,31 @@ const nextConfig: NextConfig = {
    *
    * Scoped to /admin because that is the only place the site opens a popup.
    */
+  /**
+   * Serves Firebase's sign-in handler from our own origin.
+   *
+   * The client sets `authDomain` to whatever host it is running on (see
+   * lib/firebase/client.ts), so the popup opens `/__/auth/handler` here rather
+   * than on `*.firebaseapp.com`. Google still renders the page — this only
+   * changes which origin it arrives on, which is what keeps the flow
+   * first-party and out of Safari's partitioned storage.
+   *
+   * The target is the project's real auth domain, read from the same env var
+   * the client used to use, so this follows the project rather than hardcoding
+   * it.
+   */
+  async rewrites() {
+    const authHost =
+      process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ||
+      `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.firebaseapp.com`;
+
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: `https://${authHost}/__/auth/:path*`,
+      },
+    ];
+  },
   async headers() {
     return [
       {
