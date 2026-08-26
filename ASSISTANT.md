@@ -90,6 +90,39 @@ rate-limit index already covers, and Firestore treats a descending sort as a
 different index; the cap is applied in memory instead, which costs nothing when
 whispers are written by hand.
 
+## House rules
+
+The permanent, global counterpart to a whisper: standing instructions the team
+writes at **/admin/bot-rules**, applying to every conversation on every channel.
+
+One Firestore document, `botSettings/houseRules`, holding one block of text.
+Not a collection of rule records with an order and an enabled flag each — the
+useful rules are sentences, and the appeal of this is that somebody can open a
+box, type one, and have the next reply obey it.
+
+    "Never quote a price for Market Force — it is always scoped on a call."
+    "Anyone asking about jobs: take a name and email, promise nothing."
+
+Read fresh on every turn rather than cached, which is what makes "save and the
+next reply obeys" true rather than nearly true. It costs one document read per
+message, against a model call that costs vastly more.
+
+Capped at `MAX_HOUSE_RULES_LENGTH` (4000). This is a running cost, not a
+storage limit: every character is re-sent on every message. A save over the cap
+is **refused rather than truncated** — silently dropping the tail would leave
+somebody believing rules are in force that are not.
+
+Like whispers, house rules are **subordinate to the hard rules** and the prompt
+says so. The hole here is bigger than a whisper's: one sentence typed into a
+settings box would otherwise bypass the safety rules for every conversation at
+once, not one.
+
+Ordered *before* whispers in the prompt, so a whisper wins where the two
+disagree — the same "newest instruction wins" ordering `activeWhispers` relies
+on. Somebody watching one conversation knows things the standing rules cannot.
+
+Emptying the box and saving switches them off.
+
 ## Gemini 3 notes
 
 Two things differ from the Purch code and both look like broken integrations:

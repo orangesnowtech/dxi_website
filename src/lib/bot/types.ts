@@ -94,5 +94,30 @@ export type AgentTurn = {
 
 export const MAX_USER_MESSAGE_LENGTH = 2000;
 
+/**
+ * Standing instructions from the team, applying to every conversation on every
+ * channel — the permanent, global version of a whisper.
+ *
+ * Stored as one block of text the team writes by hand rather than a list of
+ * fields, because the useful rules are sentences ("never quote a price for
+ * Market Force") and nobody wants a form for that.
+ */
+export type BotHouseRules = {
+  text: string;
+  /** ISO, or null while nobody has written any. */
+  updatedAt: string | null;
+  updatedBy: string;
+};
+
+/**
+ * Cap on the standing rules.
+ *
+ * Every one of these characters is re-sent on every single message, so this is
+ * a running cost, not a storage limit. Generous enough for a page of house
+ * style, small enough that nobody can paste a brochure in and quietly triple
+ * the bill.
+ */
+export const MAX_HOUSE_RULES_LENGTH = 4000;
+
 /** How much history the agent is given. Enough for context, bounded for cost. */
 export const AGENT_HISTORY_TURNS = 16;

@@ -1,5 +1,6 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { firestore } from "@/lib/firebase/admin";
+import { houseRulesText } from "@/lib/firebase/bot-rules";
 import { runAgent } from "./agent";
 import { handoffTimeoutMinutes, hourlyMessageLimit } from "./config";
 import {
@@ -232,12 +233,12 @@ export async function handleIncomingMessage(
   // separately, so drop the tail to avoid sending it twice.
   const priorTurns = history.slice(0, -1);
 
-  const turn = await runAgent(
-    incoming.channel,
-    priorTurns,
-    incoming.text,
-    await activeWhispers(id)
-  );
+  // Read fresh on every turn rather than cached, so a rule typed into the
+  // dashboard governs the very next reply — which is the whole point of it
+  // being editable there instead of in the repo. One document read.
+  const [whispers, houseRules] = await Promise.all([activeWhispers(id), houseRulesText()]);
+
+  const turn = await runAgent(incoming.channel, priorTurns, incoming.text, whispers, houseRules);
 
   if (turn.lead) {
     await recordLead(id, turn.lead);

@@ -39,6 +39,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/chats" className={styles.adminBarLink}>
           Chats
         </Link>
+        <Link href="/admin/bot-rules" className={styles.adminBarLink}>
+          Bot rules
+        </Link>
         {session.isSuperAdmin && (
           <Link href="/admin/admins" className={styles.adminBarLink}>
             Manage admins
