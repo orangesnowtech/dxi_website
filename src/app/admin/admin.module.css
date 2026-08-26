@@ -239,14 +239,32 @@
 
 .viewDetailsBtn {
   padding: 6px 12px;
-  background-color: #8b5cf6;
-  color: white;
+  /* Darkened from #8b5cf6, which only cleared 3.4:1 against white — under the
+     4.5:1 small text needs. This clears 6:1. */
+  background-color: #6d28d9;
+  color: #ffffff;
   border: none;
   border-radius: 4px;
   font-weight: 600;
   font-size: 0.8rem;
   cursor: pointer;
   transition: background-color 0.2s;
+}
+
+/*
+  When this class lands on a link rather than a button — the events table's
+  "Registrations" is a next/link — `.table a` outscores `.viewDetailsBtn` on
+  specificity (a class plus an element beats a class alone) and repaints the
+  label blue on the purple fill. Naming the anchor takes the cascade back.
+*/
+.table a.viewDetailsBtn,
+.table a.viewDetailsBtn:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.table a.viewDetailsBtn:hover {
+  background-color: #5b21b6;
 }
 
 .viewDetailsBtn:hover {
