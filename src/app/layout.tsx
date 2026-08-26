@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Archivo, Archivo_Black, IBM_Plex_Mono } from "next/font/google";
 import { getSiteSettings } from "@/lib/data";
+import { botIsConfigured } from "@/lib/bot/config";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
+import ChatWidget from "./components/ChatWidget";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -92,6 +94,11 @@ export default async function RootLayout({
         <Nav settings={settings} />
         {children}
         <Footer settings={settings} />
+        {/*
+          Checked on the server so an unconfigured deployment ships no widget
+          at all, rather than a bubble that opens onto an apology.
+        */}
+        {botIsConfigured() && <ChatWidget />}
       </body>
     </html>
   );
