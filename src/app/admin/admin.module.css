@@ -1043,12 +1043,15 @@
 }
 
 /* Square, because the public card crops to 1:1 — the preview has to show the
-   same crop the visitor gets, or a poster looks fine here and wrong there. */
+   same crop the visitor gets, or a poster looks fine here and wrong there.
+   A button rather than a div: it is a click target and a drop zone, so it
+   should be reachable by keyboard and announce itself as such. */
 .posterPreview {
   width: 140px;
   height: 140px;
   flex: 0 0 auto;
-  border: 1px solid #e5e7eb;
+  padding: 0;
+  border: 2px dashed #d1d5db;
   border-radius: 8px;
   background-color: #f9fafb;
   overflow: hidden;
@@ -1057,6 +1060,47 @@
   justify-content: center;
   color: #9ca3af;
   font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.posterPreview:hover {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.posterPreviewActive {
+  border-color: #b91c1c;
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+/* Driven by the buttons beside and around it. A bare file input is too easy to
+   overlook in a form this long, which is the whole reason this exists. */
+.hiddenFileInput {
+  display: none;
+}
+
+.uploadBtn {
+  align-self: flex-start;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: #b91c1c;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.uploadBtn:hover:not(:disabled) {
+  background-color: #991b1b;
+}
+
+.uploadBtn:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
 }
 
 .posterPreview img {

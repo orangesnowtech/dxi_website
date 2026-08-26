@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -155,6 +155,8 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
   /** The slug being edited, or null when the form is creating. */
   const [editing, setEditing] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const posterInputRef = useRef<HTMLInputElement>(null);
   /** Slug whose public link was just copied, for the button's confirmation. */
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -525,21 +527,45 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
             <div className={styles.codeField} style={{ marginTop: 18 }}>
               <label htmlFor="poster">Square poster</label>
               <div className={styles.posterRow}>
-                <div className={styles.posterPreview}>
+                {/*
+                  The square doubles as the drop target and a second way to
+                  open the picker, so the whole control is clickable rather
+                  than just the button beside it.
+                */}
+                <button
+                  type="button"
+                  className={`${styles.posterPreview} ${dragging ? styles.posterPreviewActive : ""}`}
+                  onClick={() => posterInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragging(true);
+                  }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragging(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handlePosterUpload(file);
+                  }}
+                  aria-label={form.posterUrl ? "Replace the poster" : "Upload a poster"}
+                >
                   {form.posterUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={form.posterUrl} alt="Poster preview" />
                   ) : (
-                    <span>No poster</span>
+                    <span>{dragging ? "Drop it here" : "No poster"}</span>
                   )}
-                </div>
+                </button>
 
                 <div className={styles.posterControls}>
+                  {/* The real input is driven by the button; on its own it is
+                      too easy to miss among the rest of the form. */}
                   <input
                     id="poster"
+                    ref={posterInputRef}
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
-                    disabled={uploading}
+                    className={styles.hiddenFileInput}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) handlePosterUpload(file);
@@ -547,10 +573,23 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                       e.target.value = "";
                     }}
                   />
-                  <span className={styles.codeHint}>
+
+                  <button
+                    type="button"
+                    className={styles.uploadBtn}
+                    disabled={uploading}
+                    onClick={() => posterInputRef.current?.click()}
+                  >
                     {uploading
                       ? "Uploading…"
-                      : "JPEG, PNG or WebP, up to 5MB. Cropped to a square from the top on the card, so upload it square."}
+                      : form.posterUrl
+                        ? "Replace poster"
+                        : "Upload poster"}
+                  </button>
+
+                  <span className={styles.codeHint}>
+                    JPEG, PNG or WebP, up to 5MB. Drag one onto the square, or paste a URL
+                    below. Cropped to a square from the top on the card, so upload it square.
                   </span>
 
                   <input
