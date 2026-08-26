@@ -172,9 +172,31 @@ export default function EventRegistrations({ event }: { event: EventRecord }) {
     <div className={styles.container}>
       <main className={styles.main}>
         <div className={styles.header}>
-          <Link href="/admin/events" className={styles.backLink}>
-            ← All events
-          </Link>
+          {/*
+            A bordered control rather than a line of grey text: under a 2.5rem
+            title, a plain link is swamped and reads as a caption.
+          */}
+          <div className={styles.pageNav}>
+            <Link href="/admin/events" className={styles.backLink}>
+              ← All events
+            </Link>
+            <Link
+              href={`/events/${event.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+            >
+              Public page ↗
+            </Link>
+            <Link
+              href={`/events/${event.slug}/check-in`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.navLink}
+            >
+              Check-in page ↗
+            </Link>
+          </div>
           <h1>{event.title}</h1>
           <p className={styles.subtitle}>
             {formatEventWhen(event.startsAt, event.endsAt)} · {event.registrationCount}

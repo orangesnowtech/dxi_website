@@ -900,17 +900,50 @@
    held at a door rather than a laptop at a desk.
    ────────────────────────────────────────────────────────────────────────── */
 
-.backLink {
+.pageNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+/* The way out of a detail page. Given a border and a solid fill because as
+   plain grey text under a 2.5rem heading it was being missed entirely. */
+.backLink,
+.navLink {
   display: inline-block;
-  margin-bottom: 12px;
-  color: #6b7280;
-  font-size: 0.9rem;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
   font-weight: 600;
   text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.backLink {
+  background-color: #111827;
+  border: 1px solid #111827;
+  color: #ffffff;
 }
 
 .backLink:hover {
-  color: #111827;
+  background-color: #374151;
+  border-color: #374151;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.navLink {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.navLink:hover {
+  border-color: #b91c1c;
+  color: #b91c1c;
+  text-decoration: none;
 }
 
 .typeRows {
