@@ -611,6 +611,25 @@ export async function saveEvent(
   });
 }
 
+/**
+ * Changes only an event's status.
+ *
+ * Separate from `saveEvent` so unpublishing does not require re-validating and
+ * rewriting every other field — the status is the one thing that gets changed
+ * in a hurry.
+ */
+export async function setEventStatus(
+  slug: string,
+  status: EventStatus,
+  adminEmail: string
+) {
+  await events().doc(slug).update({
+    status,
+    updatedAt: new Date().toISOString(),
+    updatedBy: adminEmail,
+  });
+}
+
 /** How many registrations an event still carries, for the delete guard. */
 export async function countRegistrationsFor(eventSlug: string) {
   const snapshot = await registrations().where("eventSlug", "==", eventSlug).count().get();

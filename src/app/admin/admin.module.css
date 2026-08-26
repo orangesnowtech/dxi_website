@@ -154,6 +154,27 @@
   color: #1f2937;
 }
 
+/* The name opens the detail panel, because the Details button sits in the last
+   of eight columns and scrolls off the right edge on most screens. */
+.nameBtn {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: #d1d5db;
+  text-underline-offset: 3px;
+}
+
+.nameBtn:hover {
+  color: #b91c1c;
+  text-decoration-color: #b91c1c;
+}
+
 .business {
   max-width: 150px;
   overflow: hidden;

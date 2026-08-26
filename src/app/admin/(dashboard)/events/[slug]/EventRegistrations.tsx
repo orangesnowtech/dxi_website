@@ -261,7 +261,20 @@ export default function EventRegistrations({ event }: { event: EventRecord }) {
                 {registrations.map((registration) => (
                   <tr key={registration.id} className={styles.row}>
                     <td>
-                      <div className={styles.name}>{registration.fullName}</div>
+                      {/*
+                        The Details button lives in the last of eight columns,
+                        which on most screens sits off the right edge of a table
+                        that scrolls sideways. The name is always visible, so it
+                        opens the same panel.
+                      */}
+                      <button
+                        type="button"
+                        className={styles.nameBtn}
+                        onClick={() => setSelected(registration)}
+                        title="See everything this person submitted"
+                      >
+                        {registration.fullName}
+                      </button>
                       {registration.organizationName && (
                         <span className={styles.referralNote}>
                           {registration.organizationName}

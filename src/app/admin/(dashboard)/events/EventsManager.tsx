@@ -209,6 +209,53 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
     }
   };
 
+  /**
+   * Publishes or unpublishes straight from the list.
+   *
+   * Warns before pulling something the public may already be holding tickets
+   * for: unpublishing hides the event page and stops registration, and anyone
+   * who follows a shared link gets a 404 rather than an explanation.
+   */
+  const handleStatusChange = async (event: EventRecord, status: EventStatus) => {
+    if (
+      event.status === "published" &&
+      status !== "published" &&
+      event.registrationCount > 0 &&
+      !window.confirm(
+        `"${event.title}" has ${event.registrationCount} registration(s).\n\n` +
+          `Taking it off the site hides the event page and closes registration. ` +
+          `Anyone following a link they were sent will get a "not found" page.\n\nContinue?`
+      )
+    ) {
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      const response = await fetch(`/api/admin/events/${event.slug}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not update the status");
+      }
+
+      setNotice(`"${event.title}" is now ${EVENT_STATUS_LABELS[status].toLowerCase()}.`);
+      await fetchEvents();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
@@ -865,12 +912,29 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                     <td>{EVENT_KIND_LABELS[event.kind]}</td>
                     <td>{formatEventDay(event.startsAt)}</td>
                     <td>
-                      <span
-                        className={styles.statusBadge}
-                        style={{ backgroundColor: EVENT_STATUS_COLORS[event.status] }}
+                      {/*
+                        Editable in place. Pulling an event off the site should
+                        not mean opening the full form and re-saving every
+                        field, which is what it took before.
+                      */}
+                      <select
+                        className={styles.statusSelect}
+                        style={{
+                          borderColor: EVENT_STATUS_COLORS[event.status],
+                          color: EVENT_STATUS_COLORS[event.status],
+                        }}
+                        value={event.status}
+                        disabled={busy}
+                        onChange={(e) =>
+                          handleStatusChange(event, e.target.value as EventStatus)
+                        }
                       >
-                        {EVENT_STATUS_LABELS[event.status]}
-                      </span>
+                        {EVENT_STATUSES.map((status) => (
+                          <option key={status} value={status}>
+                            {EVENT_STATUS_LABELS[status]}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td>
                       {event.registrationCount}
