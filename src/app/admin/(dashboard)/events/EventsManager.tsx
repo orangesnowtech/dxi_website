@@ -773,18 +773,18 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                       </span>
                     </div>
 
-                    <div className={styles.codeField}>
-                      <label htmlFor={`capacity-${index}`}>Places</label>
-                      <input
-                        id={`capacity-${index}`}
-                        type="number"
-                        min={1}
-                        className={styles.grantInput}
-                        value={type.capacity}
-                        onChange={(e) => setTypeField(index, "capacity", e.target.value)}
-                        placeholder="Uncapped"
-                      />
-                    </div>
+                    {/*
+                      The per-type "Places" input is hidden until an event
+                      actually needs different limits per type. With one type
+                      it only duplicates the event's Total capacity, and a
+                      mismatch between the two reads as a bug.
+
+                      Hidden, not removed: `type.capacity` stays in form state
+                      and is still submitted, so an event that already carries
+                      per-type limits keeps them through an edit. The server
+                      rules and `seatsLeft` are untouched, so restoring this is
+                      putting the input back.
+                    */}
 
                     <div className={styles.codeField}>
                       <label htmlFor={`description-${index}`}>Description</label>
