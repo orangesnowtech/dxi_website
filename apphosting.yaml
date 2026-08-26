@@ -114,3 +114,19 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  # Serves Firebase's sign-in handler from our own origin, which is what makes
+  # signInWithRedirect viable: the returning credential stays first-party
+  # instead of landing in *.firebaseapp.com storage that browsers partition
+  # away. Requires https://<host>/__/auth/handler to be registered on the OAuth
+  # client for every host that builds with this on, or Google answers with
+  # redirect_uri_mismatch.
+  #
+  # Deliberately on the redesign branch only. The live backend builds from
+  # `live`, so production keeps the popup flow until this is proven on preview
+  # by an actual sign-in.
+  - variable: NEXT_PUBLIC_FIREBASE_SAME_ORIGIN_AUTH
+    value: "1"
+    availability:
+      - BUILD
+      - RUNTIME
