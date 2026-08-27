@@ -9,6 +9,7 @@
  */
 
 import type { Analytics } from "firebase/analytics";
+import { readConsent } from "@/lib/consent";
 
 /** The GA4 property, handed to us in the Firebase web app config. */
 export const measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "";
@@ -29,13 +30,20 @@ export function isMeasurablePath(pathname: string) {
   return !pathname.startsWith("/admin");
 }
 
-export function analyticsEnabled() {
+/**
+ * Whether this host would ever measure anything, consent aside.
+ *
+ * Separate from `analyticsEnabled` because the banner needs it: there is no
+ * honest way to ask somebody to accept cookies on a host that was never going
+ * to set any. On localhost and on preview, no banner and no tag.
+ */
+export function analyticsPossible() {
   if (typeof window === "undefined" || !measurementId) {
     return false;
   }
 
-  // The escape hatch, for confirming the tag fires on preview before it is
-  // trusted on the live site. Off unless somebody deliberately sets it.
+  // The escape hatch, for confirming the tag and the banner behave on preview
+  // before either is trusted on the live site. Off unless deliberately set.
   if (process.env.NEXT_PUBLIC_ANALYTICS_FORCE === "1") {
     return true;
   }
@@ -46,9 +54,20 @@ export function analyticsEnabled() {
 }
 
 /**
- * Resolved once and reused. `null` means "asked, and the answer was no" —
- * distinct from `undefined`, which means nobody has asked yet, so a browser
- * that cannot support analytics is not re-checked on every event.
+ * Whether to measure right now: a host that counts, and a visitor who agreed.
+ *
+ * Consent is re-read on every call rather than captured once, so a decision
+ * made in the banner takes effect on the very next event without anything
+ * having to be re-mounted.
+ */
+export function analyticsEnabled() {
+  return analyticsPossible() && readConsent() === "granted";
+}
+
+/**
+ * Resolved once and reused. `null` means the SDK was asked for and could not
+ * run here — distinct from `undefined`, which means it has not been tried — so
+ * a browser that cannot support analytics is not re-checked on every event.
  */
 let instance: Analytics | null | undefined;
 let pending: Promise<Analytics | null> | null = null;
@@ -70,12 +89,15 @@ export async function initAnalytics(): Promise<Analytics | null> {
     return pending;
   }
 
+  // Checked before the memo is written, not inside it. Caching the `null` from
+  // a visitor who simply had not answered yet would mean analytics never
+  // started when they later said yes.
+  if (!analyticsEnabled()) {
+    return null;
+  }
+
   pending = (async () => {
     try {
-      if (!analyticsEnabled()) {
-        return null;
-      }
-
       const [{ getAnalytics, isSupported }, { getFirebaseClientApp }] = await Promise.all([
         import("firebase/analytics"),
         import("@/lib/firebase/client"),

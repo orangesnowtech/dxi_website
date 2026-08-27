@@ -6,6 +6,7 @@ import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import ChatWidget from "./components/ChatWidget";
 import Analytics from "./components/Analytics";
+import ConsentBanner from "./components/ConsentBanner";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -105,6 +106,7 @@ export default async function RootLayout({
           testing on preview does not land in the same reports as customers.
         */}
         <Analytics />
+        <ConsentBanner />
       </body>
     </html>
   );

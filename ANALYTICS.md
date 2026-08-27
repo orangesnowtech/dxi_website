@@ -87,10 +87,42 @@ They must be available at **BUILD** as well as RUNTIME. They are read through
 `process.env` in client components, which Next inlines at build time; a
 runtime-only value compiles to `undefined` and analytics silently never starts.
 
-## Not done
+## Consent
 
-No consent banner. Firebase Analytics sets cookies and collects IP-derived
-location on first load, with no opt-in asked. That is a decision to make
-deliberately rather than a gap to fill by reflex — it turns on how much EU
-traffic the site gets and what line DXI wants to take under the NDPR. Worth
-revisiting before any EU campaign.
+**Opt-in, not opt-out.** Nothing is measured and no analytics cookie is set
+until a visitor accepts. That is what the GDPR asks for and what the NDPR is
+read to ask for, and it is the only honest version — a banner announcing
+tracking that has already started is a notice, not a choice.
+
+Implemented by simply not starting the SDK, rather than by starting it in a
+denied Consent Mode. Consent Mode leaves gtag loaded and pinging with signals
+stripped; this way somebody who declines has nothing running at all.
+
+The banner appears only where analytics could actually run: never on
+localhost, never on the preview backend, never on `/admin`. Asking somebody to
+accept cookies on a host that was never going to set any is theatre. Use
+`NEXT_PUBLIC_ANALYTICS_FORCE=1` to see it off the production domain.
+
+Accept and Decline carry **the same visual weight**. A greyed-out Decline next
+to a bright Accept is the pattern regulators single out, and it makes the
+resulting consent worth less than no banner at all.
+
+The answer is stored in `localStorage` under a versioned key
+(`dxi.analytics-consent.v1`), so a later change to what is collected can ask
+again rather than inheriting a yes given for something narrower. A browser that
+refuses storage — private mode, an embedded webview — never records the answer,
+so the banner asks again next time. Asking twice is a much better failure than
+measuring someone who said no.
+
+Accepting starts measurement immediately rather than on the next navigation.
+Otherwise the page that actually persuaded them — the one worth knowing about —
+is the one page that goes unrecorded.
+
+Withdrawing is as easy as giving: the footer carries a **Cookie choices** link
+once an answer exists, which forgets it and brings the banner back.
+
+### Expect the numbers to drop
+
+Typical acceptance rates run 50–80%. Traffic reported after this lands is not
+comparable with traffic reported before it, and the gap is consent, not a fall
+in visitors. Worth remembering before reading anything into the first month.

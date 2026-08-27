@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { SiteSettings } from "@/lib/sanity/types";
+import CookieChoicesLink from "./CookieChoicesLink";
 
 export default function Footer({ settings }: { settings: SiteSettings | null }) {
   return (
@@ -18,6 +19,7 @@ export default function Footer({ settings }: { settings: SiteSettings | null }) 
         </Link>
         {settings?.footerTagline && <span>{settings.footerTagline}</span>}
         {settings?.footerContact && <span>{settings.footerContact}</span>}
+        <CookieChoicesLink />
       </div>
     </footer>
   );

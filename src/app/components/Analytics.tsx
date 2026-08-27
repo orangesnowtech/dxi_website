@@ -8,6 +8,7 @@ import {
   trackPageView,
   trackWhatsAppClick,
 } from "@/lib/analytics";
+import { onConsentChange } from "@/lib/consent";
 
 /**
  * Starts analytics and keeps it told where the visitor is.
@@ -34,6 +35,7 @@ export default function Analytics() {
 
     if (startedOn.current === null) {
       startedOn.current = pathname;
+      // A no-op until consent is granted; the listener below picks it up then.
       void initAnalytics();
       return;
     }
@@ -42,6 +44,27 @@ export default function Analytics() {
     // without a document load, so nothing else would report it.
     trackPageView(pathname);
   }, [pathname]);
+
+  /**
+   * Accepting in the banner has to start measurement there and then.
+   *
+   * Without this, a visitor who accepts is not counted until they navigate —
+   * so the page that actually persuaded them, which is the one worth knowing
+   * about, is the one page that goes unrecorded.
+   */
+  useEffect(
+    () =>
+      onConsentChange((choice) => {
+        if (choice !== "granted") {
+          return;
+        }
+
+        // Firebase sends its own page_view as it starts, so the current page
+        // is counted by this alone — nothing more to fire here.
+        void initAnalytics();
+      }),
+    []
+  );
 
   /**
    * WhatsApp links, caught at the document rather than per button.
