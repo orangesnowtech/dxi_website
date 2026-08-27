@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { siteSettings } from "@/content/site";
 import { MEMBERSHIP_FEE_LABEL } from "@/lib/academy";
 import { normalizeReferralCode } from "@/lib/referral";
+import { trackApplicationSubmitted } from "@/lib/analytics";
 import {
   SectionLabel,
   Field,
@@ -553,6 +554,7 @@ export default function BusinessProfilePage() {
           "Thank you. Your business profile is now with our team for review, and we will be in touch either way.",
       });
       setIsSubmitted(true);
+      trackApplicationSubmitted();
       setFormData(initialFormData);
       setReferralCheck({ status: "idle", message: "" });
       window.scrollTo({ top: 0, behavior: "smooth" });

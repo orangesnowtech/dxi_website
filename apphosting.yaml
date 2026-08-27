@@ -176,3 +176,31 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  # ---- Google Analytics (via the Firebase web app) ----
+  # Plain values, not Secret Manager entries, unlike the Firebase keys above.
+  # These three are shipped to every browser in the JS bundle by definition —
+  # an app id and a GA4 measurement id are public identifiers, not credentials,
+  # and putting them behind a secret would suggest otherwise while protecting
+  # nothing.
+  #
+  # BUILD as well as RUNTIME: they are read through process.env in client
+  # components, which Next inlines at build time. Runtime-only values would
+  # compile to undefined and analytics would silently never start.
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:573410811306:web:6c16ecc4498125d3abdfd3"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-YRK0M86VH7
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: dxi-website-backed.appspot.com
+    availability:
+      - BUILD
+      - RUNTIME

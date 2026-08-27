@@ -5,6 +5,7 @@ import { botIsConfigured } from "@/lib/bot/config";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import ChatWidget from "./components/ChatWidget";
+import Analytics from "./components/Analytics";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -99,6 +100,11 @@ export default async function RootLayout({
           at all, rather than a bubble that opens onto an apology.
         */}
         {botIsConfigured() && <ChatWidget />}
+        {/*
+          Renders nothing. Starts itself only on the live domain, so the team
+          testing on preview does not land in the same reports as customers.
+        */}
+        <Analytics />
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { trackChatOpened } from "@/lib/analytics";
 
 type Bubble = { role: "user" | "assistant"; text: string };
 
@@ -170,7 +171,12 @@ export default function ChatWidget() {
     <>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          // Only the opening half. A close is not interest, and counting both
+          // would make one curious visitor look like two.
+          if (!open) trackChatOpened();
+          setOpen((v) => !v);
+        }}
         aria-expanded={open}
         aria-label={open ? "Close chat" : "Chat with DXI"}
         className="fixed right-5 bottom-5 z-200 flex h-14 w-14 items-center justify-center bg-signal text-[22px] leading-none text-white shadow-[0_6px_24px_rgba(0,0,0,0.25)] transition-transform hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"

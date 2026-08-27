@@ -3,12 +3,20 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { GoogleAuthProvider, getAuth } from "firebase/auth";
 
-// Only the auth-facing keys are needed here. They are public by design — the
-// real gate is the email allowlist checked server-side on every request.
+// Public by design — the real gate is the email allowlist checked server-side
+// on every request.
+//
+// `appId` and `measurementId` are not needed for sign-in and are here for
+// analytics, which will not start without them: the SDK resolves the GA4
+// stream from the app id, and silently does nothing when it is absent. That
+// silence is why this config carries fields the auth path never reads.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 /**

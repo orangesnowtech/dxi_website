@@ -23,6 +23,7 @@ import {
   TextInput,
 } from "@/app/components/ui/FormControls";
 import Eyebrow from "@/app/components/ui/Eyebrow";
+import { trackEventRegistration } from "@/lib/analytics";
 
 type FormState = {
   firstName: string;
@@ -144,6 +145,15 @@ export default function RegistrationForm({ event }: { event: PublicEvent }) {
         status: data.status as RegistrationStatus,
         accessCode: data.accessCode ?? null,
         feeNaira: data.feeNaira ?? 0,
+      });
+
+      // After the place is actually held, never on submit: counting attempts
+      // as registrations would inflate the one number the events are judged on.
+      trackEventRegistration({
+        eventSlug: event.slug,
+        typeKey: selected.key,
+        status: String(data.status),
+        feeNaira: Number(data.feeNaira ?? 0),
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (submitError) {
