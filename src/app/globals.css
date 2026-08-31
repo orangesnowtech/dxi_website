@@ -90,6 +90,9 @@ body {
   font-family: var(--font-mono);
   color: var(--color-signal);
   font-size: 20px;
+  /* Inert where the summary is flex (the box shrinks to fit); centres the
+     marker where the summary is a grid and the box fills its track. */
+  text-align: center;
   transition: transform 0.2s;
 }
 

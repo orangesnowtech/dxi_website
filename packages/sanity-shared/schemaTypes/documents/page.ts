@@ -44,6 +44,7 @@ export default defineType({
         { type: 'introSection' },
         { type: 'cardGrid' },
         { type: 'plateGrid' },
+        { type: 'featureList' },
         { type: 'statsSection' },
         { type: 'stepsSection' },
         { type: 'faqSection' },

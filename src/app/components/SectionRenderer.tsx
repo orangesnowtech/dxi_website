@@ -3,6 +3,7 @@ import Hero from "./sections/Hero";
 import Intro from "./sections/Intro";
 import CardGrid from "./sections/CardGrid";
 import PlateGrid from "./sections/PlateGrid";
+import FeatureList from "./sections/FeatureList";
 import Stats from "./sections/Stats";
 import Steps from "./sections/Steps";
 import Faq from "./sections/Faq";
@@ -37,6 +38,8 @@ export default function SectionRenderer({
             return <CardGrid key={section._key} section={section} settings={settings} />;
           case "plateGrid":
             return <PlateGrid key={section._key} section={section} settings={settings} />;
+          case "featureList":
+            return <FeatureList key={section._key} section={section} settings={settings} />;
           case "statsSection":
             return <Stats key={section._key} section={section} />;
           case "stepsSection":

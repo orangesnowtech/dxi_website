@@ -17,6 +17,7 @@ import heroSection from './sections/heroSection';
 import introSection from './sections/introSection';
 import cardGrid from './sections/cardGrid';
 import plateGrid from './sections/plateGrid';
+import featureList from './sections/featureList';
 import statsSection from './sections/statsSection';
 import stepsSection from './sections/stepsSection';
 import faqSection from './sections/faqSection';
@@ -43,6 +44,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   introSection,
   cardGrid,
   plateGrid,
+  featureList,
   statsSection,
   stepsSection,
   faqSection,

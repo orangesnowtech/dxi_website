@@ -63,6 +63,15 @@ const SECTION_FIELDS = groq`
     band{ ${BAND_FIELDS} }
   },
 
+  _type == "featureList" => {
+    eyebrow, heading, body, sectionId, background, caption,
+    features[]{
+      _key, title, lede, body, tier,
+      points[]{ _key, text, tier }
+    },
+    band{ ${BAND_FIELDS} }
+  },
+
   _type == "statsSection" => {
     eyebrow, heading, body, sectionId,
     stats[]{ _key, value, label, detail }

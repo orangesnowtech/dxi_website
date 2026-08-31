@@ -77,6 +77,9 @@ export const plates = section<Extract<Section, { _type: "plateGrid" }>>("plateGr
   background: "paper",
   columns: 3,
 });
+export const features = section<Extract<Section, { _type: "featureList" }>>("featureList", {
+  background: "paper",
+});
 export const stats = section<Extract<Section, { _type: "statsSection" }>>("statsSection");
 export const steps = section<Extract<Section, { _type: "stepsSection" }>>("stepsSection", {
   background: "paper",

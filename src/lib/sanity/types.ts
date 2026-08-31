@@ -29,6 +29,12 @@ export interface Band {
 export type Background = "paper" | "ash" | "dark";
 export type Access = "free" | "members";
 
+/**
+ * The pricing ladder. A capability tagged at a tier is included at that tier
+ * and every tier above it, so features carry the tier they *first* appear at.
+ */
+export type Tier = "starter" | "standard" | "scale";
+
 interface SectionBase {
   _key: string;
   eyebrow?: string;
@@ -98,6 +104,30 @@ export interface PlateGridSection extends SectionBase {
   _type: "plateGrid";
   columns?: 2 | 3;
   plates?: PlateItem[];
+  band?: Band;
+}
+
+export interface FeaturePoint {
+  _key: string;
+  text: string;
+  tier: Tier;
+}
+
+export interface FeatureItem {
+  _key: string;
+  title: string;
+  /** The clause after the em dash in the heading — "one inbox for every channel". */
+  lede?: string;
+  body?: string;
+  tier: Tier;
+  points?: FeaturePoint[];
+}
+
+export interface FeatureListSection extends SectionBase {
+  _type: "featureList";
+  /** Legend above the grid — explains the ladder and that rows open. */
+  caption?: string;
+  features?: FeatureItem[];
   band?: Band;
 }
 
@@ -186,6 +216,7 @@ export type Section =
   | IntroSection
   | CardGridSection
   | PlateGridSection
+  | FeatureListSection
   | StatsSection
   | StepsSection
   | FaqSection

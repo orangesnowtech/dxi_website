@@ -89,6 +89,7 @@ const hero = (fields) => ({ _key: key(), _type: 'heroSection', tone: 'dark', ...
 const intro = (fields) => ({ _key: key(), _type: 'introSection', background: 'paper', ...fields });
 const cards = (fields) => ({ _key: key(), _type: 'cardGrid', background: 'paper', columns: 3, ...fields });
 const plates = (fields) => ({ _key: key(), _type: 'plateGrid', background: 'paper', columns: 3, ...fields });
+const features = (fields) => ({ _key: key(), _type: 'featureList', background: 'paper', ...fields });
 const stats = (fields) => ({ _key: key(), _type: 'statsSection', ...fields });
 const steps = (fields) => ({ _key: key(), _type: 'stepsSection', background: 'paper', ...fields });
 const faq = (fields) => ({ _key: key(), _type: 'faqSection', background: 'paper', ...fields });
@@ -354,6 +355,168 @@ const salesEngine = {
         },
       ]),
     }),
+    features({
+      eyebrow: "What's inside the engine",
+      heading: 'One system. Every part of the sale.',
+      body: "The Sales Engine isn't one tool — it's the whole path from stranger to paying customer, built as one machine. Here's what runs inside it, and what unlocks as you scale.",
+      caption: 'Every tier includes everything to its left. Open any row for the detail.',
+      features: list([
+        {
+          title: 'Unified Communications',
+          lede: 'One inbox for every channel',
+          tier: 'starter',
+          body: 'Your customers message you everywhere — WhatsApp, Instagram, Facebook, your website. The Sales Engine pulls all of it into one place. One inbox, one conversation history per customer, no matter how they reached you. Nothing gets missed because it landed on the wrong app, and your team stops switching between five screens to answer one question.',
+          points: list([
+            {
+              text: 'WhatsApp, Facebook Messenger, Instagram DM and website chat — all in one inbox',
+              tier: 'starter',
+            },
+            { text: 'One unified history per customer, across every channel', tier: 'starter' },
+            { text: 'Never lose a message to the wrong platform again', tier: 'starter' },
+          ]),
+        },
+        {
+          title: 'The AI Chatbot',
+          lede: 'Answers, qualifies and sells 24/7',
+          tier: 'starter',
+          body: "The engine's core. Our AI answers the moment a customer messages — 2am, Sunday, public holiday — and never makes them wait till morning. It handles the repetitive questions, separates serious buyers from browsers, and hands the ready-to-pay ones to your team. Every enquiry it touches becomes a contact you keep.",
+          points: list([
+            { text: 'Instant replies, 24/7, on every channel', tier: 'starter' },
+            {
+              text: 'Answers common questions automatically — price, stock, delivery, location',
+              tier: 'starter',
+            },
+            { text: 'Qualifies buyers before your team spends a minute on them', tier: 'starter' },
+            {
+              text: 'Quotes, invoices, confirms payment and upsells inside the chat',
+              tier: 'standard',
+            },
+            { text: 'Smooth handoff to a human when the conversation needs one', tier: 'starter' },
+          ]),
+        },
+        {
+          title: 'Multi-User Access',
+          lede: 'Your whole team, one system',
+          tier: 'standard',
+          body: "One person can't hold a growing sales operation. The Sales Engine lets your whole team work the same inbox without stepping on each other — assign conversations, set who can see and do what, and know exactly who handled which customer.",
+          points: list([
+            { text: 'Multiple team members in the same inbox', tier: 'standard' },
+            { text: 'Roles and permissions — control who sees and does what', tier: 'standard' },
+            { text: 'Assign conversations to specific staff', tier: 'standard' },
+            { text: 'Full accountability — see who replied to whom', tier: 'standard' },
+          ]),
+        },
+        {
+          title: 'Lead Capture & CRM',
+          lede: 'Every enquiry becomes an asset',
+          tier: 'starter',
+          body: "A walk-in who leaves, leaves nothing. Every conversation through the Sales Engine becomes a saved customer record — contact details, what they asked, what they bought, when. Your customer list stops living in one person's phone and becomes an asset the business owns.",
+          points: list([
+            { text: 'Every conversation saved as a customer record', tier: 'starter' },
+            { text: 'Contact details captured automatically', tier: 'starter' },
+            { text: 'Full history per customer — asked, bought, when', tier: 'standard' },
+            { text: 'Tag and segment customers: new, repeat, high-value, cold', tier: 'scale' },
+          ]),
+        },
+        {
+          title: 'Advertising That Starts Conversations',
+          tier: 'starter',
+          body: "Likes don't pay salaries. Our ads are built to start conversations and drive sales, not collect vanity metrics. And they don't stop at the first click — we follow up with the people who showed interest and didn't buy, and find new people who look like your best customers.",
+          points: list([
+            {
+              text: 'Direct-response ads on Meta and Google, built to drive chats',
+              tier: 'starter',
+            },
+            {
+              text: "Retargeting — follow up with people who clicked or messaged but didn't buy",
+              tier: 'standard',
+            },
+            {
+              text: 'Lookalike audiences — find new people like your best customers',
+              tier: 'scale',
+            },
+            { text: 'Full tracking and pixel setup so every naira is measurable', tier: 'starter' },
+          ]),
+        },
+        {
+          title: 'The Store',
+          lede: 'Built to convert',
+          tier: 'starter',
+          body: 'A storefront built for how your customers actually buy: mobile-first, WhatsApp-first, payment-flexible. Your catalogue with prices and images, a checkout that works, and a chat button on every page that feeds straight back into your unified inbox.',
+          points: list([
+            { text: 'Conversion-built landing page or storefront', tier: 'starter' },
+            { text: 'Full product catalogue — prices, images, descriptions', tier: 'standard' },
+            { text: 'Multi-line e-commerce for a bigger range', tier: 'scale' },
+            { text: 'Mobile-first, chat-connected on every page', tier: 'starter' },
+          ]),
+        },
+        {
+          title: 'Payments & Commerce',
+          tier: 'standard',
+          body: 'From “how much?” to “payment confirmed” without leaving the conversation. The engine quotes, invoices and takes payment in-chat and on-site, through the rails your customers already use.',
+          points: list([
+            { text: 'In-chat and on-site payment — quote, invoice, confirm', tier: 'standard' },
+            { text: 'Order tracking and confirmation', tier: 'standard' },
+            { text: 'Local payment rails, installment-ready', tier: 'standard' },
+          ]),
+        },
+        {
+          title: 'Retention & Re-Engagement',
+          lede: 'Bring buyers back',
+          tier: 'scale',
+          body: 'You fought to win a customer once. The Scale engine makes sure you speak to them again. When new stock lands or an offer drops, reach every past buyer at once — and let automated follow-ups do the reminding your team forgets to.',
+          points: list([
+            {
+              text: 'Broadcast campaigns — message past customers when stock or offers drop',
+              tier: 'scale',
+            },
+            { text: 'Automated follow-ups — post-purchase, abandoned enquiries', tier: 'scale' },
+            { text: 'Segmented messaging — right message, right customer group', tier: 'scale' },
+          ]),
+        },
+        {
+          title: 'Automation & Workflows',
+          tier: 'standard',
+          body: 'The engine does the remembering. Instant acknowledgements, rules that route each conversation to the right place, and follow-up triggers so nothing slips through while your team sleeps.',
+          points: list([
+            { text: 'Auto-replies and instant acknowledgements', tier: 'starter' },
+            { text: 'Routing rules — right conversation, right person', tier: 'standard' },
+            { text: 'Follow-up reminders and triggers', tier: 'scale' },
+          ]),
+        },
+        {
+          title: 'Reporting & Analytics',
+          lede: 'See everything',
+          tier: 'standard',
+          body: "“The ads are working, I think” is not a report. The Sales Engine shows you exactly what's happening: enquiries, response times, conversions, what a customer costs, what they're worth, and which channel brings your best buyers — in one dashboard, with a monthly summary you can actually act on.",
+          points: list([
+            { text: 'Core dashboard — enquiries, response times, conversions', tier: 'standard' },
+            { text: 'Cost per lead and customer value', tier: 'standard' },
+            {
+              text: 'Channel performance — which platform brings the best buyers',
+              tier: 'standard',
+            },
+            { text: 'Advanced analytics and monthly strategy report', tier: 'scale' },
+          ]),
+        },
+        {
+          title: 'Managed by DXI',
+          lede: 'You run your business, we run the engine',
+          tier: 'starter',
+          body: "You didn't start your business to become a marketer. Every tier is managed by DXI — setup, daily optimisation, ad management, creative testing and continuous chatbot tuning. A team accountable for the numbers, not just a tool you're handed and left to figure out.",
+          points: list([
+            { text: 'Full setup, optimisation and daily management', tier: 'starter' },
+            { text: 'Ad management and creative testing', tier: 'starter' },
+            { text: 'Ongoing chatbot tuning', tier: 'starter' },
+            { text: 'A dedicated strategist and weekly optimisation', tier: 'scale' },
+          ]),
+        },
+      ]),
+      band: {
+        text: 'Starter proves demand. Standard builds the engine that closes it. *Scale brings the customers back.*',
+      },
+    }),
+
     plates({
       sectionId: 'tiers',
       background: 'ash',
