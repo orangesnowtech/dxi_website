@@ -201,12 +201,17 @@ env:
   #     - RUNTIME
 
   # Only the fallback: the number a conversation actually arrived on is stored
-  # on the conversation and wins. This covers the first message on a number
-  # added before that field existed.
-  - variable: WHATSAPP_PHONE_NUMBER_ID
-    value: ""
-    availability:
-      - RUNTIME
+  # on the conversation and wins, so this covers just the first message on a
+  # number added before that field existed.
+  #
+  # Commented out rather than left empty. App Hosting rejects `value: ""` and
+  # fails the build — an empty env var has to be an absent one. The code reads
+  # it as "" either way.
+  #
+  # - variable: WHATSAPP_PHONE_NUMBER_ID
+  #   value: "<phone number id from WhatsApp > API Setup>"
+  #   availability:
+  #     - RUNTIME
 
   # Pinned rather than left to Meta's default, so a version rollover cannot
   # change a response shape under a live webhook without anyone deciding to.

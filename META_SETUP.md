@@ -130,8 +130,10 @@ work without it; only *sending* fails. When you have the token:
 
 then uncomment the block in `apphosting.yaml` and deploy.
 
-`WHATSAPP_PHONE_NUMBER_ID` and `META_GRAPH_VERSION` are plain values in
-`apphosting.yaml`. Set the phone number id there and redeploy.
+`META_GRAPH_VERSION` is a plain value in `apphosting.yaml`.
+`WHATSAPP_PHONE_NUMBER_ID` is commented out beside it — App Hosting **rejects
+`value: ""`** and fails the build, so an env var you do not have a value for
+has to be absent, not empty. Uncomment it with the id from WhatsApp → API Setup.
 
 The two backends are `dxi-webapp-backend` (dximarketing.com, built from `live`)
 and `dxi-redesign-preview` (built from `redesign`). A secret must be granted to
