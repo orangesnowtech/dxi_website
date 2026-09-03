@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
+import { deliver } from "@/lib/bot/channels";
 import {
   allMessages,
   appendMessage,
@@ -103,8 +104,32 @@ export async function POST(request: NextRequest, { params }: Context) {
 
     const stored = await appendMessage(conversationId, "agent", message, session.email);
 
-    // Web conversations collect this on their next poll. Meta channels will
-    // push it out through the same responder the bot uses.
+    // Web conversations collect this on their next poll; the Meta channels
+    // have to be pushed to. Stored before it is sent, and reported as failed
+    // rather than rolled back: a delivery that actually went out and was then
+    // erased from the thread is the worse of the two mistakes, because the
+    // next person to open it answers a question the customer already had
+    // answered.
+    try {
+      await deliver(
+        conversation.channel,
+        conversation.externalId,
+        message,
+        conversation.businessId
+      );
+    } catch (error) {
+      console.error("Failed to deliver an agent reply:", error);
+
+      return NextResponse.json(
+        {
+          message: stored,
+          error:
+            "Saved to the thread, but Meta rejected it — it did not reach them. Check the channel's token.",
+        },
+        { status: 502 }
+      );
+    }
+
     return NextResponse.json({ message: stored });
   } catch (error) {
     console.error("Failed to send agent reply:", error);

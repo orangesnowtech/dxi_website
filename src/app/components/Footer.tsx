@@ -19,7 +19,18 @@ export default function Footer({ settings }: { settings: SiteSettings | null }) 
         </Link>
         {settings?.footerTagline && <span>{settings.footerTagline}</span>}
         {settings?.footerContact && <span>{settings.footerContact}</span>}
-        <CookieChoicesLink />
+        {/* Meta checks that the privacy and terms URLs it was given actually
+            load, and a policy nobody can reach from the site is not one
+            anybody has been given. */}
+        <span className="flex items-center gap-3.5">
+          <Link href="/privacy" className="hover:text-paper">
+            Privacy
+          </Link>
+          <Link href="/terms" className="hover:text-paper">
+            Terms
+          </Link>
+          <CookieChoicesLink />
+        </span>
       </div>
     </footer>
   );

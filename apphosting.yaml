@@ -162,11 +162,68 @@ env:
     availability:
       - RUNTIME
 
+  # ---- Meta channels (WhatsApp, Messenger, Instagram) ----
+  # One Meta app, three products, one webhook: /api/webhooks/meta. The bot
+  # itself is already channel-agnostic, so these four values plus the Meta-side
+  # setup in META_SETUP.md are the whole of it.
+  #
+  # RUNTIME only, unlike GEMINI_API_KEY. Nothing about these is read while
+  # pages are being rendered — the webhook is a route handler, and there is no
+  # widget whose existence depends on them.
+  #
+  # Every secret named here must exist in Secret Manager before this file
+  # names it, and both backends must be granted access. Naming one that does
+  # not exist fails the build for the whole site, marketing pages included.
+  - variable: META_APP_SECRET
+    secret: META_APP_SECRET
+    availability:
+      - RUNTIME
+
+  - variable: META_VERIFY_TOKEN
+    secret: META_VERIFY_TOKEN
+    availability:
+      - RUNTIME
+
+  # System-user token carrying the WhatsApp scopes, and the fallback for the
+  # Messenger and Instagram Page-token lookup — one all-scope token in one
+  # secret can run all three channels.
+  #
+  # Commented out until the token exists, because naming a secret that is not
+  # in Secret Manager fails the build for the whole site. Nothing needs it yet:
+  # the webhook handshake and every inbound message work without it, and only
+  # *sending* fails. Create the secret, grant both backends, uncomment, deploy.
+  #
+  #   firebase apphosting:secrets:set WHATSAPP_TOKEN
+  #
+  # - variable: WHATSAPP_TOKEN
+  #   secret: WHATSAPP_TOKEN
+  #   availability:
+  #     - RUNTIME
+
+  # Only the fallback: the number a conversation actually arrived on is stored
+  # on the conversation and wins. This covers the first message on a number
+  # added before that field existed.
+  - variable: WHATSAPP_PHONE_NUMBER_ID
+    value: ""
+    availability:
+      - RUNTIME
+
+  # Pinned rather than left to Meta's default, so a version rollover cannot
+  # change a response shape under a live webhook without anyone deciding to.
+  - variable: META_GRAPH_VERSION
+    value: v23.0
+    availability:
+      - RUNTIME
+
   # ---- Short links ----
-  # The site's own address, for the places that compose a link with no request
-  # to read the host from — the assistant writing a WhatsApp reply, mainly.
-  # Pages that have a browser keep reading window.location.origin instead, so
-  # this being wrong on a preview backend costs nothing there.
+  # The address every link this site hands out is built against — the
+  # assistant's WhatsApp replies, the dashboard's Copy link buttons, the public
+  # share control. Set for BUILD too because the browser-side ones read it
+  # through process.env, which Next inlines at build time.
+  #
+  # The same value on the preview backend as on live, deliberately. Preview
+  # serves the same dashboard, and a link copied there used to carry the
+  # preview host into a message or onto a flyer that outlives it.
   #
   # Defaults to https://dximarketing.com in code, so a backend without it still
   # sends working links; it is set here so that default never becomes load

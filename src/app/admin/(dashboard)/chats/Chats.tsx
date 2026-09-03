@@ -108,7 +108,15 @@ export default function Chats({ configured }: { configured: boolean }) {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Could not send that");
+
+      // A rejected delivery on a Meta channel still stored the message, and
+      // the thread is the honest place to see that: the reply is there,
+      // written by you, and the banner says it did not arrive. Clearing the
+      // draft would invite typing it again and sending it twice.
+      if (!response.ok) {
+        if (data.message) await fetchThread(selectedId);
+        throw new Error(data.error || "Could not send that");
+      }
 
       setDraft("");
       await fetchThread(selectedId);

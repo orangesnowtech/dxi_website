@@ -57,6 +57,14 @@ export type BotConversation = {
   channel: BotChannel;
   /** Phone number, page-scoped id, or the web session id. */
   externalId: string;
+  /**
+   * Which of our numbers or Pages this conversation arrived on. Empty on web.
+   *
+   * Recorded on first contact so a reply typed in the dashboard days later
+   * goes out the way it came in, without the sender having to be guessed from
+   * whichever number happens to be configured that week.
+   */
+  businessId?: string;
   mode: ConversationMode;
   /** Whatever the person has told us, so the agent stops re-asking. */
   contactName: string;
@@ -79,8 +87,30 @@ export type IncomingMessage = {
   channel: BotChannel;
   externalId: string;
   text: string;
-  /** Present for Meta channels; used to reply on the right phone number. */
+  /**
+   * Present for Meta channels: the WhatsApp phone number id, or the Page or
+   * Instagram account id that received the message. Replies go back out
+   * through it, so it is stored on the conversation rather than assumed —
+   * otherwise a second Page added later would have its messages answered from
+   * the first one.
+   */
   businessId?: string;
+  /** Meta's own id for the message. Used to mark it read and show typing. */
+  messageId?: string;
+  /** WhatsApp hands the profile name over in the webhook; the others cost a call. */
+  contactName?: string;
+  /**
+   * Messenger and Instagram do not send the name, and asking Meta for it is a
+   * Graph call. Passed as a function so it is made once, when the conversation
+   * is created, rather than on every message for a name we already have.
+   */
+  resolveContactName?: () => Promise<string>;
+  /**
+   * Set when the message carried nothing the agent can read — a sticker, a
+   * voice note, a bare photo. Answered with a line asking for words rather
+   * than passed to the model, which would be paying for a reply to "".
+   */
+  unsupported?: boolean;
 };
 
 /** What the agent produced for one turn. */

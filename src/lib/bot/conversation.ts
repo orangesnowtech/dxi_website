@@ -26,17 +26,32 @@ function messagesRef(id: string) {
   return conversations().doc(id).collection(MESSAGES_SUBCOLLECTION);
 }
 
-/** Creates the conversation on first contact, or returns the existing one. */
-async function loadOrCreate(
-  channel: BotChannel,
-  externalId: string
-): Promise<BotConversation> {
+/**
+ * Creates the conversation on first contact, or returns the existing one.
+ *
+ * Takes the whole inbound message rather than a channel and an id because the
+ * Meta channels carry two things worth keeping from the very first delivery:
+ * which number or Page it came in on, and — on WhatsApp — the sender's profile
+ * name, which is free here and costs a Graph call later.
+ */
+async function loadOrCreate(incoming: IncomingMessage): Promise<BotConversation> {
+  const { channel, externalId } = incoming;
   const id = conversationId(channel, externalId);
   const ref = conversations().doc(id);
   const snapshot = await ref.get();
 
   if (snapshot.exists) {
-    return { ...(snapshot.data() as BotConversation), id };
+    const existing = { ...(snapshot.data() as BotConversation), id };
+
+    // A number can be moved between WABAs, and a conversation opened before
+    // this field existed has none at all. Cheap to keep current, and the
+    // alternative is a reply that cannot be sent.
+    if (incoming.businessId && existing.businessId !== incoming.businessId) {
+      await ref.update({ businessId: incoming.businessId });
+      existing.businessId = incoming.businessId;
+    }
+
+    return existing;
   }
 
   const now = new Date().toISOString();
@@ -44,8 +59,12 @@ async function loadOrCreate(
     id,
     channel,
     externalId,
+    businessId: incoming.businessId || "",
     mode: "bot",
-    contactName: "",
+    // Only what the channel told us. The agent still asks, and what a person
+    // types about themselves overwrites this. Resolved here and nowhere else:
+    // this branch runs once per person, ever.
+    contactName: incoming.contactName || (await incoming.resolveContactName?.()) || "",
     contactEmail: "",
     contactPhone: "",
     isLead: false,
@@ -178,6 +197,18 @@ async function recordLead(
     });
 }
 
+/**
+ * What a message with nothing readable in it is recorded and answered as.
+ *
+ * Kept here rather than in the webhook because it is a conversation turn: it
+ * is stored in the thread, it is what the customer sees, and the next model
+ * call reads it back as history.
+ */
+const UNSUPPORTED_INBOUND = "[sent an attachment the assistant cannot read]";
+
+const UNSUPPORTED_REPLY =
+  "I can only read text at the moment — could you type that out for me?";
+
 export type HandleResult = {
   conversationId: string;
   /** Absent when the bot stayed silent, which is not the same as failing. */
@@ -201,10 +232,30 @@ export type HandleResult = {
 export async function handleIncomingMessage(
   incoming: IncomingMessage
 ): Promise<HandleResult> {
-  const conversation = await loadOrCreate(incoming.channel, incoming.externalId);
+  const conversation = await loadOrCreate(incoming);
   const id = conversation.id;
 
-  await appendMessage(id, "user", incoming.text);
+  await appendMessage(
+    id,
+    "user",
+    // A sticker, a voice note or a bare photo has no text. Stored as a
+    // described placeholder rather than an empty string, so the dashboard
+    // shows a person that something arrived instead of a blank row.
+    incoming.unsupported ? UNSUPPORTED_INBOUND : incoming.text
+  );
+
+  // Answered before the mode check on purpose: this is not the assistant
+  // taking a turn, it is the channel saying what it can carry, and it stays
+  // true while a colleague owns the thread.
+  if (incoming.unsupported) {
+    const stored = await appendMessage(id, "assistant", UNSUPPORTED_REPLY);
+    return {
+      conversationId: id,
+      reply: UNSUPPORTED_REPLY,
+      replyAt: stored.at,
+      mode: conversation.mode,
+    };
+  }
 
   if (conversation.mode === "human") {
     const waitedMs = conversation.escalatedAt
@@ -300,4 +351,48 @@ export async function allMessages(id: string, limit = 200) {
     id: doc.id,
     ...(doc.data() as Omit<BotMessage, "id">),
   }));
+}
+
+/* ── Erasure ────────────────────────────────────────────────────────────── */
+
+/**
+ * Deletes everything stored about one person on the Meta channels.
+ *
+ * Called by Meta's data-deletion callback, which identifies somebody by an id
+ * scoped to our app and says nothing about which channel they used — so every
+ * Meta channel is tried and the ones that do not match cost a miss each.
+ *
+ * The conversation document goes last. If the messages fail to delete the
+ * conversation is still there to try again from; the reverse would leave a
+ * subcollection nothing points at, which is data we promised to erase and can
+ * no longer find.
+ */
+export async function deleteConversationData(externalId: string): Promise<string[]> {
+  const deleted: string[] = [];
+
+  for (const channel of ["whatsapp", "messenger", "instagram"] as const) {
+    const id = conversationId(channel, externalId);
+    const ref = conversations().doc(id);
+
+    if (!(await ref.get()).exists) {
+      continue;
+    }
+
+    // Batched rather than one delete per document: a long thread is hundreds
+    // of writes, and Meta wants an answer inside its request.
+    const messages = await messagesRef(id).get();
+
+    for (let index = 0; index < messages.docs.length; index += 400) {
+      const batch = firestore.batch();
+      for (const doc of messages.docs.slice(index, index + 400)) {
+        batch.delete(doc.ref);
+      }
+      await batch.commit();
+    }
+
+    await ref.delete();
+    deleted.push(id);
+  }
+
+  return deleted;
 }

@@ -4,9 +4,10 @@ A Gemini agent that answers about DXI, captures leads, registers people for
 events, and hands over to a person when that is what is needed. Modelled on
 `orangesnowtech/purch-whatsapp-bot`, rebuilt around this repo's own content.
 
-Website channel is live. WhatsApp, Messenger and Instagram are next and share
-the same agent — they are behind Meta app review, which the web widget is not,
-which is why the web widget shipped first.
+Website channel is live. WhatsApp, Messenger and Instagram are built and share
+the same agent, the same conversation store and the same dashboard; what stands
+between them and real customers is Meta app review, not code. See
+**META_SETUP.md**.
 
 ## Why it lives in this repo
 
@@ -40,6 +41,20 @@ visitor ─► ChatWidget ─► POST /api/bot/chat
 
 staff ─► /admin/chats ─► POST /api/admin/chats/[id] ─► widget polls it back
 ```
+
+The Meta channels enter the same diagram one box earlier:
+
+```
+WhatsApp ──┐
+Messenger ─┼─► POST /api/webhooks/meta ─► handleIncomingMessage ─► runAgent
+Instagram ─┘     signature + dedupe                                    │
+                                                                       ▼
+                                                        deliver() pushes the reply
+```
+
+Web is the odd one out, not the Meta channels: its widget *polls* for replies,
+so nothing is pushed to it. `deliver()` is a no-op there, which is why no
+caller has to branch on the channel.
 
 ## Knowledge, not lookups
 
@@ -155,6 +170,13 @@ GEMINI_API_KEY=                    # unset = no widget rendered, endpoint 503s
 GEMINI_MODEL=gemini-3.6-flash
 BOT_HANDOFF_TIMEOUT_MINUTES=15
 BOT_HOURLY_MESSAGE_LIMIT=40
+
+META_APP_SECRET=                   # unset = the webhook rejects everything
+META_VERIFY_TOKEN=                 # unset = Meta cannot complete the handshake
+WHATSAPP_TOKEN=                    # system-user token, all channels
+WHATSAPP_PHONE_NUMBER_ID=          # fallback only; the stored one wins
+META_GRAPH_VERSION=v23.0
+META_PAGE_TOKEN=                   # optional; defaults to WHATSAPP_TOKEN
 ```
 
 With no key the assistant is **inert, not broken**: the layout renders no widget
@@ -163,10 +185,53 @@ and the endpoint answers 503.
 For deployment the key must exist in Secret Manager *before* it is named in
 `apphosting.yaml` — naming a secret that does not exist fails the build.
 
+The Meta secrets are checked together. `metaIsConfigured()` wants both the
+verify token and the app secret, and the webhook answers nothing without them —
+there is deliberately no "skip the signature check in development" path, the
+way the reference implementation has. That endpoint is a public URL that writes
+to Firestore and spends money on model calls; an unsigned request reaching the
+agent is not a convenience.
+
+## The Meta channels
+
+Three products of one Meta app, one webhook, and above `lib/bot/channels.ts`
+nothing knows which is which. Instagram deliberately goes through the Messenger
+Platform rather than its own Login API, so Messenger and Instagram are one code
+path with one token.
+
+Four things are worth knowing:
+
+**Replies go out the way they came in.** `businessId` — the WhatsApp number id,
+or the Page or IG account id — is recorded on the conversation at first
+contact. Sending from whichever number happens to be configured this week works
+right up until there are two.
+
+**A retry is not a second answer.** Meta resends anything it does not get a 2xx
+for in about twenty seconds, and a model call can cross that. Each message id
+is claimed with a Firestore `create`, which fails if it already exists — so the
+check and the claim are one write with no race. A message that fails *before*
+its reply is stored gives the claim back; one that fails while being *delivered*
+does not, because the model has already been paid for and a bad token will
+fail again.
+
+**Delivery failure is not silence.** A dashboard reply is stored before it is
+sent and stays in the thread if the send is rejected, with a banner saying it
+did not arrive. Rolling it back would be worse: the next person to open the
+thread would answer a question the customer had already been answered.
+
+**Text only.** Stickers, voice notes and bare photos are recorded as an
+attachment and answered with a line asking for words. Handled in
+`handleIncomingMessage` rather than the route, because it is a conversation
+turn — stored in the thread, read back as history — and answered before the
+mode check, since it stays true while a colleague owns the conversation.
+
 ## Known limits
 
-- **Web only.** The Meta channels need a Business account, tokens, app review,
-  and the privacy/terms/data-deletion pages Meta requires.
+- **Not yet reaching real customers.** The code is done; Meta app review and
+  Business Verification are not. META_SETUP.md is the checklist.
 - **Polling, not streaming.** Replies appear within about six seconds. Fine at
   this volume; a socket would be the answer if it ever is not.
+- **No outbound-first messaging.** Replies live inside the 24-hour window. A
+  WhatsApp message to somebody who has not written in needs an approved
+  template, which is not built.
 - **No conversation-level analytics** beyond what the dashboard lists.
