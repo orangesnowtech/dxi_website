@@ -58,13 +58,16 @@ function parseSignedRequest(signed: string): { user_id?: string } | null {
 }
 
 export async function POST(request: NextRequest) {
-  // Sent as a form post, not JSON.
+  // Sent as a form post, not JSON. Read once as text and parse it ourselves:
+  // `request.formData()` consumes the body even when it throws, so falling
+  // back to `request.text()` afterwards throws again — turning a request with
+  // no body into a 500 where it should be a 400.
   let signed: string | null = null;
 
   try {
-    signed = (await request.formData()).get("signed_request") as string | null;
-  } catch {
     signed = new URLSearchParams(await request.text()).get("signed_request");
+  } catch (error) {
+    console.error("[data-deletion] could not read the request body:", error);
   }
 
   if (!signed) {
