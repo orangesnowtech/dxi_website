@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
 
     let built;
-    let stampField: "paymentDetailsSentAt" | "rejectionSentAt" | null = null;
+    let stampField: "paymentDetailsSentAt" | "rejectionSentAt" | "ticketSentAt" | null = null;
 
     if (kind === ("payment" satisfies Kind)) {
       if (registration.feeNaira <= 0) {
@@ -138,6 +138,7 @@ export async function POST(request: NextRequest) {
             : undefined,
         paidLabel: registration.feeNaira > 0 ? formatFee(registration.feeNaira) : undefined,
       });
+      stampField = "ticketSentAt";
     }
 
     await sendZeptoEmail(

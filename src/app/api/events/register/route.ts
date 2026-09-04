@@ -10,7 +10,11 @@ import {
   type EventRecord,
   type EventRegistration,
 } from "@/lib/events";
-import { registerForEvent, type RegistrationInput } from "@/lib/firebase/events";
+import {
+  registerForEvent,
+  stampRegistration,
+  type RegistrationInput,
+} from "@/lib/firebase/events";
 import { getEventsRecipient, getZeptoConfig, sendZeptoEmail } from "@/lib/zeptomail";
 import { BANK_DETAILS } from "@/lib/academy";
 import {
@@ -174,6 +178,14 @@ export async function POST(request: NextRequest) {
       facts,
       origin: request.nextUrl.origin,
     });
+
+    // A free place is confirmed the moment it is claimed, so its ticket goes
+    // from here rather than from the dashboard. Stamped for the same reason
+    // the dashboard stamps its own: without it there is no dispatch time to
+    // hold a late arrival against.
+    if (registration.status === "confirmed") {
+      await stampRegistration(registration.id, "ticketSentAt", "registration");
+    }
 
     return NextResponse.json(
       {

@@ -450,6 +450,14 @@ export default function EventRegistrations({ event }: { event: EventRecord }) {
                     <strong>Payment details sent:</strong>{" "}
                     {formatMoment(selected.paymentDetailsSentAt)}
                   </div>
+                  {/*
+                    The moment we handed the confirmation to ZeptoMail. Compare
+                    it with the Received header in the inbox: a gap here is a
+                    delay at the mail provider, not in the dashboard.
+                  */}
+                  <div className={styles.field}>
+                    <strong>Confirmation sent:</strong> {formatMoment(selected.ticketSentAt)}
+                  </div>
                   <div className={styles.field}>
                     <strong>Paid:</strong> {formatMoment(selected.paidAt)}
                   </div>

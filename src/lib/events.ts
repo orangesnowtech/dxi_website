@@ -184,6 +184,16 @@ export type EventRegistration = {
   status: RegistrationStatus;
   feeNaira: number;
   paymentDetailsSentAt: string | null;
+  /**
+   * When the confirmation email was handed to ZeptoMail.
+   *
+   * The other two sends were always stamped; this one was not, which meant
+   * "the confirmation never arrived" and "the confirmation arrived an hour
+   * late" looked identical from the dashboard. With a dispatch time to
+   * compare against the headers in the inbox, a delay can be pinned on us or
+   * on the mail provider instead of guessed at.
+   */
+  ticketSentAt: string | null;
   paidAt: string | null;
   /** Six characters, unique across the collection. Issued at registration so
    *  it can be quoted as the transfer narration, but only emailed on confirm. */

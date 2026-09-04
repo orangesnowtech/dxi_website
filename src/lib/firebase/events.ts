@@ -182,6 +182,7 @@ export async function registerForEvent(input: RegistrationInput): Promise<Regist
       status,
       feeNaira: type.feeNaira,
       paymentDetailsSentAt: null,
+      ticketSentAt: null,
       paidAt: null,
       accessCode,
       checkedIn: false,
@@ -379,7 +380,7 @@ export async function listRegistrations(options: {
 /** Marks the moment a hand-sent email went out, so nobody sends it twice. */
 export async function stampRegistration(
   registrationId: string,
-  field: "paymentDetailsSentAt" | "rejectionSentAt",
+  field: "paymentDetailsSentAt" | "rejectionSentAt" | "ticketSentAt",
   adminEmail: string
 ) {
   await registrations().doc(registrationId).update({
