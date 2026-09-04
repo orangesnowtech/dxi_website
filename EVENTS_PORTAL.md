@@ -79,9 +79,13 @@ allowlist is one more thing that can break a card.
 Events are shareable by design. The dashboard's list has a **Copy link** button
 per event, and the public page carries a copy control that offers the native
 share sheet on phones and falls back to a selectable input where the clipboard
-API is unavailable. Both build the URL from the browser's own origin, so they
-are correct on preview, on the apex domain and on localhost without a base URL
-having to be configured and kept in step.
+API is unavailable. Both build the URL against `NEXT_PUBLIC_SITE_URL` rather than
+the browser's own origin, and so does the **/admin/links** dashboard. The
+browser's origin looks like the tidier answer — no base URL to configure — but
+the preview backend serves the same dashboard as the live site, and a link
+copied there named the preview host in a WhatsApp message or on a flyer, long
+after that preview was gone. `shareOrigin()` in `src/lib/links.ts` falls back to
+the browser only when nothing is configured, which is local development.
 
 ## Short links
 
@@ -101,8 +105,9 @@ gets noticed.
 The dashboard's **Copy link** button and the public page's share control both
 hand out the short form when the event has one. So does the assistant, which is
 where it matters most — its replies are read in WhatsApp, and it composes them
-with no request to read the host from, so those links are absolute
-(`NEXT_PUBLIC_SITE_URL`, defaulting to `https://dximarketing.com`).
+with no request to read the host from, so those links are absolute —
+`siteOrigin()`, the same `NEXT_PUBLIC_SITE_URL`, defaulting to
+`https://dximarketing.com`.
 
 A link can also be made by hand and pointed anywhere, including off-site: that
 is how a printed code survives an event moving to somebody else's ticketing

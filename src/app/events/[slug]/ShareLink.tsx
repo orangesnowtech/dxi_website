@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { shareOrigin } from "@/lib/links";
 
 /**
  * Copy-the-link control for an event.
  *
- * The origin is read from the browser rather than passed in, so it is right on
- * every host the site answers on — the preview backend, the apex domain, or
- * localhost — without a base URL having to be configured and kept in step.
+ * The origin comes from `shareOrigin`, not from the browser. This address is
+ * about to be sent to somebody: a link copied off the preview backend would
+ * name the preview backend in a message that outlives it.
  *
  * `shortPath` is the event's short link when it has one. What gets shared is
  * what travels, and this address is going into a WhatsApp message far more
@@ -29,7 +30,7 @@ export default function ShareLink({
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setUrl(window.location.origin + (shortPath || window.location.pathname));
+    setUrl(shareOrigin(window.location.origin) + (shortPath || window.location.pathname));
   }, [shortPath]);
 
   useEffect(() => {

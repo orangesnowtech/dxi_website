@@ -16,7 +16,7 @@ import {
   type EventRecord,
   type EventStatus,
 } from "@/lib/events";
-import { shortLinkPath } from "@/lib/links";
+import { shareOrigin, shortLinkPath } from "@/lib/links";
 import styles from "../../admin.module.css";
 
 type TypeForm = {
@@ -195,7 +195,9 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
   };
 
   /**
-   * Copies one of an event's public URLs, built from the browser's own origin.
+   * Copies one of an event's public URLs, against the site's real address —
+   * not the browser's, which on the preview backend would hand out a link to
+   * the preview backend.
    *
    * `kind` distinguishes the two so the confirmation lands on the button that
    * was actually pressed rather than both.
@@ -214,7 +216,7 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
           : `/events/${slug}`;
 
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}${path}`);
+      await navigator.clipboard.writeText(`${shareOrigin(window.location.origin)}${path}`);
       setCopied(`${slug}:${kind}`);
       setTimeout(() => setCopied(null), 2000);
     } catch {

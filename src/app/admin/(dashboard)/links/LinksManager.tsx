@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  DEFAULT_SITE_ORIGIN,
   normalizeShortCode,
+  shareOrigin,
   shortLinkPath,
   suggestShortCode,
   type ShortLink,
@@ -45,14 +47,16 @@ export default function LinksManager({ isSuperAdmin }: { isSuperAdmin: boolean }
   const [copied, setCopied] = useState<string | null>(null);
 
   /**
-   * Read from the browser rather than configured, so a link copied on the
-   * preview backend points at the preview backend. The same reasoning as the
-   * public `ShareLink` control.
+   * The site's real address, which is what every code here is shown and copied
+   * against. Deliberately not the browser's origin: the preview backend serves
+   * this same dashboard, and a code copied there has to work on the poster it
+   * ends up on. Falls back to the browser only in local development, where
+   * nothing is configured. Held in state because it is resolved after mount.
    */
   const [origin, setOrigin] = useState("");
 
   useEffect(() => {
-    setOrigin(window.location.origin);
+    setOrigin(shareOrigin(window.location.origin));
   }, []);
 
   const fetchLinks = useCallback(async () => {
@@ -257,7 +261,7 @@ export default function LinksManager({ isSuperAdmin }: { isSuperAdmin: boolean }
   };
 
   const preview = form.code
-    ? `${origin || "https://dximarketing.com"}${shortLinkPath(normalizeShortCode(form.code))}`
+    ? `${origin || DEFAULT_SITE_ORIGIN}${shortLinkPath(normalizeShortCode(form.code))}`
     : "The address people will be given.";
 
   return (

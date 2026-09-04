@@ -77,21 +77,52 @@ export function shortLinkPath(code: string) {
 }
 
 /**
+ * Trailing slashes, stripped off every origin before a path is joined onto it,
+ * so `https://dximarketing.com/` never composes into a double slash.
+ */
+const TRAILING_SLASHES = /\/+$/;
+
+/** Where the site lives when nothing says otherwise. */
+export const DEFAULT_SITE_ORIGIN = "https://dximarketing.com";
+
+/** `NEXT_PUBLIC_SITE_URL` if it is set, trimmed of trailing slashes. */
+function configuredOrigin() {
+  return (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(TRAILING_SLASHES, "");
+}
+
+/**
  * The site's own address, for the places that have no request to read it from
  * — the assistant composing a reply for WhatsApp, or an email being built.
- *
- * Pages that *do* have a browser should keep reading `window.location.origin`
- * instead, the way `ShareLink` does: that stays right on the preview backend
- * and on localhost without this having to be configured per environment.
  */
 export function siteOrigin() {
-  const configured = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
-  return configured || "https://dximarketing.com";
+  return configuredOrigin() || DEFAULT_SITE_ORIGIN;
+}
+
+/**
+ * The origin to put in front of a link somebody is about to hand out.
+ *
+ * Not the browser's origin, which is the obvious answer and the wrong one: the
+ * preview backend serves the same dashboard as the live site, so a link copied
+ * there carried the preview host into a WhatsApp message or onto a flyer,
+ * where it long outlives the preview it was named after.
+ *
+ * The configured address wins wherever there is one — both deployed backends
+ * build with `NEXT_PUBLIC_SITE_URL` set to the live domain, which is the only
+ * address a shared link should ever name. The browser's origin is the fallback
+ * for local development, where nothing is configured and a link pointing at
+ * the live site would be the useless answer.
+ */
+export function shareOrigin(browserOrigin?: string | null) {
+  return (
+    configuredOrigin() ||
+    (browserOrigin || "").trim().replace(TRAILING_SLASHES, "") ||
+    DEFAULT_SITE_ORIGIN
+  );
 }
 
 /** The full thing you would paste into a message. */
 export function shortLinkUrl(code: string, origin: string = siteOrigin()) {
-  return `${origin.replace(/\/+$/, "")}${shortLinkPath(code)}`;
+  return `${origin.replace(TRAILING_SLASHES, "")}${shortLinkPath(code)}`;
 }
 
 /**
@@ -99,7 +130,7 @@ export function shortLinkUrl(code: string, origin: string = siteOrigin()) {
  * site's own address so it reads like the link it will become.
  */
 export function describeLinkTarget(target: string, origin: string = siteOrigin()) {
-  return target.startsWith("/") ? `${origin.replace(/\/+$/, "")}${target}` : target;
+  return target.startsWith("/") ? `${origin.replace(TRAILING_SLASHES, "")}${target}` : target;
 }
 
 type TargetResult = { error: string; value: null } | { error: null; value: string };
