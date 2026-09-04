@@ -7,6 +7,7 @@ import {
   type RecordingStatus,
 } from "@/lib/recordings";
 import {
+  countWatches,
   deleteRecording,
   getRecording,
   listRecordings,
@@ -61,7 +62,7 @@ function readLoom(
   };
 }
 
-/** Replays, plus the events one can be attached to. */
+/** Replays with their watch counts, plus the events one can be attached to. */
 export async function GET(request: NextRequest) {
   const { session, response: unauthorized } = await requireAdmin(request);
 
@@ -76,8 +77,17 @@ export async function GET(request: NextRequest) {
       listEvents("all"),
     ]);
 
+    // Counted per replay rather than read and tallied, so the list does not
+    // get slower every time somebody watches something.
+    const watchCounts = await Promise.all(
+      recordings.map((recording) => countWatches(recording.slug).catch(() => 0))
+    );
+
     return NextResponse.json({
-      recordings,
+      recordings: recordings.map((recording, index) => ({
+        ...recording,
+        watchCount: watchCounts[index],
+      })),
       events: allEvents.map((event) => ({
         slug: event.slug,
         title: event.title,

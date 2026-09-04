@@ -21,6 +21,19 @@ import styles from "../../admin.module.css";
 
 type EventOption = { slug: string; title: string; startsAt: string };
 
+/** A replay as the admin list sends it: the record plus its watch tally. */
+type RecordingRow = Recording & { watchCount?: number };
+
+/** One authorised watch, as recorded the moment the gate let somebody in. */
+type Watch = {
+  id: string;
+  watcher: string;
+  name: string;
+  phone: string;
+  access: string;
+  at: string;
+};
+
 type FormState = {
   slug: string;
   title: string;
@@ -68,7 +81,7 @@ function toLocalInput(iso: string | null) {
 
 export default function RecordingsManager({ isSuperAdmin }: { isSuperAdmin: boolean }) {
   const router = useRouter();
-  const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [recordings, setRecordings] = useState<RecordingRow[]>([]);
   const [events, setEvents] = useState<EventOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -77,6 +90,10 @@ export default function RecordingsManager({ isSuperAdmin }: { isSuperAdmin: bool
   const [form, setForm] = useState<FormState>(emptyForm);
   /** The slug being edited, or null while creating. */
   const [editing, setEditing] = useState<string | null>(null);
+  /** The replay whose watch list is open, or null when the panel is closed. */
+  const [viewing, setViewing] = useState<RecordingRow | null>(null);
+  const [watchers, setWatchers] = useState<Watch[] | null>(null);
+  const [watchersError, setWatchersError] = useState<string | null>(null);
 
   const fetchAll = useCallback(async () => {
     try {
@@ -159,6 +176,34 @@ export default function RecordingsManager({ isSuperAdmin }: { isSuperAdmin: bool
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setBusy(false);
+    }
+  };
+
+  /**
+   * Opens the watch list for one replay.
+   *
+   * Loaded on demand rather than with the table: the list is the interesting
+   * part but it is also the long part, and most visits to this page are to
+   * add a replay rather than to read who watched one.
+   */
+  const showWatchers = async (recording: RecordingRow) => {
+    setViewing(recording);
+    setWatchers(null);
+    setWatchersError(null);
+
+    try {
+      const response = await fetch(
+        `/api/admin/recordings/${encodeURIComponent(recording.slug)}/watchers`
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not load the watch list.");
+      }
+
+      setWatchers(data.watchers as Watch[]);
+    } catch (err) {
+      setWatchersError(err instanceof Error ? err.message : "An error occurred");
     }
   };
 
@@ -461,6 +506,7 @@ export default function RecordingsManager({ isSuperAdmin }: { isSuperAdmin: bool
                   <th>Replay</th>
                   <th>Who can watch</th>
                   <th>Runtime</th>
+                  <th>Watched</th>
                   <th>Closes</th>
                   <th>Video</th>
                   <th>Status</th>
@@ -484,6 +530,24 @@ export default function RecordingsManager({ isSuperAdmin }: { isSuperAdmin: bool
                       )}
                     </td>
                     <td>{formatDuration(recording.durationSeconds) || "—"}</td>
+                    <td>
+                      {/*
+                        A count on its own is a vanity metric. It is a button
+                        because the names behind it are the point.
+                      */}
+                      {recording.watchCount ? (
+                        <button
+                          type="button"
+                          onClick={() => showWatchers(recording)}
+                          className={styles.viewDetailsBtn}
+                        >
+                          {recording.watchCount} watch
+                          {recording.watchCount === 1 ? "" : "es"}
+                        </button>
+                      ) : (
+                        <span className={styles.referralNote}>None yet</span>
+                      )}
+                    </td>
                     <td>
                       {recording.availableUntil
                         ? new Date(recording.availableUntil).toLocaleDateString("en-NG")
@@ -529,6 +593,85 @@ export default function RecordingsManager({ isSuperAdmin }: { isSuperAdmin: bool
           </div>
         )}
       </main>
+
+      {viewing && (
+        <div className={styles.modalOverlay} onClick={() => setViewing(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2>Who watched &ldquo;{viewing.title}&rdquo;</h2>
+              <button
+                type="button"
+                className={styles.closeModalBtn}
+                onClick={() => setViewing(null)}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className={styles.modalContent}>
+              {watchersError && <div className={styles.error}>{watchersError}</div>}
+              {!watchers && !watchersError && <p>Loading the watch list…</p>}
+
+              {watchers && watchers.length === 0 && (
+                <p>Nobody has watched this one yet.</p>
+              )}
+
+              {watchers && watchers.length > 0 && (
+                <>
+                  {/*
+                    Said plainly, because the number above the table and the
+                    number of people in it are not the same thing and somebody
+                    will otherwise report it as a bug.
+                  */}
+                  <p className={styles.deleteLead}>
+                    {watchers.length} watch{watchers.length === 1 ? "" : "es"} by{" "}
+                    {new Set(watchers.map((watch) => watch.watcher || watch.name)).size}{" "}
+                    person/people. Somebody coming back tomorrow is counted twice.
+                  </p>
+
+                  <a
+                    href={`/api/admin/recordings/${encodeURIComponent(viewing.slug)}/export`}
+                    className={styles.exportBtn}
+                  >
+                    Download as a spreadsheet
+                  </a>
+
+                  <div className={styles.tableWrapper}>
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>When</th>
+                          <th>Who</th>
+                          <th>Phone</th>
+                          <th>How they got in</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {watchers.map((watch) => (
+                          <tr key={watch.id} className={styles.row}>
+                            <td>{new Date(watch.at).toLocaleString("en-NG")}</td>
+                            <td>
+                              <div className={styles.name}>{watch.name || "—"}</div>
+                              <span className={styles.referralNote}>
+                                {watch.watcher || "no email captured"}
+                              </span>
+                            </td>
+                            <td>{watch.phone || "—"}</td>
+                            <td>
+                              {RECORDING_ACCESS_LABELS[watch.access as RecordingAccess] ||
+                                watch.access}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

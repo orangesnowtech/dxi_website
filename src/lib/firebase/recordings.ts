@@ -150,6 +150,27 @@ export async function recordWatch(view: RecordingView) {
   }
 }
 
+/**
+ * How many authorised watches one replay has had.
+ *
+ * An aggregation rather than a read: the dashboard shows this next to every
+ * replay in the list, and pulling every row back to call `.length` on it would
+ * make the page slower with every watch the feature earns.
+ *
+ * Counts watches, not people — the same person coming back tomorrow is two.
+ * That is the honest number for "how much is this being used"; the list below
+ * is where you find out who.
+ */
+export async function countWatches(recordingSlug: string) {
+  const snapshot = await firestore
+    .collection(RECORDING_VIEWS_COLLECTION)
+    .where("recordingSlug", "==", recordingSlug)
+    .count()
+    .get();
+
+  return snapshot.data().count;
+}
+
 /** The watch list for one replay, newest first. */
 export async function listWatchers(recordingSlug: string, limit = 500) {
   const snapshot = await firestore
