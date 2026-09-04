@@ -3,10 +3,11 @@ import { requireAdmin, requireSuperAdmin } from "@/lib/admin-auth";
 import { parseEventPayload, type EventPayload } from "@/lib/events";
 import {
   countRegistrationsFor,
-  deleteEvent,
   getEvent,
+  purgeEvent,
   saveEvent,
 } from "@/lib/firebase/events";
+import { deleteEventPosters } from "@/lib/firebase/storage";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -74,15 +75,23 @@ export async function PATCH(request: NextRequest, { params }: Context) {
 }
 
 /**
- * Permanently deletes an event. Super admin only, and only while nobody has
- * registered.
+ * Permanently deletes an event and everything that only existed because of it.
+ * Super admin only.
  *
- * Once a single person has a place, deleting the event would orphan their
- * registration and destroy the record of what they were promised. Archiving is
- * the reversible option and is what the dashboard steers towards.
+ * Archiving remains the reversible option, and the dashboard still steers
+ * towards it. This is for the case archiving does not cover — a test event, a
+ * duplicate, something created by mistake — where leaving it archived forever
+ * is only litter.
+ *
+ * Three things stand between a click and a destroyed customer list: the super
+ * admin check, the typed slug, and `deleteRegistrations`, which is a separate
+ * answer to a separate question. The first two were already here; the third is
+ * what makes deleting a populated event possible at all, and it is deliberately
+ * not implied by the other two. GET ../export builds the spreadsheet that
+ * should be taken first.
  */
 export async function DELETE(request: NextRequest, { params }: Context) {
-  const { response: forbidden } = await requireSuperAdmin(request);
+  const { session, response: forbidden } = await requireSuperAdmin(request);
 
   if (forbidden) {
     return forbidden;
@@ -99,7 +108,10 @@ export async function DELETE(request: NextRequest, { params }: Context) {
 
     // Checked server-side too — the browser dialog is a convenience, not the
     // safeguard.
-    const { confirmSlug } = (await request.json().catch(() => ({}))) as { confirmSlug?: string };
+    const { confirmSlug, deleteRegistrations } = (await request.json().catch(() => ({}))) as {
+      confirmSlug?: string;
+      deleteRegistrations?: boolean;
+    };
 
     if (confirmSlug?.trim().toLowerCase() !== slug) {
       return NextResponse.json(
@@ -110,18 +122,38 @@ export async function DELETE(request: NextRequest, { params }: Context) {
 
     const registrationCount = await countRegistrationsFor(slug);
 
-    if (registrationCount > 0) {
+    // Deleting the registrations along with the event is a second decision,
+    // and it gets its own answer. Without it the old behaviour stands: an
+    // event with people attached refuses to go, because deleting it silently
+    // would take a paid customer list with it on a click meant for the event.
+    if (registrationCount > 0 && !deleteRegistrations) {
       return NextResponse.json(
         {
-          error: `This event has ${registrationCount} registration(s). Archive it instead — deleting it would orphan them.`,
+          error: `This event has ${registrationCount} registration(s). Archive it instead, or confirm that you also want the registrations deleted.`,
+          registrationCount,
+          needsRegistrationConsent: true,
         },
         { status: 409 }
       );
     }
 
-    await deleteEvent(slug);
+    const result = await purgeEvent(slug, session.email);
 
-    return NextResponse.json({ message: "Event deleted", slug });
+    // The poster is not in Firestore, so it is not part of the batch and its
+    // failure must not undo one. Cleared after the records, and never allowed
+    // to turn a completed deletion into an error.
+    const postersDeleted = await deleteEventPosters(slug);
+
+    console.info(
+      `${session.email} deleted the event ${slug}: ${result.registrationsDeleted} registration(s), ${postersDeleted} poster file(s).`
+    );
+
+    return NextResponse.json({
+      message: `Deleted ${slug}.`,
+      slug,
+      ...result,
+      postersDeleted,
+    });
   } catch (error) {
     console.error(`Failed to delete event ${slug}:`, error);
     return NextResponse.json({ error: "Could not delete the event." }, { status: 500 });

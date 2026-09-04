@@ -1,6 +1,8 @@
 import { FieldValue } from "firebase-admin/firestore";
 import type { DocumentData, Query, Transaction } from "firebase-admin/firestore";
 import { firestore } from "@/lib/firebase/admin";
+import { SHORT_LINKS_COLLECTION } from "@/lib/firebase/links";
+import { RECORDINGS_COLLECTION } from "@/lib/firebase/recordings";
 import {
   approvedRegistrationStatus,
   checkInWindow,
@@ -638,4 +640,166 @@ export async function countRegistrationsFor(eventSlug: string) {
 
 export async function deleteEvent(slug: string) {
   await events().doc(slug).delete();
+}
+
+/* ── Deleting an event outright ─────────────────────────────────────────── */
+
+/**
+ * Everything that would be destroyed or cut loose by deleting one event.
+ *
+ * Read and shown before anybody confirms, because "delete this event" and
+ * "delete the ninety people who paid for it" are different decisions and only
+ * one of them is on the button. Archiving remains the reversible option; this
+ * exists for the case archiving does not cover — a test event, a duplicate, a
+ * thing created by mistake — where leaving it archived forever is just litter.
+ */
+export type EventDeletionImpact = {
+  registrations: { total: number; confirmed: number; paid: number; checkedIn: number };
+  /** Short links pointing at this event. Kept, but cut loose — see `purgeEvent`. */
+  shortLinks: { code: string; target: string }[];
+  /** Replays recorded at this event. Also kept and cut loose. */
+  recordings: { slug: string; title: string; status: string; access: string }[];
+};
+
+export async function summarizeEventDeletion(slug: string): Promise<EventDeletionImpact> {
+  const [registrationDocs, linkDocs, recordingDocs] = await Promise.all([
+    registrations().where("eventSlug", "==", slug).get(),
+    firestore.collection(SHORT_LINKS_COLLECTION).where("eventSlug", "==", slug).get(),
+    firestore.collection(RECORDINGS_COLLECTION).where("eventSlug", "==", slug).get(),
+  ]);
+
+  const rows = registrationDocs.docs.map((doc) => doc.data() as EventRegistration);
+
+  return {
+    registrations: {
+      total: rows.length,
+      confirmed: rows.filter((row) => row.status === "confirmed").length,
+      // The ones that cost somebody money. If this is not zero, the list is
+      // worth exporting before it stops existing.
+      paid: rows.filter((row) => Boolean(row.paidAt)).length,
+      checkedIn: rows.filter((row) => row.checkedIn).length,
+    },
+    shortLinks: linkDocs.docs.map((doc) => ({
+      code: doc.id,
+      target: (doc.data() as { target?: string }).target || "",
+    })),
+    recordings: recordingDocs.docs.map((doc) => {
+      const data = doc.data() as { title?: string; status?: string; access?: string };
+      return {
+        slug: doc.id,
+        title: data.title || doc.id,
+        status: data.status || "",
+        access: data.access || "",
+      };
+    }),
+  };
+}
+
+/** Firestore's own ceiling on a write batch. */
+const BATCH_LIMIT = 500;
+
+export type EventPurgeResult = {
+  registrationsDeleted: number;
+  shortLinksCutLoose: number;
+  recordingsCutLoose: number;
+  /** Replays pulled back to draft because their gate can no longer be checked. */
+  recordingsDrafted: number;
+};
+
+/**
+ * Deletes an event and everything that only existed because of it.
+ *
+ * The order matters. Registrations go first, because they are the part that
+ * cannot be reconstructed from anything else and a failure halfway through
+ * should leave the event still standing to try again. The event document goes
+ * last, so there is never a window where registrations point at an event that
+ * is not there.
+ *
+ * Two things are cut loose rather than destroyed:
+ *
+ * **Short links** are kept. A code is printed on posters and flyers, and the
+ * whole point of the retargeting in `links.ts` is that a printed thing keeps
+ * working after the thing it pointed at moves. Deleting the code would break
+ * paper nobody can recall. Their `eventSlug` is cleared and the caller is told
+ * which codes now point at a dead page, so they can be retargeted.
+ *
+ * **Replays** are kept for the same reason — the recording is still a
+ * recording. But one gated on `registrants` verified codes against this
+ * event's registrations, and those are now gone, so it is pulled back to draft
+ * rather than left published behind a gate that can never open. That is a
+ * visible change to a public page, so it is counted and reported.
+ */
+export async function purgeEvent(
+  slug: string,
+  adminEmail: string
+): Promise<EventPurgeResult> {
+  const result: EventPurgeResult = {
+    registrationsDeleted: 0,
+    shortLinksCutLoose: 0,
+    recordingsCutLoose: 0,
+    recordingsDrafted: 0,
+  };
+
+  // Paged rather than read whole: an event with thousands of registrations
+  // would otherwise be held in memory all at once to delete it.
+  for (;;) {
+    const page = await registrations()
+      .where("eventSlug", "==", slug)
+      .limit(BATCH_LIMIT)
+      .get();
+
+    if (page.empty) {
+      break;
+    }
+
+    const batch = firestore.batch();
+    page.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+
+    result.registrationsDeleted += page.size;
+
+    if (page.size < BATCH_LIMIT) {
+      break;
+    }
+  }
+
+  const now = new Date().toISOString();
+
+  const linkDocs = await firestore.collection(SHORT_LINKS_COLLECTION).where("eventSlug", "==", slug).get();
+
+  if (!linkDocs.empty) {
+    const batch = firestore.batch();
+    linkDocs.docs.forEach((doc) => batch.update(doc.ref, { eventSlug: null }));
+    await batch.commit();
+    result.shortLinksCutLoose = linkDocs.size;
+  }
+
+  const recordingDocs = await firestore.collection(RECORDINGS_COLLECTION).where("eventSlug", "==", slug).get();
+
+  if (!recordingDocs.empty) {
+    const batch = firestore.batch();
+
+    recordingDocs.docs.forEach((doc) => {
+      const data = doc.data() as { access?: string; status?: string };
+      const stranded = data.access === "registrants";
+
+      batch.update(doc.ref, {
+        eventSlug: null,
+        ...(stranded ? { status: "draft", publishedAt: null } : {}),
+        updatedAt: now,
+        updatedBy: adminEmail,
+      });
+
+      if (stranded) {
+        result.recordingsDrafted += 1;
+      }
+    });
+
+    await batch.commit();
+    result.recordingsCutLoose = recordingDocs.size;
+  }
+
+  await events().doc(slug).delete();
+
+  return result;
 }

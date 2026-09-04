@@ -1511,3 +1511,96 @@
 .composerWrap .chatComposer {
   border-top: none;
 }
+
+/* ---- Deleting an event ----
+   Styled to be read rather than clicked past. The list is the whole point of
+   the dialog: it says what goes, in numbers, before anybody confirms. */
+
+.deleteLead {
+  margin: 0 0 16px 0;
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.deleteImpact {
+  margin: 0 0 20px 0;
+  padding: 16px 16px 16px 34px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  color: #374151;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.deleteImpact li + li {
+  margin-top: 10px;
+}
+
+.deleteImpact code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  font-size: 0.85rem;
+}
+
+.deleteImpactNote {
+  display: block;
+  margin-top: 2px;
+  color: #6b7280;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.exportBtn {
+  display: block;
+  margin-bottom: 18px;
+  padding: 11px 18px;
+  border: 1px solid #047857;
+  border-radius: 8px;
+  background-color: #ecfdf5;
+  color: #047857;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.exportBtn:hover {
+  background-color: #d1fae5;
+}
+
+.deleteConsent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.deleteConsent input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.deleteConfirmLabel {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.deleteConfirmLabel code {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #f3f4f6;
+  font-weight: 600;
+}

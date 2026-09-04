@@ -112,3 +112,39 @@ export async function uploadEventPoster(
     objectPath
   )}?alt=media&token=${token}`;
 }
+
+/**
+ * Removes every poster ever uploaded for one event.
+ *
+ * By prefix rather than by the URL on the event record, because a poster
+ * swapped three times leaves three objects and the record only remembers the
+ * last. Deleting the event and leaving its images in the bucket is how a
+ * storage bill outlives the thing it was for.
+ *
+ * Never throws. It is called during a deletion that has already destroyed
+ * Firestore records, and failing here would abort a job that cannot be
+ * usefully retried — a leftover image is a smaller problem than a half-deleted
+ * event, so this reports and moves on.
+ */
+export async function deleteEventPosters(slug: string): Promise<number> {
+  try {
+    const bucketName = await resolveBucketName();
+    const [files] = await getStorage()
+      .bucket(bucketName)
+      .getFiles({ prefix: `event-posters/${slug}/` });
+
+    const results = await Promise.allSettled(files.map((file) => file.delete()));
+    const deleted = results.filter((result) => result.status === "fulfilled").length;
+
+    if (deleted < files.length) {
+      console.error(
+        `Left ${files.length - deleted} poster file(s) behind for ${slug}; delete them by hand under event-posters/${slug}/.`
+      );
+    }
+
+    return deleted;
+  } catch (error) {
+    console.error(`Could not clear posters for ${slug}:`, error);
+    return 0;
+  }
+}

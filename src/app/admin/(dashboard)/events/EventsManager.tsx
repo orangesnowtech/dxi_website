@@ -19,6 +19,13 @@ import {
 import { shareOrigin, shortLinkPath } from "@/lib/links";
 import styles from "../../admin.module.css";
 
+/** What the server says deleting one event would destroy. */
+type DeletionImpact = {
+  registrations: { total: number; confirmed: number; paid: number; checkedIn: number };
+  shortLinks: { code: string; target: string }[];
+  recordings: { slug: string; title: string; status: string; access: string }[];
+};
+
 type TypeForm = {
   key: string;
   label: string;
@@ -162,6 +169,14 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
   const [copied, setCopied] = useState<string | null>(null);
   /** `slug -> short code`, for the events that have a link. Managed on /admin/links. */
   const [shortCodes, setShortCodes] = useState<Record<string, string>>({});
+  /** The event the delete dialog is open for, or null when it is closed. */
+  const [deleting, setDeleting] = useState<EventRecord | null>(null);
+  const [impact, setImpact] = useState<DeletionImpact | null>(null);
+  const [impactError, setImpactError] = useState<string | null>(null);
+  const [confirmSlug, setConfirmSlug] = useState("");
+  /** The separate yes to destroying the registrations. Never pre-ticked. */
+  const [consentToRegistrations, setConsentToRegistrations] = useState(false);
+  const [exported, setExported] = useState(false);
 
   /**
    * Sends a poster straight to storage and keeps only the URL on the form.
@@ -381,12 +396,46 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
     }
   };
 
+  /**
+   * Opens the delete dialog and asks the server what it would cost.
+   *
+   * The numbers are read before anything is confirmed, because "delete this
+   * event" and "delete the ninety people who paid for it" are different
+   * decisions, and only one of them is written on the button.
+   */
   const handleDelete = async (event: EventRecord) => {
-    const typed = window.prompt(
-      `This permanently deletes "${event.title}". Archiving is the reversible option.\n\nType the event address to confirm:\n${event.slug}`
-    );
+    setDeleting(event);
+    setImpact(null);
+    setImpactError(null);
+    setConfirmSlug("");
+    setConsentToRegistrations(false);
+    setExported(false);
 
-    if (!typed) {
+    try {
+      const response = await fetch(`/api/admin/events/${event.slug}/deletion`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Could not check what this would affect.");
+      }
+
+      setImpact(data.impact as DeletionImpact);
+    } catch (err) {
+      setImpactError(err instanceof Error ? err.message : "An error occurred");
+    }
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleting(null);
+    setImpact(null);
+    setImpactError(null);
+    setConfirmSlug("");
+    setConsentToRegistrations(false);
+    setExported(false);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleting) {
       return;
     }
 
@@ -395,10 +444,13 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
     setNotice(null);
 
     try {
-      const response = await fetch(`/api/admin/events/${event.slug}`, {
+      const response = await fetch(`/api/admin/events/${deleting.slug}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ confirmSlug: typed }),
+        body: JSON.stringify({
+          confirmSlug,
+          deleteRegistrations: consentToRegistrations,
+        }),
       });
 
       const data = await response.json();
@@ -407,7 +459,29 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
         throw new Error(data.error || "Could not delete the event");
       }
 
-      setNotice(`Deleted "${event.title}".`);
+      // Says what actually happened rather than just "deleted". The replays
+      // pulled back to draft are a visible change to a public page, and
+      // nobody asked for that in so many words.
+      const parts = [`Deleted "${deleting.title}".`];
+
+      if (data.registrationsDeleted > 0) {
+        parts.push(`${data.registrationsDeleted} registration(s) destroyed.`);
+      }
+
+      if (data.shortLinksCutLoose > 0) {
+        parts.push(
+          `${data.shortLinksCutLoose} short link(s) kept but now pointing at a dead page — retarget them under Links.`
+        );
+      }
+
+      if (data.recordingsDrafted > 0) {
+        parts.push(
+          `${data.recordingsDrafted} replay(s) pulled back to draft: their gate checked codes against this event.`
+        );
+      }
+
+      setNotice(parts.join(" "));
+      closeDeleteDialog();
       await fetchEvents();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -1007,7 +1081,7 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
                         >
                           Edit
                         </button>
-                        {isSuperAdmin && event.registrationCount === 0 && (
+                        {isSuperAdmin && (
                           <button
                             type="button"
                             className={styles.revokeBtn}
@@ -1026,6 +1100,144 @@ export default function EventsManager({ isSuperAdmin }: { isSuperAdmin: boolean 
           </div>
         )}
       </main>
+
+      {deleting && (
+        <div className={styles.modalOverlay} onClick={closeDeleteDialog}>
+          <div
+            className={styles.modal}
+            style={{ maxWidth: 620 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <h2>Delete &ldquo;{deleting.title}&rdquo;</h2>
+              <button type="button" className={styles.closeModalBtn} onClick={closeDeleteDialog}>
+                Cancel
+              </button>
+            </div>
+
+            <div className={styles.modalContent}>
+              {impactError && <div className={styles.error}>{impactError}</div>}
+
+              {!impact && !impactError && <p>Checking what this would affect…</p>}
+
+              {impact && (
+                <>
+                  <p className={styles.deleteLead}>
+                    Archiving is reversible and keeps everything. This is not. Here is what
+                    goes:
+                  </p>
+
+                  <ul className={styles.deleteImpact}>
+                    <li>
+                      <strong>{impact.registrations.total} registration(s)</strong> deleted
+                      permanently
+                      {impact.registrations.total > 0 && (
+                        <span className={styles.deleteImpactNote}>
+                          {impact.registrations.confirmed} confirmed,{" "}
+                          {impact.registrations.paid} of whom paid,{" "}
+                          {impact.registrations.checkedIn} checked in on the day
+                        </span>
+                      )}
+                    </li>
+                    <li>
+                      <strong>The event page and its poster</strong>, so{" "}
+                      <code>/events/{deleting.slug}</code> becomes a 404
+                    </li>
+                    {impact.shortLinks.length > 0 && (
+                      <li>
+                        <strong>{impact.shortLinks.length} short link(s)</strong> kept, but left
+                        pointing at a dead page
+                        <span className={styles.deleteImpactNote}>
+                          {impact.shortLinks.map((link) => `/r/${link.code}`).join(", ")} — a
+                          printed code is not ours to break, so retarget them under Links
+                        </span>
+                      </li>
+                    )}
+                    {impact.recordings.length > 0 && (
+                      <li>
+                        <strong>{impact.recordings.length} replay(s)</strong> kept, but cut loose
+                        from this event
+                        <span className={styles.deleteImpactNote}>
+                          {impact.recordings
+                            .map(
+                              (recording) =>
+                                `${recording.title}${
+                                  recording.access === "registrants"
+                                    ? " (gated on this event's codes — will be pulled back to draft)"
+                                    : ""
+                                }`
+                            )
+                            .join("; ")}
+                        </span>
+                      </li>
+                    )}
+                  </ul>
+
+                  {impact.registrations.total > 0 && (
+                    <>
+                      {/*
+                        The rows are the only record that some of these people
+                        ever paid us. Offered before the confirmation, not
+                        after, because after is too late.
+                      */}
+                      <a
+                        href={`/api/admin/events/${deleting.slug}/export`}
+                        onClick={() => setExported(true)}
+                        className={styles.exportBtn}
+                      >
+                        {exported ? "Downloaded ✓ — take another copy" : "Download the registration list first"}
+                      </a>
+
+                      <label className={styles.deleteConsent}>
+                        <input
+                          type="checkbox"
+                          checked={consentToRegistrations}
+                          onChange={(e) => setConsentToRegistrations(e.target.checked)}
+                        />
+                        <span>
+                          Yes, delete the {impact.registrations.total} registration(s) too. I
+                          understand this cannot be undone.
+                        </span>
+                      </label>
+                    </>
+                  )}
+
+                  <label className={styles.deleteConfirmLabel} htmlFor="confirmSlug">
+                    Type <code>{deleting.slug}</code> to confirm
+                  </label>
+                  <input
+                    id="confirmSlug"
+                    value={confirmSlug}
+                    onChange={(e) => setConfirmSlug(e.target.value)}
+                    autoComplete="off"
+                    className={styles.grantInput}
+                    placeholder={deleting.slug}
+                  />
+                </>
+              )}
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button type="button" className={styles.closeModalBtn} onClick={closeDeleteDialog}>
+                Keep the event
+              </button>
+              <button
+                type="button"
+                className={styles.revokeBtn}
+                onClick={confirmDelete}
+                disabled={
+                  busy ||
+                  !impact ||
+                  confirmSlug.trim().toLowerCase() !== deleting.slug ||
+                  (impact.registrations.total > 0 && !consentToRegistrations)
+                }
+              >
+                {busy ? "Deleting…" : "Delete permanently"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
