@@ -2,13 +2,29 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getRedirectResult, signInWithRedirect, signOut } from "firebase/auth";
+import {
+  getRedirectResult,
+  signInWithEmailAndPassword,
+  signInWithRedirect,
+  signOut,
+} from "firebase/auth";
 import {
   getFirebaseAuth,
   getGoogleProvider,
   isFirebaseClientConfigured,
 } from "@/lib/firebase/client";
 import styles from "../admin.module.css";
+
+/**
+ * Whether to offer the password box.
+ *
+ * `NODE_ENV` is inlined by the bundler, so in a production build this is the
+ * literal `false` and everything it guards is dropped from the bundle. The
+ * password form does not exist on the deployed site — it is not hidden there,
+ * it is not there. That is the only reason offering a second way in is
+ * acceptable at all.
+ */
+const IS_DEV = process.env.NODE_ENV === "development";
 
 /** Only ever bounce back to an in-app admin path. */
 function safeNextPath(value: string | null) {
@@ -19,6 +35,35 @@ function safeNextPath(value: string | null) {
   return value === "/admin/login" ? "/admin" : value;
 }
 
+/**
+ * Firebase error codes, in words that say what to do about them.
+ *
+ * `operation-not-allowed` is the one worth naming: it means the provider is
+ * switched off in the console, and its default message ("this operation is not
+ * allowed") sends you looking at the code instead.
+ */
+function passwordSignInMessage(error: unknown) {
+  const code = (error as { code?: string })?.code || "";
+
+  if (code === "auth/operation-not-allowed") {
+    return "Email/Password sign-in is switched off for this Firebase project. Turn it on under Authentication > Sign-in method.";
+  }
+
+  if (
+    code === "auth/invalid-credential" ||
+    code === "auth/wrong-password" ||
+    code === "auth/user-not-found"
+  ) {
+    return "That email and password do not match an account. Run node scripts/dev-admin-password.js to set one.";
+  }
+
+  if (code === "auth/too-many-requests") {
+    return "Too many attempts. Firebase has paused sign-in for this account for a few minutes.";
+  }
+
+  return error instanceof Error ? error.message : "Sign-in failed. Please try again.";
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,13 +71,17 @@ function LoginForm() {
   const [busy, setBusy] = useState(false);
   /** True until we know whether this load is a return trip from Google. */
   const [resolving, setResolving] = useState(true);
+  const [email, setEmail] = useState(process.env.NEXT_PUBLIC_DEV_ADMIN_EMAIL || "");
+  const [password, setPassword] = useState("");
 
   /**
    * Trades a Firebase credential for our own session cookie.
    *
-   * Shared by the redirect handler below; the cookie is what the proxy and
-   * every /api/admin route actually check, so sign-in is not finished until
-   * this succeeds.
+   * Shared by the redirect handler and the password form; the cookie is what
+   * the proxy and every /api/admin route actually check, so sign-in is not
+   * finished until this succeeds. Both ways in land here, which is why the
+   * password box is a convenience rather than a bypass: the allowlist check
+   * on the other end of this call is the same one either way.
    */
   const startSession = useCallback(
     async (idToken: string) => {
@@ -116,6 +165,34 @@ function LoginForm() {
     }
   };
 
+  /**
+   * The local way in, for when Google is more trouble than it is worth.
+   *
+   * Google sign-in on localhost needs `http://localhost:3001/__/auth/handler`
+   * listed on the OAuth client, and when it is not, the flow dies at Google
+   * with "Access blocked" — a console trip, in the middle of doing something
+   * else. This is a normal Firebase credential taking a different provider to
+   * the same door.
+   */
+  const handlePasswordSignIn = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+
+    try {
+      const credential = await signInWithEmailAndPassword(
+        getFirebaseAuth(),
+        email.trim(),
+        password
+      );
+
+      await startSession(await credential.user.getIdToken());
+    } catch (err) {
+      setError(passwordSignInMessage(err));
+      setBusy(false);
+    }
+  };
+
   if (!isFirebaseClientConfigured) {
     return (
       <p className={styles.loginError}>
@@ -135,6 +212,39 @@ function LoginForm() {
         {resolving ? "Checking…" : busy ? "Redirecting to Google…" : "Continue with Google"}
       </button>
       {error && <p className={styles.loginError}>{error}</p>}
+
+      {IS_DEV && (
+        <form onSubmit={handlePasswordSignIn} className={styles.devSignIn}>
+          <span className={styles.devSignInLabel}>Development only</span>
+
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            autoComplete="username"
+            required
+            className={styles.devSignInInput}
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            autoComplete="current-password"
+            required
+            className={styles.devSignInInput}
+          />
+
+          <button type="submit" disabled={busy || resolving} className={styles.devSignInBtn}>
+            {busy ? "Signing in…" : "Sign in with password"}
+          </button>
+
+          <p className={styles.devSignInNote}>
+            This box is not in the production build. The deployed dashboard is Google-only.
+          </p>
+        </form>
+      )}
     </>
   );
 }

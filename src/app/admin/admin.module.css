@@ -663,6 +663,72 @@
   line-height: 1.5;
 }
 
+/* ---- Development-only password sign-in ----
+   Rendered only when NODE_ENV is development, so none of this reaches a
+   production bundle. Styled to look like the workaround it is rather than a
+   second, equal way in. */
+
+.devSignIn {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px dashed #d1d5db;
+  text-align: left;
+}
+
+.devSignInLabel {
+  display: block;
+  margin-bottom: 12px;
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.devSignInInput {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+.devSignInInput:focus {
+  border-color: #b91c1c;
+  outline: none;
+}
+
+.devSignInBtn {
+  width: 100%;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #374151;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: border-color 0.15s ease;
+}
+
+.devSignInBtn:hover:not(:disabled) {
+  border-color: #b91c1c;
+}
+
+.devSignInBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.devSignInNote {
+  margin: 12px 0 0 0;
+  color: #9ca3af;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
 /* ---- Review workflow ---- */
 
 .sendPaymentBtn {
