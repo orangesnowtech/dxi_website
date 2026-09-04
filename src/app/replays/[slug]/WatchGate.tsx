@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatSize, type RecordingAccess } from "@/lib/recordings";
 import { track } from "@/lib/analytics";
 
@@ -56,6 +56,28 @@ export default function WatchGate({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ accessCode: "", name: "", email: "", phone: "" });
+  /** True once Loom's player document has loaded behind the overlay. */
+  const [playerReady, setPlayerReady] = useState(false);
+  /** True when it has taken long enough that silence would start to worry. */
+  const [slow, setSlow] = useState(false);
+
+  /*
+   * Changes the wording rather than the spinner.
+   *
+   * On a slow connection a spinner that has said the same thing for ten
+   * seconds stops reading as progress and starts reading as a hang. Saying so
+   * out loud is the difference between somebody waiting another moment and
+   * somebody reloading the page and losing their place in the gate.
+   */
+  useEffect(() => {
+    if (!ticket || playerReady) {
+      return;
+    }
+
+    const timer = setTimeout(() => setSlow(true), 8000);
+
+    return () => clearTimeout(timer);
+  }, [ticket, playerReady]);
 
   const setField = (field: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -116,7 +138,50 @@ export default function WatchGate({
             allowFullScreen
             allow="fullscreen; picture-in-picture"
             className="absolute inset-0 h-full w-full border-0"
+            // Fires when Loom's player document has loaded, which is the only
+            // signal we get from across an iframe boundary. Good enough: it is
+            // the moment the black rectangle stops being all there is.
+            onLoad={() => setPlayerReady(true)}
           />
+
+          {/*
+            Something to look at while Loom's player fetches itself.
+
+            Without this the wrapper's own dark background is the whole
+            experience for a second or two — longer on the mobile data this
+            page keeps warning people about — and a black rectangle after
+            typing a code reads as a broken replay rather than a loading one.
+
+            The thumbnail sits behind the spinner where there is one, so the
+            wait shows the actual talk rather than a void. Left in the tree and
+            faded out rather than unmounted, so there is no flash of dark
+            between the overlay going and the first frame arriving.
+          */}
+          <div
+            role="status"
+            aria-live="polite"
+            className={`absolute inset-0 flex flex-col items-center justify-center gap-4 bg-ink transition-opacity duration-500 ${
+              playerReady ? "pointer-events-none opacity-0" : "opacity-100"
+            }`}
+          >
+            {thumbnailUrl && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={thumbnailUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-30"
+              />
+            )}
+
+            <span
+              className="relative h-9 w-9 animate-spin rounded-full border-2 border-white/25 border-t-signal motion-reduce:animate-none"
+              aria-hidden
+            />
+
+            <span className="relative font-mono text-[11px] uppercase tracking-[0.14em] text-white/70">
+              {slow ? "Still loading — hang on" : "Loading the replay…"}
+            </span>
+          </div>
         </div>
       </div>
     );
