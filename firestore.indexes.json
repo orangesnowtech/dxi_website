@@ -2,21 +2,33 @@
   "//": "Composite indexes for the whole app, not just the event portal. This file is the DECLARATIVE SOURCE OF TRUTH: an index created by hand in the Firebase console is DELETED by the next `firebase deploy --only firestore:indexes`. Add it here instead. Firestore builds single-field indexes automatically, so only multi-field queries appear below.",
   "indexes": [
     {
-      "//": "Academy dashboard — submissions filtered by status (both `in` for the default active scope and `==` for one status), newest first. Predates the event portal; the collection had no composite indexes at all, so /admin could not load its list.",
+      "//": "Academy dashboard \u2014 submissions filtered by status (both `in` for the default active scope and `==` for one status), newest first. Predates the event portal; the collection had no composite indexes at all, so /admin could not load its list.",
       "collectionGroup": "businessProfileSubmissions",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
-      "//": "Public events listing — published events, soonest first.",
+      "//": "Public events listing \u2014 published events, soonest first.",
       "collectionGroup": "events",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "startsAt", "order": "ASCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "startsAt",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
@@ -24,8 +36,14 @@
       "collectionGroup": "events",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "startsAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "startsAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
@@ -33,9 +51,18 @@
       "collectionGroup": "eventRegistrations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "eventSlug", "order": "ASCENDING" },
-        { "fieldPath": "email", "order": "ASCENDING" },
-        { "fieldPath": "status", "order": "ASCENDING" }
+        {
+          "fieldPath": "eventSlug",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "email",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
@@ -43,8 +70,14 @@
       "collectionGroup": "eventRegistrations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "eventSlug", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "eventSlug",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
@@ -52,9 +85,18 @@
       "collectionGroup": "eventRegistrations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "eventSlug", "order": "ASCENDING" },
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "eventSlug",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
@@ -62,35 +104,59 @@
       "collectionGroup": "eventRegistrations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "status", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
-      "//": "Assistant rate limit — counts a conversation's inbound messages in the last hour.",
+      "//": "Assistant rate limit \u2014 counts a conversation's inbound messages in the last hour.",
       "collectionGroup": "messages",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "role", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "ASCENDING" }
+        {
+          "fieldPath": "role",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
-      "//": "Assistant dashboard — conversations filtered by bot/human, most recent first.",
+      "//": "Assistant dashboard \u2014 conversations filtered by bot/human, most recent first.",
       "collectionGroup": "botConversations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "mode", "order": "ASCENDING" },
-        { "fieldPath": "lastMessageAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "mode",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastMessageAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
-      "//": "Assistant dashboard — captured leads only, most recent first.",
+      "//": "Assistant dashboard \u2014 captured leads only, most recent first.",
       "collectionGroup": "botConversations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "isLead", "order": "ASCENDING" },
-        { "fieldPath": "lastMessageAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "isLead",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastMessageAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
@@ -98,8 +164,89 @@
       "collectionGroup": "eventRegistrations",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "accessCode", "order": "ASCENDING" },
-        { "fieldPath": "eventSlug", "order": "ASCENDING" }
+        {
+          "fieldPath": "accessCode",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "eventSlug",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "//": "Public replay library \u2014 published recordings, newest first.",
+      "collectionGroup": "recordings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "publishedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "//": "Admin replay list filtered by status, newest first.",
+      "collectionGroup": "recordings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "//": "The published replays attached to one event, for the event page to offer.",
+      "collectionGroup": "recordings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "eventSlug",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "//": "Who watched one replay, newest first. This is the sales list, not a view counter.",
+      "collectionGroup": "recordingViews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "recordingSlug",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "at",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "//": "The Academy replay gate \u2014 is this address an approved member? Equality on both, so no ordering.",
+      "collectionGroup": "businessProfileSubmissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "email",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
       ]
     }
   ],
