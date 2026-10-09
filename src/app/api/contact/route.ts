@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { writeClient } from '@sanity-shared/lib/writeClient';
 import { firestore } from '@/lib/firebase/admin';
+import { sendZeptoEmail } from '@/lib/zeptomail';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -37,23 +38,6 @@ function getZeptoConfig() {
       'info@dximarketing.com'
     ).trim(),
   };
-}
-
-async function sendZeptoEmail(payload: Record<string, unknown>, token: string) {
-  const response = await fetch('https://api.zeptomail.com/v1.1/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token,
-    },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(10000),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`ZeptoMail error ${response.status}: ${errorText}`);
-  }
 }
 
 export async function POST(request: NextRequest) {

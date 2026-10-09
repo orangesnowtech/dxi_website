@@ -1,3 +1,5 @@
+import { recordEmail } from "./firebase/email-log";
+
 export type ZeptoConfig = {
   token: string;
   bounceAddress: string;
@@ -44,19 +46,42 @@ export function getEventsRecipient() {
 // Single implementation, kept next to the templates that need it most.
 export { escapeHtml } from "./emails/academy";
 
-export async function sendZeptoEmail(payload: Record<string, unknown>, token: string) {
-  const response = await fetch("https://api.zeptomail.com/v1.1/email", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: token,
-    },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(10000),
-  });
+/**
+ * Sends one email, and writes it to the admin email log either way.
+ *
+ * The log is written here rather than by each caller so that it cannot be
+ * forgotten: whatever sends, is logged. A failure is logged and then thrown as
+ * before, so callers that swallow the error still leave a trace of it.
+ */
+export async function sendZeptoEmail(
+  payload: Record<string, unknown>,
+  token: string,
+  /** Set by the dashboard's Resend, so the log shows what was a repeat. */
+  resend?: { of: string; by: string }
+) {
+  try {
+    const response = await fetch("https://api.zeptomail.com/v1.1/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10000),
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`ZeptoMail error ${response.status}: ${errorText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`ZeptoMail error ${response.status}: ${errorText}`);
+    }
+  } catch (error) {
+    await recordEmail(
+      payload,
+      { status: "failed", error: error instanceof Error ? error.message : String(error) },
+      resend
+    );
+    throw error;
   }
+
+  await recordEmail(payload, { status: "sent" }, resend);
 }

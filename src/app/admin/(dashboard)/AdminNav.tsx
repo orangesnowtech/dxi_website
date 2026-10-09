@@ -44,6 +44,7 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
     title: "Site",
     items: [
       { href: "/admin/links", label: "Links" },
+      { href: "/admin/emails", label: "Emails" },
       { href: "/admin/admins", label: "Manage admins", superAdminOnly: true },
     ],
   },
