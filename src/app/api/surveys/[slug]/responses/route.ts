@@ -20,6 +20,7 @@ import {
   buildSurveyLinkEmail,
   buildSurveyReceivedEmail,
 } from "@/lib/emails/surveys";
+import { shareOrigin } from "@/lib/links";
 import { getZeptoConfig, sendZeptoEmail } from "@/lib/zeptomail";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +51,7 @@ type SavePayload = {
 async function sendLinkEmail(
   survey: Survey,
   response: SurveyResponse,
-  /** Taken from the request so the link is right on whichever host served it. */
+  /** The site's public address. See where it is resolved in POST. */
   origin: string,
   kind: "link" | "received"
 ) {
@@ -162,7 +163,12 @@ export async function POST(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Choose your area." }, { status: 400 });
     }
 
-    const origin = request.nextUrl.origin;
+    // Not the request's own origin: behind App Hosting that is the container's
+    // internal address (https://0.0.0.0:8080), and it went out in an email.
+    // The configured site address wins, with the request as the fallback for
+    // local development where nothing is configured. A link carrying
+    // somebody's private id should not be built from request headers anyway.
+    const origin = shareOrigin(request.nextUrl.origin);
     const existing = await getSurveyResponse(slug, payload.id);
 
     if (!existing) {
