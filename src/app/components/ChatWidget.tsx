@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { trackChatOpened } from "@/lib/analytics";
+import { isSurveyPath } from "@/lib/surveys";
 
 type Bubble = { role: "user" | "assistant"; text: string };
 
@@ -162,8 +163,9 @@ export default function ChatWidget() {
   };
 
   // The dashboard is staff answering these conversations; a customer-facing
-  // chat bubble floating over it would be a way to talk to yourself.
-  if (pathname?.startsWith("/admin")) {
+  // chat bubble floating over it would be a way to talk to yourself. And a
+  // client's questionnaire is theirs — not a place to sell our services.
+  if (pathname?.startsWith("/admin") || isSurveyPath(pathname)) {
     return null;
   }
 

@@ -10,6 +10,7 @@
 
 import type { Analytics } from "firebase/analytics";
 import { readConsent } from "@/lib/consent";
+import { isSurveyPath } from "@/lib/surveys";
 
 /** The GA4 property, handed to us in the Firebase web app config. */
 export const measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "";
@@ -25,9 +26,13 @@ export const measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || 
  */
 const PRODUCTION_HOST = "dximarketing.com";
 
-/** Admin pages are internal. Measuring our own dashboard use is noise. */
+/**
+ * Admin pages are internal. Measuring our own dashboard use is noise. A client
+ * questionnaire is confidential to that client, so it is never measured either
+ * — which also keeps the cookie banner off it.
+ */
 export function isMeasurablePath(pathname: string) {
-  return !pathname.startsWith("/admin");
+  return !pathname.startsWith("/admin") && !isSurveyPath(pathname);
 }
 
 /**

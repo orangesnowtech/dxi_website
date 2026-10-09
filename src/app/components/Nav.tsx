@@ -6,12 +6,18 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { SiteSettings } from "@/lib/sanity/types";
 import { pagePath } from "@/lib/content";
+import { isSurveyPath } from "@/lib/surveys";
 import Button from "./ui/Button";
 
 export default function Nav({ settings }: { settings: SiteSettings | null }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const links = settings?.navLinks ?? [];
+
+  // A client questionnaire carries the client's name, not our navigation.
+  if (isSurveyPath(pathname)) {
+    return null;
+  }
 
   return (
     <nav className="sticky top-0 z-100 border-b border-line bg-paper">
