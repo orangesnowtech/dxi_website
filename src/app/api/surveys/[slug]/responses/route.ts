@@ -20,7 +20,7 @@ import {
   buildSurveyLinkEmail,
   buildSurveyReceivedEmail,
 } from "@/lib/emails/surveys";
-import { shareOrigin } from "@/lib/links";
+import { siteOrigin } from "@/lib/links";
 import { getZeptoConfig, sendZeptoEmail } from "@/lib/zeptomail";
 
 export const dynamic = "force-dynamic";
@@ -163,12 +163,12 @@ export async function POST(request: NextRequest, { params }: Context) {
       return NextResponse.json({ error: "Choose your area." }, { status: 400 });
     }
 
-    // Not the request's own origin: behind App Hosting that is the container's
-    // internal address (https://0.0.0.0:8080), and it went out in an email.
-    // The configured site address wins, with the request as the fallback for
-    // local development where nothing is configured. A link carrying
+    // Always the site's public address, never the request's. Behind App
+    // Hosting the request's origin is the container's internal address, and on
+    // a developer's machine it is localhost — and an email leaves the machine
+    // either way, so neither is a link its reader can open. A link carrying
     // somebody's private id should not be built from request headers anyway.
-    const origin = shareOrigin(request.nextUrl.origin);
+    const origin = siteOrigin();
     const existing = await getSurveyResponse(slug, payload.id);
 
     if (!existing) {

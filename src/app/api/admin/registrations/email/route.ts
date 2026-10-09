@@ -9,7 +9,7 @@ import {
   paymentReference,
 } from "@/lib/events";
 import { getEvent, getRegistration, stampRegistration } from "@/lib/firebase/events";
-import { shareOrigin } from "@/lib/links";
+import { siteOrigin } from "@/lib/links";
 import { getZeptoConfig, sendZeptoEmail } from "@/lib/zeptomail";
 import {
   EVENTS_FROM_NAME,
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
         checkInUrl:
           event?.format === "venue"
             ? // The public address, not the request's: see the register route.
-              `${shareOrigin(request.nextUrl.origin)}/events/${event.slug}/check-in?code=${registration.accessCode}`
+              `${siteOrigin()}/events/${event.slug}/check-in?code=${registration.accessCode}`
             : undefined,
         paidLabel: registration.feeNaira > 0 ? formatFee(registration.feeNaira) : undefined,
       });
