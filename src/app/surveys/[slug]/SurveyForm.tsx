@@ -986,7 +986,12 @@ export default function SurveyForm({ survey }: { survey: Survey }) {
 
             return (
               <div key={s.key} className={styles.rv}>
-                <b>{s.title}</b>
+                {/* The whole card opens the section: the button's hit area is
+                    stretched over it in CSS, which keeps the question links
+                    below as real buttons rather than buttons inside a button. */}
+                <button type="button" className={styles.rvTitle} onClick={() => go(index + 1)}>
+                  {s.title}
+                </button>
                 {missing.length ? (
                   <span className={styles.partial}>
                     {s.questions.length - missing.length} of {s.questions.length}

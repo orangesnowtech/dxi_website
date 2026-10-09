@@ -867,6 +867,43 @@
   padding: 14px 16px;
 }
 
+.rv {
+  position: relative;
+  transition: border-color 0.15s;
+}
+
+.rv:hover,
+.rv:focus-within {
+  border-color: var(--gold);
+}
+
+.rvTitle {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rvTitle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+}
+
+/* The question links sit above the card's hit area; the gaps between them
+   still fall through to it. */
+.miss {
+  pointer-events: none;
+}
+
+.miss .linkBtn {
+  position: relative;
+  pointer-events: auto;
+}
+
 .miss {
   grid-column: 1 / -1;
   font-size: 0.9rem;
