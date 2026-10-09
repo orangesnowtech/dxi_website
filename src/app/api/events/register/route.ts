@@ -15,6 +15,7 @@ import {
   stampRegistration,
   type RegistrationInput,
 } from "@/lib/firebase/events";
+import { shareOrigin } from "@/lib/links";
 import { getEventsRecipient, getZeptoConfig, sendZeptoEmail } from "@/lib/zeptomail";
 import { BANK_DETAILS } from "@/lib/academy";
 import {
@@ -176,7 +177,11 @@ export async function POST(request: NextRequest) {
       registration,
       event,
       facts,
-      origin: request.nextUrl.origin,
+      // Not the request's own origin: behind App Hosting that is the
+      // container's internal address, and it went out in ticket emails as
+      // https://0.0.0.0:8080. The configured site address wins; the request is
+      // the fallback for local development, where nothing is configured.
+      origin: shareOrigin(request.nextUrl.origin),
     });
 
     // A free place is confirmed the moment it is claimed, so its ticket goes
@@ -225,7 +230,7 @@ async function sendRegistrationEmails({
   registration: EventRegistration;
   event: EventRecord;
   facts: EventEmailFacts;
-  /** Taken from the request so the link is right on whichever host served it. */
+  /** The site's public address. See where it is resolved in POST. */
   origin: string;
 }) {
   const { token, fromAddress } = getZeptoConfig();

@@ -9,6 +9,7 @@ import {
   paymentReference,
 } from "@/lib/events";
 import { getEvent, getRegistration, stampRegistration } from "@/lib/firebase/events";
+import { shareOrigin } from "@/lib/links";
 import { getZeptoConfig, sendZeptoEmail } from "@/lib/zeptomail";
 import {
   EVENTS_FROM_NAME,
@@ -134,7 +135,8 @@ export async function POST(request: NextRequest) {
         joinUrl: event?.format === "online" ? event.joinUrl || undefined : undefined,
         checkInUrl:
           event?.format === "venue"
-            ? `${request.nextUrl.origin}/events/${event.slug}/check-in?code=${registration.accessCode}`
+            ? // The public address, not the request's: see the register route.
+              `${shareOrigin(request.nextUrl.origin)}/events/${event.slug}/check-in?code=${registration.accessCode}`
             : undefined,
         paidLabel: registration.feeNaira > 0 ? formatFee(registration.feeNaira) : undefined,
       });
