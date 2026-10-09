@@ -709,6 +709,24 @@
   flex-wrap: wrap;
 }
 
+/* On a phone the two buttons stack, and the one that moves you forward goes
+   on top: it is the one nearly everybody wants, so it should be the one the
+   thumb meets first. Full width so neither is a small target. */
+@media (max-width: 560px) {
+  .nav {
+    flex-direction: column-reverse;
+    flex-wrap: nowrap;
+  }
+
+  .nav .btn {
+    width: 100%;
+  }
+
+  .nav span:empty {
+    display: none;
+  }
+}
+
 .btn {
   border: 1px solid var(--line);
   background: var(--surface);
