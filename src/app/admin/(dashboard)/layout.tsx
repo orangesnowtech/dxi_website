@@ -1,7 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/admin-auth";
-import SignOutButton from "./SignOutButton";
+import AdminNav from "./AdminNav";
 import styles from "../admin.module.css";
 
 export const dynamic = "force-dynamic";
@@ -18,46 +17,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <>
-      <div className={styles.adminBar}>
-        <span className={styles.adminBarBrand}>DXI Admin</span>
-        <Link href="/admin" className={styles.adminBarLink}>
-          Submissions
-        </Link>
-        <Link href="/admin/referral-codes" className={styles.adminBarLink}>
-          Referral codes
-        </Link>
-        <Link href="/admin/events" className={styles.adminBarLink}>
-          Events
-        </Link>
-        <Link href="/admin/check-in" className={styles.adminBarLink}>
-          Check-in
-        </Link>
-        <Link href="/admin/replays" className={styles.adminBarLink}>
-          Replays
-        </Link>
-        <Link href="/admin/surveys" className={styles.adminBarLink}>
-          Surveys
-        </Link>
-        <Link href="/admin/links" className={styles.adminBarLink}>
-          Links
-        </Link>
-        <Link href="/admin/chats" className={styles.adminBarLink}>
-          Chats
-        </Link>
-        <Link href="/admin/bot-rules" className={styles.adminBarLink}>
-          Bot rules
-        </Link>
-        {session.isSuperAdmin && (
-          <Link href="/admin/admins" className={styles.adminBarLink}>
-            Manage admins
-          </Link>
-        )}
-        <span className={styles.adminBarSpacer} />
-        <span className={styles.adminBarEmail}>{session.email}</span>
-        <SignOutButton />
-      </div>
-      {children}
-    </>
+    <div className={styles.adminShell}>
+      <AdminNav email={session.email} isSuperAdmin={session.isSuperAdmin} />
+      <div className={styles.adminContent}>{children}</div>
+    </div>
   );
 }

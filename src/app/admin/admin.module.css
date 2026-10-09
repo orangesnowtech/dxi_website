@@ -556,14 +556,154 @@
 
 /* ---- Auth chrome ---- */
 
-.adminBar {
+/* The dashboard's frame: navigation down the left, the page beside it. A
+   column rather than a bar because a bar has one row to spend, and ten links
+   had used it up. */
+.adminShell {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 20px;
+  align-items: flex-start;
+  background-color: #f9fafb;
+}
+
+.adminContent {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Sticks under the site's own nav, which is 64px tall plus its border. */
+.sidebar {
+  position: sticky;
+  top: 65px;
+  flex: none;
+  width: 220px;
+  height: calc(100vh - 65px);
+  display: flex;
+  flex-direction: column;
   background-color: #111827;
   color: #f9fafb;
   font-size: 0.9rem;
+}
+
+.sidebarHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 12px;
+}
+
+/* Only a narrow screen needs to fold the menu away. */
+.sidebarToggle {
+  display: none;
+  background-color: transparent;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  color: #f9fafb;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+}
+
+.sidebarBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarNav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 12px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #374151 transparent;
+}
+
+.sidebarGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+}
+
+.sidebarGroupTitle {
+  padding: 0 8px 4px;
+  color: #9ca3af;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sidebarLink {
+  color: #d1d5db;
+  text-decoration: none;
+  /* Tight enough that all ten fit a laptop screen without scrolling. */
+  padding: 6px 8px;
+  line-height: 1.3;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebarLink:hover {
+  background-color: #1f2937;
+  color: #ffffff;
+}
+
+.sidebarLinkActive,
+.sidebarLinkActive:hover {
+  background-color: #374151;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sidebarFoot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid #1f2937;
+}
+
+.sidebarFoot .adminBarEmail {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 900px) {
+  .adminShell {
+    display: block;
+  }
+
+  /* Back to a bar across the top, with the links behind a Menu button: the
+     check-in screen is used on a phone at a door and needs the whole width. */
+  .sidebar {
+    position: static;
+    width: auto;
+    height: auto;
+  }
+
+  .sidebarHead {
+    padding: 12px 20px;
+  }
+
+  .sidebarToggle {
+    display: block;
+  }
+
+  .sidebarBody {
+    display: none;
+  }
+
+  .sidebarBody.sidebarOpen {
+    display: flex;
+  }
+
+  .sidebarNav {
+    overflow-y: visible;
+  }
 }
 
 .adminBarBrand {
@@ -777,20 +917,6 @@
 }
 
 /* ---- Admin management ---- */
-
-.adminBarLink {
-  color: #d1d5db;
-  text-decoration: none;
-  font-size: 0.9rem;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.adminBarLink:hover {
-  background-color: #1f2937;
-  color: #ffffff;
-}
 
 .grantForm {
   display: flex;
