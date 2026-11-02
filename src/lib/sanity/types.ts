@@ -202,6 +202,30 @@ export interface RichSection extends SectionBase {
   content?: unknown[];
 }
 
+/**
+ * A local image. `src` is a path under /public for now; once this moves to
+ * Sanity it becomes an asset URL, and width/height come from its metadata.
+ */
+export interface SiteImage {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+
+export interface ShowcaseShot extends SiteImage {
+  _key: string;
+  caption?: string;
+}
+
+/** A product we've built, shown with its logo and screenshots and a link out to it. */
+export interface ShowcaseSection extends SectionBase {
+  _type: "showcaseSection";
+  logo?: SiteImage;
+  shots?: ShowcaseShot[];
+  cta?: Cta;
+}
+
 export interface CtaSection {
   _key: string;
   _type: "ctaSection";
@@ -223,6 +247,7 @@ export type Section =
   | CourseGridSection
   | WebinarGridSection
   | RichSection
+  | ShowcaseSection
   | CtaSection;
 
 /* ── Documents ──────────────────────────────────────────────────────────── */
@@ -248,11 +273,18 @@ export interface NavLink {
   slug: string;
 }
 
+/** A dropdown in the top bar: a label that opens a short list of pages. */
+export interface NavGroup {
+  _key: string;
+  label: string;
+  links: NavLink[];
+}
+
 export interface SiteSettings {
   whatsappNumber: string;
   phoneDisplay?: string;
   phoneDial?: string;
-  navLinks?: NavLink[];
+  navLinks?: (NavLink | NavGroup)[];
   navCta?: Cta;
   footerTagline?: string;
   footerContact?: string;

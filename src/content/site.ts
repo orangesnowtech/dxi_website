@@ -14,10 +14,19 @@ export const siteSettings: SiteSettings = {
   phoneDial: "+2348074533441",
   navLinks: keyed([
     { label: "Home", slug: "home" },
-    { label: "Sales Engine", slug: "sales-engine" },
-    { label: "Content", slug: "content" },
-    { label: "Viral", slug: "viral-engine" },
-    { label: "PR", slug: "pr-engine" },
+    {
+      label: "Engines",
+      links: keyed([
+        { label: "Sales Engine", slug: "sales-engine" },
+        { label: "Content Engine", slug: "content" },
+        { label: "Viral Engine", slug: "viral-engine" },
+        { label: "PR Engine", slug: "pr-engine" },
+      ]),
+    },
+    {
+      label: "Products",
+      links: keyed([{ label: "Wishnests", slug: "wishnests" }]),
+    },
     { label: "Market Force", slug: "market-force" },
     { label: "Academy", slug: "academy" },
     { label: "Events", slug: "events" },
