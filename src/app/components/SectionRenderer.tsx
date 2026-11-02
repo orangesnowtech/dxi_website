@@ -10,6 +10,7 @@ import Faq from "./sections/Faq";
 import CourseGrid from "./sections/CourseGrid";
 import WebinarGrid from "./sections/WebinarGrid";
 import RichText from "./sections/RichText";
+import Showcase from "./sections/Showcase";
 import Cta from "./sections/Cta";
 
 /**
@@ -52,6 +53,8 @@ export default function SectionRenderer({
             return <WebinarGrid key={section._key} section={section} />;
           case "richSection":
             return <RichText key={section._key} section={section} />;
+          case "showcaseSection":
+            return <Showcase key={section._key} section={section} settings={settings} />;
           case "ctaSection":
             return <Cta key={section._key} section={section} settings={settings} />;
           default:

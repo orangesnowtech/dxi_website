@@ -96,4 +96,8 @@ export const webinarGrid = section<Extract<Section, { _type: "webinarGrid" }>>("
 export const richText = section<Extract<Section, { _type: "richSection" }>>("richSection", {
   background: "paper",
 });
-export const closing = section<Extract<Section, { _type: "ctaSection" }>>("ctaSection");
+export const showcase = section<Extract<Section, { _type: "showcaseSection" }>>(
+  "showcaseSection",
+  { background: "paper" }
+);
+export const closing =section<Extract<Section, { _type: "ctaSection" }>>("ctaSection");

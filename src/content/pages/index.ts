@@ -6,6 +6,7 @@ import { viralEngine } from "./viral-engine";
 import { prEngine } from "./pr-engine";
 import { marketForce } from "./market-force";
 import { academy } from "./academy";
+import { wishnests } from "./wishnests";
 
 /** Every page on the site, in navigation order. */
 export const pages: Page[] = [
@@ -14,6 +15,7 @@ export const pages: Page[] = [
   contentEngine,
   viralEngine,
   prEngine,
+  wishnests,
   marketForce,
   academy,
 ];
